@@ -66,7 +66,11 @@ def prove_package(speed_cm_s: int, maximum_speed_cm_s: int, output_dir: Path) ->
         shutil.copytree(NOIR_SOURCE, noir)
         (noir / "Prover.toml").write_text(
             "# EXPERIMENTAL SYNTHETIC_ONLY witness; destroyed after proving.\n"
-            f"speed_cm_s = {speed_cm_s}\nversion = {ordered['version']}\nmaximum_speed_cm_s = {ordered['maximum_speed_cm_s']}\ncontext_hi = {ordered['context_hi']}\ncontext_lo = {ordered['context_lo']}\n",
+            f"speed_cm_s = {speed_cm_s}\n"
+            f"version = {ordered['version']}\n"
+            f"maximum_speed_cm_s = {ordered['maximum_speed_cm_s']}\n"
+            f"context_hi = \"{ordered['context_hi']}\"\n"
+            f"context_lo = \"{ordered['context_lo']}\"\n",
             encoding="utf-8",
         )
         run_sanitized([versions["nargo_path"], "compile"], noir)
