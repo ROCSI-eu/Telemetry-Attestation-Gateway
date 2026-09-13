@@ -28,9 +28,31 @@ This is not a proof-system selection. Any later selection remains a separate rev
 
 No telemetry source, identity, timestamp, mission field, publication layer, or command path exists in this experiment.
 
+## Recorded evidence
+
+[`benchmark-results.json`](benchmark-results.json) is the raw result captured on 2026-09-13 from GitHub Actions run `34744374843`. The workflow checksum-pinned the tool binaries, warmed the public Barretenberg CRS once, and then ran the measured benchmark inside an isolated network namespace. The measured phase completed successfully without network egress.
+
+The three-run synthetic measurements were:
+
+| Case | Proof size | Prove median | Verify median | Max prover RSS |
+| --- | ---: | ---: | ---: | ---: |
+| below limit (`<`) | 14,656 B | 115.421 ms | 8.143 ms | 20,164 KB |
+| equality boundary (`=`) | 14,656 B | 115.509 ms | 8.120 ms | 20,136 KB |
+
+Additional observations:
+
+- circuit compilation: 211.761 ms, 75,424 KB peak RSS;
+- verification-key generation: 19.386 ms, 14,328 KB peak RSS;
+- the synthetic over-limit (`>`) witness was rejected before proof generation; and
+- flipping one byte in the generated proof caused verification to fail with a non-zero result.
+
+These numbers describe one GitHub-hosted runner and a tiny synthetic circuit. They are feasibility measurements, not SLOs, capacity claims, or production benchmarks.
+
 ## Toolchain and setup
 
-The experiment runner never downloads tools or reaches a hosted verifier. It requires locally installed, pinned-compatible `nargo` and `bb` binaries. Barretenberg may require its public CRS to be provisioned once in the local cache before an offline run; that CRS is public setup material, not a secret key. The benchmark evidence workflow used during PR review warms the CRS once, then runs the measured phase with network egress unavailable.
+The committed benchmark runner never downloads tools or reaches a hosted verifier. It requires locally installed, pinned-compatible `nargo` and `bb` binaries. Barretenberg requires public CRS material to be provisioned in the local cache before an offline run; that CRS is public setup material, not a secret key.
+
+The one-time PR evidence workflow used network access only to fetch checksum-pinned tool binaries and warm the public CRS. That temporary workflow was removed after the raw result was captured so the repository's default CI remains offline-oriented.
 
 Tool binaries and CRS material are not committed to this repository.
 
