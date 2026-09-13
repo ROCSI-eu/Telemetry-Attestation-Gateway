@@ -348,6 +348,11 @@ def normalize_capture(capture: Any) -> dict[str, Any]:
                 "RECEIVER_TIME_IN_FUTURE",
                 "event receiver timestamp is later than decision timestamp",
             )
+        if decision_received_at_ms - received_at_ms > max_age_ms:
+            _fail(
+                "STALE_RECEIVER_OBSERVATION",
+                "event is older than the capture receiver-age bound",
+            )
         if prior_received_at is not None and received_at_ms < prior_received_at:
             _fail("RECEIVER_TIME_REGRESSION", "capture receiver timestamps must be monotonic")
         prior_received_at = received_at_ms
@@ -462,6 +467,8 @@ def main() -> int:
     args = parser.parse_args()
     fixture_path = Path(args.capture_file)
     fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
+    if not isinstance(fixture, dict):
+        raise SystemExit("fixtures must be an object containing a captures array")
     captures = fixture.get("captures")
     if not isinstance(captures, list):
         raise SystemExit("fixtures must contain a captures array")

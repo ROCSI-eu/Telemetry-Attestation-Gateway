@@ -79,6 +79,20 @@ class FixtureTests(unittest.TestCase):
         self.assertEqual(result["status"], "REJECTED")
         self.assertEqual(result["reason_code"], "RECEIVER_TIME_IN_FUTURE")
 
+    def test_stale_diagnostic_event_is_rejected(self) -> None:
+        import copy
+
+        base = next(item for item in self.fixture["captures"] if item["name"] == "unsigned-consistent")
+        capture = copy.deepcopy(base)
+        capture["max_age_ms"] = 50
+        capture["decision_received_at_ms"] = capture["events"][0]["received_at_ms"] + 50
+        capture["events"][1]["received_at_ms"] = capture["events"][0]["received_at_ms"] - 1
+
+        result = mod.evaluate_capture(capture)
+
+        self.assertEqual(result["status"], "REJECTED")
+        self.assertEqual(result["reason_code"], "STALE_RECEIVER_OBSERVATION")
+
     def test_cli_reports_non_object_capture_as_typed_rejection(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             fixture_path = Path(directory) / "captures.json"
@@ -93,6 +107,15 @@ class FixtureTests(unittest.TestCase):
         self.assertEqual(report["results"][0]["name"], "<unnamed>")
         self.assertEqual(report["results"][0]["result"]["status"], "REJECTED")
         self.assertEqual(report["results"][0]["result"]["reason_code"], "MALFORMED_CAPTURE")
+
+    def test_cli_rejects_non_object_fixture_root(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            fixture_path = Path(directory) / "captures.json"
+            fixture_path.write_text("null", encoding="utf-8")
+
+            with mock.patch.object(sys, "argv", ["mavlink_normalize.py", str(fixture_path)]):
+                with self.assertRaisesRegex(SystemExit, "fixtures must be an object"):
+                    mod.main()
 
     def test_labels_are_conspicuous(self) -> None:
         for required in (
