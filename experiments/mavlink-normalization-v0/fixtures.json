@@ -1,0 +1,316 @@
+{
+  "labels": [
+    "EXPERIMENTAL",
+    "SYNTHETIC_ONLY",
+    "A0_SYNTHETIC",
+    "NOT VALIDATION OR PRODUCTION AUTHORIZATION"
+  ],
+  "synthetic_provenance": "All frames are fabricated test-only MAVLink 2 bytes generated for this experiment; no real vehicle, flight, operator, mission, customer, site, or participant data is present.",
+  "test_signing_key_notice": "The signing key embedded in selected captures is public, synthetic, test-only, and unsafe for any real system.",
+  "captures": [
+    {
+      "name": "unsigned-consistent",
+      "decision_received_at_ms": 2000,
+      "max_age_ms": 1500,
+      "events": [
+        {
+          "received_at_ms": 1000,
+          "frame_hex": "fd1c0000010101210000e8030000000000000000000000000000000000002c019001000000006a7b"
+        },
+        {
+          "received_at_ms": 1050,
+          "frame_hex": "fd1400000201014a0000000000000000a0400000000000000000000000000000421b"
+        }
+      ],
+      "expected_status": "NORMALIZED",
+      "expected_speed_cm_s": 500,
+      "expected_trust": "UNSIGNED"
+    },
+    {
+      "name": "signed-valid",
+      "decision_received_at_ms": 2000,
+      "max_age_ms": 1500,
+      "events": [
+        {
+          "received_at_ms": 1000,
+          "frame_hex": "fd1c0100010101210000e8030000000000000000000000000000000000002c0190010000000003b907a08601000000a4a7e47c11b5"
+        },
+        {
+          "received_at_ms": 1050,
+          "frame_hex": "fd1401000201014a0000000000000000a04000000000000000000000000000003e1f07a18601000000fc68ac6f316a"
+        }
+      ],
+      "test_trust_store": {
+        "1:1:7": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"
+      },
+      "expected_status": "NORMALIZED",
+      "expected_speed_cm_s": 500,
+      "expected_trust": "SIGNED_VALID"
+    },
+    {
+      "name": "signed-unknown-key",
+      "decision_received_at_ms": 2000,
+      "max_age_ms": 1500,
+      "events": [
+        {
+          "received_at_ms": 1000,
+          "frame_hex": "fd1c0100010101210000e8030000000000000000000000000000000000002c0190010000000003b907a08601000000a4a7e47c11b5"
+        }
+      ],
+      "expected_status": "NORMALIZED",
+      "expected_speed_cm_s": 500,
+      "expected_trust": "UNKNOWN"
+    },
+    {
+      "name": "signed-invalid",
+      "decision_received_at_ms": 2000,
+      "max_age_ms": 1500,
+      "events": [
+        {
+          "received_at_ms": 1000,
+          "frame_hex": "fd1c0100010101210000e8030000000000000000000000000000000000002c0190010000000003b907a08601000000a4a7e47c11b4"
+        }
+      ],
+      "test_trust_store": {
+        "1:1:7": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"
+      },
+      "expected_status": "REJECTED",
+      "expected_reason_code": "SIGNATURE_INVALID"
+    },
+    {
+      "name": "signed-timestamp-regression",
+      "decision_received_at_ms": 2000,
+      "max_age_ms": 1500,
+      "events": [
+        {
+          "received_at_ms": 1000,
+          "frame_hex": "fd1c0100010101210000e8030000000000000000000000000000000000002c0190010000000003b907a08601000000a4a7e47c11b5"
+        },
+        {
+          "received_at_ms": 1010,
+          "frame_hex": "fd1401000201014a0000000000000000a04000000000000000000000000000003e1f079f86010000003639b6c204b1"
+        }
+      ],
+      "test_trust_store": {
+        "1:1:7": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"
+      },
+      "expected_status": "REJECTED",
+      "expected_reason_code": "SIGNATURE_TIMESTAMP_REPLAY_OR_REGRESSION"
+    },
+    {
+      "name": "mixed-source",
+      "decision_received_at_ms": 2000,
+      "max_age_ms": 1500,
+      "events": [
+        {
+          "received_at_ms": 1000,
+          "frame_hex": "fd1c0000010101210000e8030000000000000000000000000000000000002c019001000000006a7b"
+        },
+        {
+          "received_at_ms": 1010,
+          "frame_hex": "fd1400000202014a0000000000000000a0400000000000000000000000000000c93d"
+        }
+      ],
+      "expected_status": "REJECTED",
+      "expected_reason_code": "MIXED_SOURCE"
+    },
+    {
+      "name": "stale-receiver-observation",
+      "decision_received_at_ms": 3001,
+      "max_age_ms": 1000,
+      "events": [
+        {
+          "received_at_ms": 1000,
+          "frame_hex": "fd1c0000010101210000e8030000000000000000000000000000000000002c019001000000006a7b"
+        }
+      ],
+      "expected_status": "REJECTED",
+      "expected_reason_code": "STALE_RECEIVER_OBSERVATION"
+    },
+    {
+      "name": "bad-crc",
+      "decision_received_at_ms": 2000,
+      "max_age_ms": 1500,
+      "events": [
+        {
+          "received_at_ms": 1000,
+          "frame_hex": "fd1c0000010101210000e8030000000000000000000000000000000000002c019001000000006a7a"
+        }
+      ],
+      "expected_status": "REJECTED",
+      "expected_reason_code": "BAD_CRC"
+    },
+    {
+      "name": "unsupported-message",
+      "decision_received_at_ms": 2000,
+      "max_age_ms": 1500,
+      "events": [
+        {
+          "received_at_ms": 1000,
+          "frame_hex": "fd0900000101010000000000000002030004038f9e"
+        }
+      ],
+      "expected_status": "REJECTED",
+      "expected_reason_code": "UNSUPPORTED_MESSAGE"
+    },
+    {
+      "name": "source-time-regression",
+      "decision_received_at_ms": 2000,
+      "max_age_ms": 1500,
+      "events": [
+        {
+          "received_at_ms": 1000,
+          "frame_hex": "fd1c0000010101210000d0070000000000000000000000000000000000002c019001000000001825"
+        },
+        {
+          "received_at_ms": 1010,
+          "frame_hex": "fd1c0000020101210000e8030000000000000000000000000000000000002c01900100000000e67f"
+        }
+      ],
+      "expected_status": "REJECTED",
+      "expected_reason_code": "SOURCE_TIME_REGRESSION_UNSUPPORTED"
+    },
+    {
+      "name": "vfr-nonfinite",
+      "decision_received_at_ms": 2000,
+      "max_age_ms": 1500,
+      "events": [
+        {
+          "received_at_ms": 1000,
+          "frame_hex": "fd1c0000010101210000e8030000000000000000000000000000000000002c019001000000006a7b"
+        },
+        {
+          "received_at_ms": 1010,
+          "frame_hex": "fd1400000201014a0000000000000000c07f0000000000000000000000000000a3e1"
+        }
+      ],
+      "expected_status": "REJECTED",
+      "expected_reason_code": "NON_FINITE_GROUNDSPEED"
+    },
+    {
+      "name": "gpi-max-components",
+      "decision_received_at_ms": 2000,
+      "max_age_ms": 1500,
+      "events": [
+        {
+          "received_at_ms": 1000,
+          "frame_hex": "fd1c0000010101210000e8030000000000000000000000000000000000000080008000000000fb74"
+        }
+      ],
+      "expected_status": "NORMALIZED",
+      "expected_speed_cm_s": 46341,
+      "expected_trust": "UNSIGNED"
+    },
+    {
+      "name": "gpi-conservative-ceil",
+      "decision_received_at_ms": 2000,
+      "max_age_ms": 1500,
+      "events": [
+        {
+          "received_at_ms": 1000,
+          "frame_hex": "fd1c0000010101210000e80300000000000000000000000000000000000001000100000000001391"
+        }
+      ],
+      "expected_status": "NORMALIZED",
+      "expected_speed_cm_s": 2,
+      "expected_trust": "UNSIGNED"
+    },
+    {
+      "name": "vfr-binary32-ceil",
+      "decision_received_at_ms": 2000,
+      "max_age_ms": 1500,
+      "events": [
+        {
+          "received_at_ms": 1000,
+          "frame_hex": "fd1c0000010101210000e8030000000000000000000000000000000000000000000000000000b1c6"
+        },
+        {
+          "received_at_ms": 1010,
+          "frame_hex": "fd1400000201014a000000000000b6f39d3f0000000000000000000000000000f78d"
+        }
+      ],
+      "expected_status": "NORMALIZED",
+      "expected_speed_cm_s": 0,
+      "expected_trust": "UNSIGNED",
+      "expected_vfr_speed_cm_s": 124
+    },
+    {
+      "name": "gpi-trailing-zero-truncated",
+      "decision_received_at_ms": 2000,
+      "max_age_ms": 1500,
+      "events": [
+        {
+          "received_at_ms": 1000,
+          "frame_hex": "fd140000010101210000e80300007b00000038feffffe8030000d0070000fdbb"
+        }
+      ],
+      "expected_status": "NORMALIZED",
+      "expected_speed_cm_s": 0,
+      "expected_trust": "UNSIGNED"
+    },
+    {
+      "name": "vfr-negative",
+      "decision_received_at_ms": 2000,
+      "max_age_ms": 1500,
+      "events": [
+        {
+          "received_at_ms": 1000,
+          "frame_hex": "fd1c0000010101210000e8030000000000000000000000000000000000002c019001000000006a7b"
+        },
+        {
+          "received_at_ms": 1010,
+          "frame_hex": "fd1400000201014a000000000000000080bf0000000000000000000000000000de41"
+        }
+      ],
+      "expected_status": "REJECTED",
+      "expected_reason_code": "NEGATIVE_GROUNDSPEED"
+    },
+    {
+      "name": "vfr-overflow",
+      "decision_received_at_ms": 2000,
+      "max_age_ms": 1500,
+      "events": [
+        {
+          "received_at_ms": 1000,
+          "frame_hex": "fd1c0000010101210000e8030000000000000000000000000000000000002c019001000000006a7b"
+        },
+        {
+          "received_at_ms": 1010,
+          "frame_hex": "fd1400000201014a0000000000009976967e0000000000000000000000000000918c"
+        }
+      ],
+      "expected_status": "REJECTED",
+      "expected_reason_code": "NORMALIZED_SPEED_OVERFLOW"
+    },
+    {
+      "name": "receiver-time-regression",
+      "decision_received_at_ms": 2000,
+      "max_age_ms": 1500,
+      "events": [
+        {
+          "received_at_ms": 1010,
+          "frame_hex": "fd1c0000010101210000e8030000000000000000000000000000000000002c019001000000006a7b"
+        },
+        {
+          "received_at_ms": 1000,
+          "frame_hex": "fd1400000201014a0000000000000000a0400000000000000000000000000000421b"
+        }
+      ],
+      "expected_status": "REJECTED",
+      "expected_reason_code": "RECEIVER_TIME_REGRESSION"
+    },
+    {
+      "name": "missing-primary",
+      "decision_received_at_ms": 2000,
+      "max_age_ms": 1500,
+      "events": [
+        {
+          "received_at_ms": 1000,
+          "frame_hex": "fd1400000101014a0000000000000000a04000000000000000000000000000000ddb"
+        }
+      ],
+      "expected_status": "REJECTED",
+      "expected_reason_code": "MISSING_PRIMARY_SPEED_SOURCE"
+    }
+  ]
+}
