@@ -18,3 +18,5 @@ jobs:
         run: python3 experiments/bounded-speed-v0/test_bounded_speed.py
       - name: Run MAVLink normalization spike tests
         run: python3 experiments/mavlink-normalization-v0/test_mavlink_normalize.py
+      - name: Check repository documentation
+        run: python3 scripts/check_docs.py
