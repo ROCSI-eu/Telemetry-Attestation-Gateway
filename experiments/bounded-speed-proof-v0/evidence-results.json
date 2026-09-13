@@ -87,7 +87,7 @@
   },
   "package_evidence": {
     "private_witness_disclosed": false,
-    "proof_sha256": "4741719e744895f56a175db590e011f9b64f7ce73530cf0696d0dd648814f6aa",
+    "proof_sha256": "8ff12616b24b0642e275ea4f23f9bc6573bda3ea1aa89cf53f601bbce00ac675",
     "proof_size_bytes": 14656,
     "public_artifact_sha256": "f5f122af8f96ed1bf0d532b4a1b210d59ebf8fcf99bcf83f8c752125f3766f55",
     "verification_key_sha256": "0e4eb3c0d0e64b43a67460d6e208f2f1070c805bd3c075413dee21a83e0c85b1",
