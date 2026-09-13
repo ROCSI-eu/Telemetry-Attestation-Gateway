@@ -303,8 +303,11 @@ def decode_vfr_hud(frame: ParsedFrame) -> dict[str, Any]:
     }
 
 
-def normalize_capture(capture: dict[str, Any]) -> dict[str, Any]:
+def normalize_capture(capture: Any) -> dict[str, Any]:
     """Normalize a deterministic synthetic capture into one observation result."""
+    if not isinstance(capture, dict):
+        _fail("MALFORMED_CAPTURE", "capture must be an object")
+
     try:
         decision_received_at_ms = _capture_nonnegative_int(
             "decision_received_at_ms", capture["decision_received_at_ms"]
@@ -340,6 +343,11 @@ def normalize_capture(capture: dict[str, Any]) -> dict[str, Any]:
             _fail("MALFORMED_CAPTURE", "event timestamp/frame hex is invalid")
         except ValueError:
             _fail("MALFORMED_CAPTURE", "event frame_hex is not valid hexadecimal")
+        if received_at_ms > decision_received_at_ms:
+            _fail(
+                "RECEIVER_TIME_IN_FUTURE",
+                "event receiver timestamp is later than decision timestamp",
+            )
         if prior_received_at is not None and received_at_ms < prior_received_at:
             _fail("RECEIVER_TIME_REGRESSION", "capture receiver timestamps must be monotonic")
         prior_received_at = received_at_ms
@@ -428,7 +436,7 @@ def normalize_capture(capture: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def evaluate_capture(capture: dict[str, Any]) -> dict[str, Any]:
+def evaluate_capture(capture: Any) -> dict[str, Any]:
     try:
         return normalize_capture(capture)
     except NormalizationError as exc:
@@ -463,7 +471,9 @@ def main() -> int:
         "fixture_file": fixture_path.name,
         "results": [
             {
-                "name": item.get("name", "<unnamed>"),
+                "name": (
+                    item.get("name", "<unnamed>") if isinstance(item, dict) else "<unnamed>"
+                ),
                 "result": evaluate_capture(item),
             }
             for item in captures

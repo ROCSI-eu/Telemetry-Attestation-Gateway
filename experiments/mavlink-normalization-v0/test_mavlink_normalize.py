@@ -4,11 +4,15 @@
 from __future__ import annotations
 
 import importlib.util
+import io
 import json
 import sys
+import tempfile
 import unittest
+from contextlib import redirect_stdout
 from fractions import Fraction
 from pathlib import Path
+from unittest import mock
 
 HERE = Path(__file__).resolve().parent
 SPEC = importlib.util.spec_from_file_location("mavlink_normalize", HERE / "mavlink_normalize.py")
@@ -44,7 +48,9 @@ class FixtureTests(unittest.TestCase):
     def test_capture_metadata_does_not_coerce_strings_or_booleans(self) -> None:
         import copy
 
-        base = next(item for item in self.fixture["captures"] if item["name"] == "unsigned-consistent")
+        base = next(
+            item for item in self.fixture["captures"] if item["name"] == "unsigned-consistent"
+        )
 
         string_time = copy.deepcopy(base)
         string_time["decision_received_at_ms"] = "2000"
@@ -60,6 +66,33 @@ class FixtureTests(unittest.TestCase):
         non_string_hex["events"][0]["frame_hex"] = 123
         result = mod.evaluate_capture(non_string_hex)
         self.assertEqual(result["reason_code"], "MALFORMED_CAPTURE")
+
+    def test_diagnostic_event_after_decision_is_rejected(self) -> None:
+        import copy
+
+        base = next(item for item in self.fixture["captures"] if item["name"] == "unsigned-consistent")
+        capture = copy.deepcopy(base)
+        capture["decision_received_at_ms"] = capture["events"][0]["received_at_ms"]
+
+        result = mod.evaluate_capture(capture)
+
+        self.assertEqual(result["status"], "REJECTED")
+        self.assertEqual(result["reason_code"], "RECEIVER_TIME_IN_FUTURE")
+
+    def test_cli_reports_non_object_capture_as_typed_rejection(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            fixture_path = Path(directory) / "captures.json"
+            fixture_path.write_text(json.dumps({"captures": [None]}), encoding="utf-8")
+            stdout = io.StringIO()
+
+            with mock.patch.object(sys, "argv", ["mavlink_normalize.py", str(fixture_path)]):
+                with redirect_stdout(stdout):
+                    self.assertEqual(mod.main(), 0)
+
+        report = json.loads(stdout.getvalue())
+        self.assertEqual(report["results"][0]["name"], "<unnamed>")
+        self.assertEqual(report["results"][0]["result"]["status"], "REJECTED")
+        self.assertEqual(report["results"][0]["result"]["reason_code"], "MALFORMED_CAPTURE")
 
     def test_labels_are_conspicuous(self) -> None:
         for required in (
