@@ -117,7 +117,7 @@ def _trust_key(
         return None
     try:
         key = bytes.fromhex(value)
-    except ValueError as exc:
+    except (TypeError, ValueError) as exc:
         _fail("INVALID_TEST_TRUST_STORE", "test trust-store key is not valid hex")
     if len(key) != 32:
         _fail("INVALID_TEST_TRUST_STORE", "test trust-store key must be exactly 32 bytes")
@@ -259,6 +259,12 @@ def _ceil_fraction(value: Fraction) -> int:
     return -(-value.numerator // value.denominator)
 
 
+def _capture_nonnegative_int(name: str, value: Any) -> int:
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        _fail("MALFORMED_CAPTURE", f"{name} must be a non-negative integer")
+    return value
+
+
 def decode_global_position_int(frame: ParsedFrame) -> dict[str, Any]:
     if frame.msg_id != GLOBAL_POSITION_INT:
         _fail("WRONG_MESSAGE_TYPE", "expected GLOBAL_POSITION_INT")
@@ -300,14 +306,16 @@ def decode_vfr_hud(frame: ParsedFrame) -> dict[str, Any]:
 def normalize_capture(capture: dict[str, Any]) -> dict[str, Any]:
     """Normalize a deterministic synthetic capture into one observation result."""
     try:
-        decision_received_at_ms = int(capture["decision_received_at_ms"])
-        max_age_ms = int(capture["max_age_ms"])
+        decision_received_at_ms = _capture_nonnegative_int(
+            "decision_received_at_ms", capture["decision_received_at_ms"]
+        )
+        max_age_ms = _capture_nonnegative_int("max_age_ms", capture["max_age_ms"])
         events = capture["events"]
-    except (KeyError, TypeError, ValueError) as exc:
+    except KeyError:
         _fail("MALFORMED_CAPTURE", "capture metadata is missing or invalid")
 
-    if decision_received_at_ms < 0 or max_age_ms < 0 or not isinstance(events, list) or not events:
-        _fail("MALFORMED_CAPTURE", "capture requires non-negative timing metadata and at least one event")
+    if not isinstance(events, list) or not events:
+        _fail("MALFORMED_CAPTURE", "capture requires at least one event")
 
     trust_store = capture.get("test_trust_store", {})
     if not isinstance(trust_store, dict):
@@ -323,13 +331,15 @@ def normalize_capture(capture: dict[str, Any]) -> dict[str, Any]:
         if not isinstance(event, dict):
             _fail("MALFORMED_CAPTURE", "event must be an object")
         try:
-            received_at_ms = int(event["received_at_ms"])
-            frame_bytes = bytes.fromhex(event["frame_hex"])
-        except (KeyError, TypeError, ValueError) as exc:
+            received_at_ms = _capture_nonnegative_int("received_at_ms", event["received_at_ms"])
+            frame_hex = event["frame_hex"]
+            if not isinstance(frame_hex, str):
+                _fail("MALFORMED_CAPTURE", "event frame_hex must be a hexadecimal string")
+            frame_bytes = bytes.fromhex(frame_hex)
+        except KeyError:
             _fail("MALFORMED_CAPTURE", "event timestamp/frame hex is invalid")
-
-        if received_at_ms < 0:
-            _fail("MALFORMED_CAPTURE", "received_at_ms must be non-negative")
+        except ValueError:
+            _fail("MALFORMED_CAPTURE", "event frame_hex is not valid hexadecimal")
         if prior_received_at is not None and received_at_ms < prior_received_at:
             _fail("RECEIVER_TIME_REGRESSION", "capture receiver timestamps must be monotonic")
         prior_received_at = received_at_ms
