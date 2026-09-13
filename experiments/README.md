@@ -22,6 +22,7 @@ Use [`TEMPLATE.md`](TEMPLATE.md) when useful. It is guidance, not a gate.
 ## Current experiments
 
 - [`bounded-speed-v0/`](bounded-speed-v0/) — deterministic integer/CBOR encoding spike for the synthetic predicate `speed_cm_s <= maximum_speed_cm_s`.
+- [`proof-system-benchmark-v0/`](proof-system-benchmark-v0/) — proof-system feasibility benchmark for the same synthetic bounded-speed predicate.
 
 ## Workspace boundary
 

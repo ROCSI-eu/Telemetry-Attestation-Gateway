@@ -1,0 +1,70 @@
+name: Proof benchmark evidence (temporary)
+
+on:
+  pull_request:
+    paths:
+      - "experiments/proof-system-benchmark-v0/**"
+      - ".github/workflows/proof-benchmark-evidence.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install checksum-pinned research toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          work="$RUNNER_TEMP/tag-proof-tools"
+          bin="$work/bin"
+          mkdir -p "$work/nargo" "$work/bb" "$bin"
+
+          curl -fL --retry 3 -o "$work/nargo.tar.gz" \
+            https://github.com/noir-lang/noir/releases/download/v1.0.0-beta.26/nargo-x86_64-unknown-linux-gnu.tar.gz
+          echo "64048040befd55a987158b11137d8f38f9688f696db4d84910dd1bcf0442fb80  $work/nargo.tar.gz" | sha256sum -c -
+          tar -xzf "$work/nargo.tar.gz" -C "$work/nargo"
+          nargo_bin="$(find "$work/nargo" -type f -name nargo -print -quit)"
+          test -n "$nargo_bin"
+          chmod +x "$nargo_bin"
+          cp "$nargo_bin" "$bin/nargo"
+
+          curl -fL --retry 3 -o "$work/bb.tar.gz" \
+            https://github.com/AztecProtocol/barretenberg/releases/download/v5.2.0/barretenberg-amd64-linux.tar.gz
+          echo "17ab8476961728cdc5c69b6c4ff427c9092cef11d1e0b0166929a0417dfa7cfb  $work/bb.tar.gz" | sha256sum -c -
+          tar -xzf "$work/bb.tar.gz" -C "$work/bb"
+          bb_bin="$(find "$work/bb" -type f -name bb -print -quit)"
+          test -n "$bb_bin"
+          chmod +x "$bb_bin"
+          cp "$bb_bin" "$bin/bb"
+
+          echo "$bin" >> "$GITHUB_PATH"
+
+      - name: Show pinned versions
+        run: |
+          nargo --version
+          bb --version
+
+      - name: Warm public CRS and tool caches
+        working-directory: experiments/proof-system-benchmark-v0
+        run: python3 benchmark.py --runs 1 --output warmup-results.json
+
+      - name: Run measured benchmark with network namespace isolated
+        working-directory: experiments/proof-system-benchmark-v0
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo unshare --net env \
+            HOME="$HOME" \
+            PATH="$PATH" \
+            /usr/bin/python3 benchmark.py --runs 3 --output benchmark-results-ci.json
+
+      - name: Upload benchmark evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: proof-benchmark-evidence
+          path: experiments/proof-system-benchmark-v0/benchmark-results-ci.json
+          if-no-files-found: error
