@@ -4,6 +4,8 @@ This repository contains governance documentation plus disposable sandbox artifa
 
 Sandbox contributions must use demonstrably synthetic data, remain inside the documented isolation boundary, and carry **`EXPERIMENTAL`**, **`SYNTHETIC_ONLY`**, and **`NOT VALIDATION OR PRODUCTION AUTHORIZATION`**. If a format cannot embed the markings, include the adjacent path-and-digest manifest required by the delivery plan; human-visible renderings must still display them. A sandbox contribution is not a supported prototype, external-validation or promotion evidence, an MVP component, or pilot/production work.
 
+Executable synthetic research belongs in the lightweight [experimental research workspace](experiments/README.md). Use its short experiment record and template rather than creating new milestone or governance paperwork for each disposable technical spike.
+
 ## Developer Certificate of Origin
 
 Every contribution must be certified under Developer Certificate of Origin 1.1 with a `Signed-off-by` trailer. The sign-off certifies the contributor's right to submit the work under the applicable project license; it is not a copyright assignment.
