@@ -1,0 +1,18 @@
+name: Experimental research check
+
+on:
+  pull_request:
+    paths:
+      - "experiments/**"
+      - ".github/workflows/experiments.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  bounded-speed-v0:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run bounded-speed encoding spike tests
+        run: python3 experiments/bounded-speed-v0/test_bounded_speed.py

@@ -1,0 +1,29 @@
+{
+  "labels": [
+    "EXPERIMENTAL",
+    "SYNTHETIC_ONLY",
+    "NOT VALIDATION OR PRODUCTION AUTHORIZATION"
+  ],
+  "assurance_id": "A0_SYNTHETIC",
+  "note": "All values are fabricated test-only integers in centimetres per second.",
+  "cases": [
+    {
+      "name": "below_limit",
+      "speed_cm_s": 499,
+      "maximum_speed_cm_s": 500,
+      "expected": "satisfied"
+    },
+    {
+      "name": "at_limit",
+      "speed_cm_s": 500,
+      "maximum_speed_cm_s": 500,
+      "expected": "satisfied"
+    },
+    {
+      "name": "above_limit",
+      "speed_cm_s": 501,
+      "maximum_speed_cm_s": 500,
+      "expected": "not_satisfied"
+    }
+  ]
+}
