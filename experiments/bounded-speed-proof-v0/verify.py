@@ -16,7 +16,7 @@ import subprocess
 import tempfile
 from typing import Any
 
-from common import BOUNDED, ExperimentError, LABELS, public_inputs_json, reconstruct_bb_public_inputs, require_bb
+from common import BOUNDED, ExperimentError, EXPECTED_VK_SHA256, LABELS, public_inputs_json, reconstruct_bb_public_inputs, require_bb, sha256_file
 
 
 def _base_result() -> dict[str, Any]:
@@ -53,6 +53,9 @@ def verify_public_package(public_artifact_path: Path, proof_path: Path, verifica
     if not proof_path.is_file() or not verification_key_path.is_file():
         result["cryptographic"] = {"status": "UNVERIFIABLE", "reason": "PROOF_OR_KEY_UNAVAILABLE"}
         return result
+    if sha256_file(verification_key_path) != EXPECTED_VK_SHA256:
+        result["cryptographic"] = {"status": "UNVERIFIABLE", "reason": "VERIFICATION_KEY_UNRECOGNIZED"}
+        return result
     try:
         bb_path, _ = require_bb()
     except ExperimentError:
@@ -79,10 +82,8 @@ def exit_code(result: dict[str, Any]) -> int:
     if result["input"]["status"] == "REJECTED":
         return 2
     status = result["cryptographic"]["status"]
-    if status == "VALID":
-        return 0
-    if status == "INVALID":
-        return 3
+    if status == "VALID": return 0
+    if status == "INVALID": return 3
     return 4
 
 

@@ -16,6 +16,7 @@ BOUNDED_SPEED_MODULE = ROOT.parent / "bounded-speed-v0" / "bounded_speed.py"
 
 EXPECTED_NARGO_FRAGMENT = "1.0.0-beta.26"
 EXPECTED_BB_FRAGMENT = "5.2.0"
+EXPECTED_VK_SHA256 = "0e4eb3c0d0e64b43a67460d6e208f2f1070c805bd3c075413dee21a83e0c85b1"
 
 LABELS = (
     "EXPERIMENTAL",
@@ -88,12 +89,7 @@ def tool_version(command: str, expected_fragment: str) -> tuple[str, str]:
     path = shutil.which(command)
     if not path:
         raise ExperimentError(f"required local tool is unavailable: {command}")
-    result = subprocess.run(
-        [path, "--version"],
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-    )
+    result = subprocess.run([path, "--version"], text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     if result.returncode != 0:
         raise ExperimentError(f"could not determine {command} version")
     version = result.stdout.strip()
@@ -109,22 +105,12 @@ def require_bb() -> tuple[str, str]:
 def require_prover_tools() -> dict[str, str]:
     nargo_path, nargo_version = tool_version("nargo", EXPECTED_NARGO_FRAGMENT)
     bb_path, bb_version = require_bb()
-    return {
-        "nargo_path": nargo_path,
-        "nargo_version": nargo_version,
-        "bb_path": bb_path,
-        "bb_version": bb_version,
-    }
+    return {"nargo_path": nargo_path, "nargo_version": nargo_version, "bb_path": bb_path, "bb_version": bb_version}
 
 
 def run_sanitized(command: list[str], cwd: Path, *, expect_success: bool = True) -> int:
     """Run a tool without surfacing stdout/stderr that could include witness details."""
-    result = subprocess.run(
-        command,
-        cwd=cwd,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
+    result = subprocess.run(command, cwd=cwd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     if expect_success and result.returncode != 0:
         raise ExperimentError(f"local proof tool failed with exit code {result.returncode}")
     if not expect_success and result.returncode == 0:

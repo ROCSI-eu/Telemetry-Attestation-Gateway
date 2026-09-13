@@ -56,6 +56,8 @@ The circuit independently constrains the fixed version and context limbs as well
 
 The verifier writes its own Barretenberg public-input file from the CBOR artifact. It never trusts a prover-supplied public-input file, ordering, context interpretation, or maximum value.
 
+The experimental verifier also pins the expected verification-key digest to `sha256:0e4eb3c0d0e64b43a67460d6e208f2f1070c805bd3c075413dee21a83e0c85b1`, derived from the pinned circuit and toolchain evidence run. A different verification key is reported as `UNVERIFIABLE`, not accepted merely because it accompanies a self-consistent proof. This is a test-only trust anchor, not production key governance.
+
 ## Typed verifier result
 
 The verifier returns separate dimensions rather than one overall validity Boolean:
@@ -74,14 +76,7 @@ The verifier returns separate dimensions rather than one overall validity Boolea
 
 ## Prover package minimization
 
-`prove.py` uses a temporary working copy of the Noir circuit. `Prover.toml` and the generated witness remain inside the temporary directory and are destroyed after proving. A successful output package contains only:
-
-- `public-artifact.cbor`;
-- `proof`;
-- `vk`; and
-- `manifest.json` with public/test-only metadata and digests.
-
-The manifest does not contain the private speed.
+`prove.py` uses a temporary working copy of the Noir circuit. `Prover.toml` and the generated witness remain inside the temporary directory and are destroyed after proving. A successful output package contains only `public-artifact.cbor`, `proof`, `vk`, and `manifest.json` with public/test-only metadata and digests. The manifest does not contain the private speed.
 
 The prover rejects an over-limit synthetic witness before proof generation. It does not convert that policy/predicate failure into a cryptographic result.
 
@@ -116,15 +111,7 @@ python3 experiments/bounded-speed-proof-v0/test_verify.py
 
 ## Evidence cases
 
-The genuine evidence run covers:
-
-- below-limit proof verifies;
-- equality-boundary proof verifies;
-- above-limit witness is rejected before proof generation;
-- one-byte proof mutation is cryptographically rejected;
-- a different but canonical public speed-limit artifact causes cryptographic rejection;
-- malformed public artifact is rejected before cryptographic verification; and
-- the verifier package contains no witness or private speed material.
+The genuine evidence run covers below-limit and equality proofs, over-limit rejection before proving, a mutated proof, altered canonical public input, malformed public artifact, and package witness minimization.
 
 ## Interpretation boundary
 
