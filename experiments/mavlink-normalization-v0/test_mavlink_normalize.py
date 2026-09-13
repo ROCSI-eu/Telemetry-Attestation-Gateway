@@ -41,6 +41,26 @@ class FixtureTests(unittest.TestCase):
                 else:
                     self.assertEqual(result["reason_code"], capture["expected_reason_code"])
 
+    def test_capture_metadata_does_not_coerce_strings_or_booleans(self) -> None:
+        import copy
+
+        base = next(item for item in self.fixture["captures"] if item["name"] == "unsigned-consistent")
+
+        string_time = copy.deepcopy(base)
+        string_time["decision_received_at_ms"] = "2000"
+        result = mod.evaluate_capture(string_time)
+        self.assertEqual(result["reason_code"], "MALFORMED_CAPTURE")
+
+        boolean_time = copy.deepcopy(base)
+        boolean_time["events"][0]["received_at_ms"] = True
+        result = mod.evaluate_capture(boolean_time)
+        self.assertEqual(result["reason_code"], "MALFORMED_CAPTURE")
+
+        non_string_hex = copy.deepcopy(base)
+        non_string_hex["events"][0]["frame_hex"] = 123
+        result = mod.evaluate_capture(non_string_hex)
+        self.assertEqual(result["reason_code"], "MALFORMED_CAPTURE")
+
     def test_labels_are_conspicuous(self) -> None:
         for required in (
             "EXPERIMENTAL",
