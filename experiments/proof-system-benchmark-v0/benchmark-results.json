@@ -1,0 +1,136 @@
+{
+  "compile": {
+    "elapsed_ms": 211.761,
+    "max_rss_kb": 75424
+  },
+  "environment": {
+    "command_path": "none",
+    "hardware": "none",
+    "network_required_by_runner": false
+  },
+  "labels": [
+    "EXPERIMENTAL",
+    "SYNTHETIC_ONLY",
+    "A0_SYNTHETIC",
+    "NOT VALIDATION OR PRODUCTION AUTHORIZATION"
+  ],
+  "over_limit_case": {
+    "rejected_before_proof": true,
+    "synthetic_relation": ">"
+  },
+  "predicate": "speed_cm_s <= maximum_speed_cm_s",
+  "proof_validity_is_not_telemetry_truth": true,
+  "tampered_proof": {
+    "mutated_byte_index": 7328,
+    "rejected": true,
+    "return_code": 1
+  },
+  "tool_versions": {
+    "bb": "5.2.0",
+    "nargo": "nargo version = 1.0.0-beta.26\nnoirc version = 1.0.0-beta.26+40d6574f851d926f93e0c3a271bac3e6e82ac905\n(git version hash: 40d6574f851d926f93e0c3a271bac3e6e82ac905, is dirty: false)"
+  },
+  "valid_cases": [
+    {
+      "case": "below",
+      "proof_size_bytes": [
+        14656
+      ],
+      "prove": {
+        "elapsed_ms": {
+          "max": 135.371,
+          "median": 115.421,
+          "min": 115.206,
+          "samples": [
+            135.371,
+            115.421,
+            115.206
+          ]
+        },
+        "max_rss_kb": {
+          "max": 20164,
+          "samples": [
+            19892,
+            20164,
+            19828
+          ]
+        },
+        "runs": 3
+      },
+      "synthetic_relation": "<",
+      "verify": {
+        "elapsed_ms": {
+          "max": 8.623,
+          "median": 8.143,
+          "min": 8.017,
+          "samples": [
+            8.623,
+            8.017,
+            8.143
+          ]
+        },
+        "max_rss_kb": {
+          "max": 8308,
+          "samples": [
+            8308,
+            8308,
+            8308
+          ]
+        },
+        "runs": 3
+      }
+    },
+    {
+      "case": "equal",
+      "proof_size_bytes": [
+        14656
+      ],
+      "prove": {
+        "elapsed_ms": {
+          "max": 115.719,
+          "median": 115.509,
+          "min": 114.913,
+          "samples": [
+            115.509,
+            114.913,
+            115.719
+          ]
+        },
+        "max_rss_kb": {
+          "max": 20136,
+          "samples": [
+            19844,
+            20096,
+            20136
+          ]
+        },
+        "runs": 3
+      },
+      "synthetic_relation": "=",
+      "verify": {
+        "elapsed_ms": {
+          "max": 8.21,
+          "median": 8.12,
+          "min": 8.043,
+          "samples": [
+            8.043,
+            8.21,
+            8.12
+          ]
+        },
+        "max_rss_kb": {
+          "max": 8500,
+          "samples": [
+            8308,
+            8500,
+            8436
+          ]
+        },
+        "runs": 3
+      }
+    }
+  ],
+  "verification_key_generation": {
+    "elapsed_ms": 19.386,
+    "max_rss_kb": 14328
+  }
+}

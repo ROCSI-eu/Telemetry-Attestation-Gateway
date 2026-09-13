@@ -1,0 +1,3 @@
+# Demonstrably synthetic, test-only values.
+speed_cm_s = 1200
+maximum_speed_cm_s = 1500
