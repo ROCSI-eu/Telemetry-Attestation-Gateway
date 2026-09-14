@@ -75,6 +75,7 @@ def _base_result(capture_name: str) -> dict[str, Any]:
         "labels": list(LABELS),
         "experiment": "end-to-end-v0",
         "capture_case": capture_name,
+        "invocation": {"status": "NOT_CHECKED", "reason": None},
         "telemetry": {
             "status": "NOT_CHECKED",
             "reason": None,
@@ -111,6 +112,7 @@ def _run_with_package(
 ) -> dict[str, Any]:
     result = _base_result(capture_name)
     maximum_speed_cm_s = _validate_public_limit(maximum_speed_cm_s)
+    result["invocation"] = {"status": "ACCEPTED", "reason": None}
 
     normalized = telemetry.evaluate_capture(capture)
     if normalized.get("status") != "NORMALIZED":
@@ -216,6 +218,8 @@ def run_fixture(
 
 
 def exit_code(result: dict[str, Any]) -> int:
+    if result["invocation"]["status"] == "REJECTED":
+        return 6
     if result["telemetry"]["status"] == "REJECTED":
         return 2
     if result["predicate"] == "NOT_SATISFIED":
@@ -259,12 +263,15 @@ def main() -> int:
         )
     except DemoError as exc:
         result = _base_result(args.capture_name)
-        result["telemetry"] = {
-            "status": "REJECTED",
-            "reason": exc.code,
-            "assurance_id": "A0_SYNTHETIC",
-            "source_trust": "NOT_EVALUATED",
-        }
+        if exc.code == "INVALID_PUBLIC_LIMIT":
+            result["invocation"] = {"status": "REJECTED", "reason": exc.code}
+        else:
+            result["telemetry"] = {
+                "status": "REJECTED",
+                "reason": exc.code,
+                "assurance_id": "A0_SYNTHETIC",
+                "source_trust": "NOT_EVALUATED",
+            }
     print(json.dumps(result, indent=2, sort_keys=True))
     return exit_code(result)
 

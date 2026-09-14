@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import io
 import json
 from pathlib import Path
 import tempfile
@@ -157,6 +158,7 @@ class DemoPipelineTests(unittest.TestCase):
     def test_result_keeps_typed_dimensions_and_no_overall_boolean(self) -> None:
         result = demo._base_result("synthetic-case")
         for key in (
+            "invocation",
             "telemetry",
             "predicate",
             "cryptographic",
@@ -172,6 +174,27 @@ class DemoPipelineTests(unittest.TestCase):
         self.assertNotIn("overall_valid", result)
         self.assertNotIn("business_disposition", result)
         self.assertEqual(result["command_path"], "NONE")
+
+    def test_invalid_public_limit_is_an_invocation_rejection(self) -> None:
+        output = io.StringIO()
+        with patch.object(
+            demo.sys,
+            "argv",
+            ["demo.py", "--maximum-speed-cm-s", str(1 << 32)],
+        ):
+            with patch.object(demo.telemetry, "evaluate_capture") as evaluate_call:
+                with patch("sys.stdout", output):
+                    status = demo.main()
+
+        evaluate_call.assert_not_called()
+        result = json.loads(output.getvalue())
+        self.assertEqual(status, 6)
+        self.assertEqual(
+            result["invocation"],
+            {"status": "REJECTED", "reason": "INVALID_PUBLIC_LIMIT"},
+        )
+        self.assertEqual(result["telemetry"]["status"], "NOT_CHECKED")
+        self.assertEqual(result["verification_input"]["status"], "NOT_CHECKED")
 
     def test_invalid_fixture_root_is_typed(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

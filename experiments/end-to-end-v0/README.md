@@ -58,6 +58,7 @@ These numbers are fabricated test-only values. They do not represent a real vehi
 
 The CLI keeps these dimensions separate:
 
+- invocation and public-limit validation;
 - telemetry normalization and source trust;
 - predicate outcome;
 - proof-generation state;
