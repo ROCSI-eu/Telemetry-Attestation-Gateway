@@ -17,6 +17,7 @@ BOUNDED_SPEED_MODULE = ROOT.parent / "bounded-speed-v0" / "bounded_speed.py"
 
 EXPECTED_NARGO_VERSION = "1.0.0-beta.26"
 EXPECTED_BB_VERSION = "5.2.0"
+VERIFIER_TARGET = "noir-recursive"
 EXPECTED_VK_SHA256 = "0e4eb3c0d0e64b43a67460d6e208f2f1070c805bd3c075413dee21a83e0c85b1"
 
 LABELS = (
