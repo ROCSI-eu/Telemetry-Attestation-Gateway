@@ -1,0 +1,62 @@
+name: End-to-end demonstrator evidence (temporary)
+
+on:
+  pull_request:
+    paths:
+      - "experiments/end-to-end-v0/**"
+      - ".github/workflows/end-to-end-evidence-temporary.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install checksum-pinned research toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          work="$RUNNER_TEMP/tag-proof-tools"
+          bin="$work/bin"
+          mkdir -p "$work/nargo" "$work/bb" "$bin"
+          curl -fL --retry 3 -o "$work/nargo.tar.gz" \
+            https://github.com/noir-lang/noir/releases/download/v1.0.0-beta.26/nargo-x86_64-unknown-linux-gnu.tar.gz
+          echo "64048040befd55a987158b11137d8f38f9688f696db4d84910dd1bcf0442fb80  $work/nargo.tar.gz" | sha256sum -c -
+          tar -xzf "$work/nargo.tar.gz" -C "$work/nargo"
+          nargo_bin="$(find "$work/nargo" -type f -name nargo -print -quit)"
+          test -n "$nargo_bin"
+          chmod +x "$nargo_bin"
+          cp "$nargo_bin" "$bin/nargo"
+          curl -fL --retry 3 -o "$work/bb.tar.gz" \
+            https://github.com/AztecProtocol/barretenberg/releases/download/v5.2.0/barretenberg-amd64-linux.tar.gz
+          echo "17ab8476961728cdc5c69b6c4ff427c9092cef11d1e0b0166929a0417dfa7cfb  $work/bb.tar.gz" | sha256sum -c -
+          tar -xzf "$work/bb.tar.gz" -C "$work/bb"
+          bb_bin="$(find "$work/bb" -type f -name bb -print -quit)"
+          test -n "$bb_bin"
+          chmod +x "$bb_bin"
+          cp "$bb_bin" "$bin/bb"
+          echo "$bin" >> "$GITHUB_PATH"
+      - name: Show pinned versions
+        run: |
+          nargo --version
+          bb --version
+      - name: Warm public CRS and tool caches
+        working-directory: experiments/end-to-end-v0
+        run: python3 evidence.py --output "$RUNNER_TEMP/warmup-end-to-end-evidence.json"
+      - name: Run measured end-to-end evidence with network namespace isolated
+        working-directory: experiments/end-to-end-v0
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo unshare --net env \
+            HOME="$HOME" \
+            PATH="$PATH" \
+            /usr/bin/python3 evidence.py --output "$RUNNER_TEMP/end-to-end-evidence.json"
+      - name: Upload minimized evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: end-to-end-demonstrator-evidence
+          path: ${{ runner.temp }}/end-to-end-evidence.json
+          if-no-files-found: error

@@ -20,5 +20,7 @@ jobs:
         run: python3 experiments/mavlink-normalization-v0/test_mavlink_normalize.py
       - name: Run bounded-speed proof/verifier boundary tests
         run: python3 experiments/bounded-speed-proof-v0/test_verify.py
+      - name: Run end-to-end demonstrator boundary tests
+        run: python3 experiments/end-to-end-v0/test_demo.py
       - name: Check repository documentation
         run: python3 scripts/check_docs.py

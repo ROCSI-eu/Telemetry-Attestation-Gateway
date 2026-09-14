@@ -25,6 +25,7 @@ Use [`TEMPLATE.md`](TEMPLATE.md) when useful. It is guidance, not a gate.
 - [`proof-system-benchmark-v0/`](proof-system-benchmark-v0/) — proof-system feasibility benchmark for the same synthetic bounded-speed predicate.
 - [`mavlink-normalization-v0/`](mavlink-normalization-v0/) — receive-only MAVLink 2 parsing and deterministic synthetic horizontal-speed normalization spike.
 - [`bounded-speed-proof-v0/`](bounded-speed-proof-v0/) — genuine bounded-speed proof plus independently invokable public-input-reconstructing offline verifier experiment.
+- [`end-to-end-v0/`](end-to-end-v0/) — local synthetic MAVLink normalization → private witness → zero-knowledge proof → independent offline verification demonstrator.
 
 ## Workspace boundary
 
