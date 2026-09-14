@@ -17,7 +17,7 @@ import subprocess
 import tempfile
 from typing import Any
 
-from common import BOUNDED, ExperimentError, EXPECTED_VK_SHA256, LABELS, public_inputs_json, reconstruct_bb_public_inputs, require_bb
+from common import BOUNDED, ExperimentError, EXPECTED_VK_SHA256, LABELS, VERIFIER_TARGET, public_inputs_json, reconstruct_bb_public_inputs, require_bb
 
 PROOF_REJECTION_MARKERS = (b"proof verification failed", b"failed to verify proof")
 
@@ -86,7 +86,7 @@ def verify_public_package(public_artifact_path: Path, proof_path: Path, verifica
         try:
             expected_path.write_text(expected_json, encoding="utf-8")
             completed = subprocess.run(
-                [bb_path, "verify", "-i", str(expected_path), "-p", str(proof_path), "-k", str(trusted_key_path)],
+                [bb_path, "verify", "-t", VERIFIER_TARGET, "-i", str(expected_path), "-p", str(proof_path), "-k", str(trusted_key_path)],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.PIPE,
             )

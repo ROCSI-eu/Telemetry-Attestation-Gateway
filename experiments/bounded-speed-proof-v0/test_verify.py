@@ -53,6 +53,7 @@ class FakeVerifierTests(unittest.TestCase):
             "if '--version' in sys.argv:\n    print('5.2.0')\n    raise SystemExit(0)\n"
             "if len(sys.argv) < 2 or sys.argv[1] != 'verify':\n    raise SystemExit(9)\n"
             "def arg(flag): return sys.argv[sys.argv.index(flag) + 1]\n"
+            f"if arg('-t') != {common.VERIFIER_TARGET!r}:\n    raise SystemExit(8)\n"
             "doc = json.loads(pathlib.Path(arg('-i')).read_text())\n"
             f"expected = {expected_hex!r}\n"
             "if doc.get('public_inputs') != expected:\n"
@@ -221,9 +222,14 @@ class BoundaryTests(unittest.TestCase):
     def test_manifest_writer_does_not_take_private_speed(self) -> None:
         self.assertNotIn("speed_cm_s", prove._write_manifest.__annotations__)
 
-    def test_prover_explicitly_requests_zero_knowledge(self) -> None:
-        source = Path(__file__).with_name("prove.py").read_text(encoding="utf-8")
-        self.assertIn('"prove", "--zk"', source)
+    def test_prover_and_verifier_pin_zero_knowledge_target(self) -> None:
+        self.assertEqual(common.VERIFIER_TARGET, "noir-recursive")
+        prove_source = Path(__file__).with_name("prove.py").read_text(encoding="utf-8")
+        verify_source = Path(__file__).with_name("verify.py").read_text(encoding="utf-8")
+        self.assertIn('"prove", "-t", VERIFIER_TARGET', prove_source)
+        self.assertIn('"write_vk", "-t", VERIFIER_TARGET', prove_source)
+        self.assertIn('"verify", "-t", VERIFIER_TARGET', verify_source)
+        self.assertNotIn('"--zk"', prove_source)
 
     def test_tool_versions_must_match_exactly(self) -> None:
         completed = subprocess.CompletedProcess([], 0, stdout="15.2.0\n")

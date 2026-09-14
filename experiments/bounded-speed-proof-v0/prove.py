@@ -16,7 +16,7 @@ import shutil
 import tempfile
 from typing import Any
 
-from common import BOUNDED, ExperimentError, LABELS, ROOT, reconstruct_bb_public_inputs, require_prover_tools, run_sanitized, sha256_file
+from common import BOUNDED, ExperimentError, LABELS, ROOT, VERIFIER_TARGET, reconstruct_bb_public_inputs, require_prover_tools, run_sanitized, sha256_file
 
 NOIR_SOURCE = ROOT / "noir"
 UINT32_MAX = (1 << 32) - 1
@@ -34,6 +34,7 @@ def _write_manifest(output_dir: Path, public_artifact: Path, proof: Path, vk: Pa
         "experiment": "bounded-speed-proof-v0",
         "predicate": "speed_cm_s <= maximum_speed_cm_s",
         "proof_mode": "zero_knowledge",
+        "verifier_target": VERIFIER_TARGET,
         "private_witness_disclosed": False,
         "public": {"schema_version": BOUNDED.SCHEMA_VERSION, "maximum_speed_cm_s": maximum_speed_cm_s, "assurance_id": BOUNDED.ASSURANCE_ID},
         "tool_versions": {"nargo": versions["nargo_version"], "bb": versions["bb_version"]},
@@ -81,8 +82,14 @@ def prove_package(speed_cm_s: int, maximum_speed_cm_s: int, output_dir: Path) ->
         witness = target / "bounded_speed_proof_v0.gz"
         if not circuit.is_file() or not witness.is_file():
             raise ExperimentError("pinned Noir outputs were not generated")
-        run_sanitized([versions["bb_path"], "write_vk", "-b", str(circuit), "-o", str(target)], noir)
-        run_sanitized([versions["bb_path"], "prove", "--zk", "-b", str(circuit), "-w", str(witness), "-o", str(target)], noir)
+        run_sanitized(
+            [versions["bb_path"], "write_vk", "-t", VERIFIER_TARGET, "-b", str(circuit), "-o", str(target)],
+            noir,
+        )
+        run_sanitized(
+            [versions["bb_path"], "prove", "-t", VERIFIER_TARGET, "-b", str(circuit), "-w", str(witness), "-o", str(target)],
+            noir,
+        )
         proof_source = target / "proof"
         vk_source = target / "vk"
         if not proof_source.is_file() or not vk_source.is_file():

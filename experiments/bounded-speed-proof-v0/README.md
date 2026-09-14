@@ -18,10 +18,13 @@ from the strict public CBOR artifact, then verify a genuine proof locally withou
 
 - Noir / Nargo: `v1.0.0-beta.26`
 - Barretenberg `bb`: `v5.2.0`
+- Barretenberg verifier target: `noir-recursive` (Poseidon2, zero knowledge enabled, no IPA accumulation)
 - public artifact semantics: `bounded-speed-v0`, schema version `0`
 - demonstrator assurance: `A0_SYNTHETIC`
 
-These versions are experiment inputs, not an accepted architecture. The Barretenberg release-binary provenance/licensing adoption question recorded by the proof benchmark remains **Open**; no tool binary, CRS, or third-party source is vendored here.
+These versions and target settings are experiment inputs, not an accepted architecture. The Barretenberg release-binary provenance/licensing adoption question recorded by the proof benchmark remains **Open**; no tool binary, CRS, or third-party source is vendored here.
+
+For Barretenberg `v5.2.0`, zero-knowledge mode is configured by `--verifier_target`; the release does not expose a `bb prove --zk` flag. The experiment therefore passes `-t noir-recursive` consistently to `write_vk`, `prove`, and `verify`, as required by the pinned Barretenberg interface.
 
 ## Public/private boundary
 
@@ -56,7 +59,7 @@ The circuit independently constrains the fixed version and context limbs as well
 
 The verifier writes its own Barretenberg public-input file from the CBOR artifact. It never trusts a prover-supplied public-input file, ordering, context interpretation, or maximum value.
 
-The experimental verifier also pins the expected verification-key digest to `sha256:0e4eb3c0d0e64b43a67460d6e208f2f1070c805bd3c075413dee21a83e0c85b1`, derived from the pinned circuit and toolchain evidence run. A different verification key is reported as `UNVERIFIABLE`, not accepted merely because it accompanies a self-consistent proof. This is a test-only trust anchor, not production key governance.
+The experimental verifier also pins the expected verification-key digest to `sha256:0e4eb3c0d0e64b43a67460d6e208f2f1070c805bd3c075413dee21a83e0c85b1`, derived from the pinned circuit and toolchain evidence. A different verification key is reported as `UNVERIFIABLE`, not accepted merely because it accompanies a self-consistent proof. This is a test-only trust anchor, not production key governance.
 
 ## Typed verifier result
 
@@ -76,7 +79,7 @@ The verifier returns separate dimensions rather than one overall validity Boolea
 
 ## Prover package minimization
 
-`prove.py` uses a temporary working copy of the Noir circuit and explicitly passes Barretenberg's `--zk` option when proving. `Prover.toml` and the generated witness remain inside the temporary directory and are destroyed after proving. A successful output package contains only `public-artifact.cbor`, `proof`, `vk`, and `manifest.json` with public/test-only metadata and digests. The manifest records `proof_mode` as `zero_knowledge` and does not contain the private speed.
+`prove.py` uses a temporary working copy of the Noir circuit and passes the pinned `noir-recursive` verifier target when constructing the verification key and proof. In Barretenberg `v5.2.0`, that target explicitly enables zero-knowledge randomization. `Prover.toml` and the generated witness remain inside the temporary directory and are destroyed after proving. A successful output package contains only `public-artifact.cbor`, `proof`, `vk`, and `manifest.json` with public/test-only metadata and digests. The manifest records `proof_mode` as `zero_knowledge`, records the verifier target, and does not contain the private speed.
 
 The prover rejects an over-limit synthetic witness before proof generation. It does not convert that policy/predicate failure into a cryptographic result.
 
@@ -107,7 +110,7 @@ Run standard-library structural/unit tests:
 python3 experiments/bounded-speed-proof-v0/test_verify.py
 ```
 
-`evidence.py` exercises the genuine proof cases with the pinned toolchain and writes a minimized result record. Evidence must be regenerated with the explicit zero-knowledge proving mode before a result is committed; the earlier non-ZK record has been removed rather than represented as witness-privacy evidence.
+`evidence.py` exercises the genuine proof cases with the pinned toolchain and writes a minimized result record. Any evidence used to support witness-privacy behavior must be generated with the pinned zero-knowledge verifier target.
 
 ## Evidence cases
 

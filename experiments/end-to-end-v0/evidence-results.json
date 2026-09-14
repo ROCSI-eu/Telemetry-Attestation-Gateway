@@ -1,0 +1,89 @@
+{
+  "cases": {
+    "altered_public_input": {
+      "cryptographic": "INVALID",
+      "verification_input": "ACCEPTED"
+    },
+    "below_limit": {
+      "assurance": "A0_SYNTHETIC",
+      "cryptographic": "VALID",
+      "predicate": "SATISFIED",
+      "proof_generation": "GENERATED",
+      "publication": "NOT_PERFORMED",
+      "relying_party_decision": "NOT_MADE",
+      "source_trust": "UNSIGNED",
+      "telemetry": "NORMALIZED",
+      "verification_input": "ACCEPTED"
+    },
+    "equality_boundary": {
+      "assurance": "A0_SYNTHETIC",
+      "cryptographic": "VALID",
+      "predicate": "SATISFIED",
+      "proof_generation": "GENERATED",
+      "publication": "NOT_PERFORMED",
+      "relying_party_decision": "NOT_MADE",
+      "source_trust": "UNSIGNED",
+      "telemetry": "NORMALIZED",
+      "verification_input": "ACCEPTED"
+    },
+    "incompatible_public_version": {
+      "cryptographic": "NOT_CHECKED",
+      "verification_input": "REJECTED"
+    },
+    "malformed_telemetry": {
+      "assurance": "A0_SYNTHETIC",
+      "cryptographic": "NOT_CHECKED",
+      "predicate": "NOT_EVALUATED",
+      "proof_generation": "NOT_ATTEMPTED",
+      "publication": "NOT_PERFORMED",
+      "relying_party_decision": "NOT_MADE",
+      "source_trust": "NOT_EVALUATED",
+      "telemetry": "REJECTED",
+      "verification_input": "NOT_CHECKED"
+    },
+    "over_limit": {
+      "assurance": "A0_SYNTHETIC",
+      "cryptographic": "NOT_CHECKED",
+      "predicate": "NOT_SATISFIED",
+      "proof_generation": "NOT_ATTEMPTED",
+      "publication": "NOT_PERFORMED",
+      "relying_party_decision": "NOT_MADE",
+      "source_trust": "UNSIGNED",
+      "telemetry": "NORMALIZED",
+      "verification_input": "NOT_CHECKED"
+    },
+    "tampered_proof": {
+      "cryptographic": "INVALID",
+      "verification_input": "ACCEPTED"
+    }
+  },
+  "environment": {
+    "command_path": "none",
+    "hardware": "none",
+    "network_required_by_measured_run": false,
+    "publication": "not_performed"
+  },
+  "experiment": "end-to-end-v0",
+  "labels": [
+    "EXPERIMENTAL",
+    "SYNTHETIC_ONLY",
+    "A0_SYNTHETIC",
+    "NOT VALIDATION OR PRODUCTION AUTHORIZATION"
+  ],
+  "non_claims": {
+    "continuous_or_whole_flight_coverage": false,
+    "customer_demand_or_pilot_readiness": false,
+    "production_readiness": false,
+    "safety_or_compliance": false,
+    "telemetry_truth": false,
+    "trustworthy_time": false
+  },
+  "path": "synthetic MAVLink observation -> allowlisted normalization -> private bounded-speed witness -> zero-knowledge proof -> independent offline verification",
+  "proof_evidence": {
+    "private_witness_disclosed": false,
+    "proof_mode": "zero_knowledge",
+    "proof_size_bytes": 14656,
+    "verifier_accepts_witness_input": false,
+    "verifier_target": "noir-recursive"
+  }
+}
