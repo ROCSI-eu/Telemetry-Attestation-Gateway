@@ -114,6 +114,46 @@ class FakeVerifierTests(unittest.TestCase):
             self.assertEqual(result["cryptographic"]["status"], "UNVERIFIABLE")
             self.assertEqual(result["cryptographic"]["reason"], "VERIFICATION_KEY_UNRECOGNIZED")
 
+    def test_verifier_uses_the_key_bytes_it_authenticated(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            d = Path(tmp)
+            bb = self._fake_bb(d, 1500)
+            source = bb.read_text(encoding="utf-8")
+            source = source.replace(
+                "doc = json.loads(pathlib.Path(arg('-i')).read_text())\n",
+                "pathlib.Path(os.environ['PACKAGE_VK']).write_bytes(b'replaced vk')\n"
+                "assert pathlib.Path(arg('-k')).read_bytes() == b'synthetic vk'\n"
+                "doc = json.loads(pathlib.Path(arg('-i')).read_text())\n",
+            ).replace("import json, pathlib, sys", "import json, os, pathlib, sys")
+            bb.write_text(source, encoding="utf-8")
+            artifact = d / "public.cbor"
+            proof_path = d / "proof"
+            vk = d / "vk"
+            artifact.write_bytes(common.BOUNDED.encode_public_artifact(1500))
+            proof_path.write_bytes(b"synthetic proof")
+            vk.write_bytes(b"synthetic vk")
+            expected_vk = hashlib.sha256(b"synthetic vk").hexdigest()
+            environment = {"PATH": f"{d}:{os.environ.get('PATH', '')}", "PACKAGE_VK": str(vk)}
+            with patch.object(verify, "EXPECTED_VK_SHA256", expected_vk):
+                with patch.dict(os.environ, environment):
+                    result = verify.verify_public_package(artifact, proof_path, vk)
+            self.assertEqual(result["cryptographic"]["status"], "VALID")
+            self.assertEqual(vk.read_bytes(), b"replaced vk")
+
+    def test_verification_key_read_failure_is_typed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            d = Path(tmp)
+            artifact = d / "public.cbor"
+            proof_path = d / "proof"
+            vk = d / "vk"
+            artifact.write_bytes(common.BOUNDED.encode_public_artifact(1500))
+            proof_path.write_bytes(b"synthetic proof")
+            vk.write_bytes(b"synthetic vk")
+            with patch.object(verify, "_copy_and_hash_verification_key", side_effect=OSError):
+                result = verify.verify_public_package(artifact, proof_path, vk)
+            self.assertEqual(result["cryptographic"]["status"], "UNVERIFIABLE")
+            self.assertEqual(result["cryptographic"]["reason"], "PROOF_OR_KEY_UNAVAILABLE")
+
     def test_malformed_public_artifact_stops_before_tool_lookup(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             d = Path(tmp)
