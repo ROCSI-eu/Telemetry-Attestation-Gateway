@@ -26,6 +26,7 @@ Prerequisites are the same pinned local research tools used by [`../bounded-spee
 
 - Noir/Nargo `1.0.0-beta.26`;
 - Barretenberg `5.2.0`;
+- verifier target `noir-recursive` (Poseidon2, zero knowledge enabled);
 - the required public Barretenberg CRS already present in the local cache.
 
 Once those public tools/materials are provisioned, the command itself performs no network fetch:
@@ -82,7 +83,7 @@ The standard-library boundary tests run without proof tooling:
 python3 experiments/end-to-end-v0/test_demo.py
 ```
 
-The genuine evidence runner additionally exercises:
+The genuine evidence runner exercises:
 
 - below-limit end-to-end proof and offline verification;
 - equality at the public maximum;
@@ -91,10 +92,12 @@ The genuine evidence runner additionally exercises:
 - one-byte proof mutation;
 - altered but canonical public input;
 - incompatible public-artifact version;
-- zero-knowledge proof mode; and
+- zero-knowledge proof mode with the pinned `noir-recursive` target; and
 - absence of generated witness material from proof packages.
 
-During PR evidence collection, proof tools and public CRS material may be provisioned first. The measured evidence phase is then run inside an isolated network namespace. The temporary network-enabled evidence workflow is removed before merge so the repository's default CI remains offline-oriented.
+The minimized result from GitHub Actions run `34818936586` is committed as [`evidence-results.json`](evidence-results.json). In that run, both below-limit and equality cases reached `cryptographic = VALID`; the over-limit and malformed-telemetry cases stopped before proof generation; tampered proof and altered public input were `INVALID`; and the incompatible public version was rejected before cryptographic verification. The proof size recorded for the synthetic circuit was `14,656` bytes.
+
+The evidence workflow provisioned checksum-pinned public research tools and CRS material first, then executed the measured evidence phase inside an isolated network namespace. The temporary network-enabled workflow was removed after the minimized evidence was captured, so the final repository path remains offline-default.
 
 ## Interpretation boundary
 
