@@ -7,6 +7,7 @@ import hashlib
 import importlib.util
 import json
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
@@ -14,8 +15,8 @@ import sys
 ROOT = Path(__file__).resolve().parent
 BOUNDED_SPEED_MODULE = ROOT.parent / "bounded-speed-v0" / "bounded_speed.py"
 
-EXPECTED_NARGO_FRAGMENT = "1.0.0-beta.26"
-EXPECTED_BB_FRAGMENT = "5.2.0"
+EXPECTED_NARGO_VERSION = "1.0.0-beta.26"
+EXPECTED_BB_VERSION = "5.2.0"
 EXPECTED_VK_SHA256 = "0e4eb3c0d0e64b43a67460d6e208f2f1070c805bd3c075413dee21a83e0c85b1"
 
 LABELS = (
@@ -85,25 +86,31 @@ def public_inputs_json(public_artifact: bytes) -> str:
     return json.dumps({"public_inputs": values}, sort_keys=True, separators=(",", ":")) + "\n"
 
 
-def tool_version(command: str, expected_fragment: str) -> tuple[str, str]:
+def tool_version(command: str, expected_version: str) -> tuple[str, str]:
     path = shutil.which(command)
     if not path:
         raise ExperimentError(f"required local tool is unavailable: {command}")
     result = subprocess.run([path, "--version"], text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     if result.returncode != 0:
         raise ExperimentError(f"could not determine {command} version")
-    version = result.stdout.strip()
-    if expected_fragment not in version:
-        raise ExperimentError(f"incompatible {command} version; expected {expected_fragment}")
-    return path, version
+    output = result.stdout.strip()
+    patterns = {
+        "nargo": r"^nargo version = ([^\s]+)$",
+        "bb": r"^([^\s]+)$",
+    }
+    pattern = patterns.get(command)
+    match = re.search(pattern, output, flags=re.MULTILINE) if pattern else None
+    if match is None or match.group(1) != expected_version:
+        raise ExperimentError(f"incompatible {command} version; expected {expected_version}")
+    return path, output
 
 
 def require_bb() -> tuple[str, str]:
-    return tool_version("bb", EXPECTED_BB_FRAGMENT)
+    return tool_version("bb", EXPECTED_BB_VERSION)
 
 
 def require_prover_tools() -> dict[str, str]:
-    nargo_path, nargo_version = tool_version("nargo", EXPECTED_NARGO_FRAGMENT)
+    nargo_path, nargo_version = tool_version("nargo", EXPECTED_NARGO_VERSION)
     bb_path, bb_version = require_bb()
     return {"nargo_path": nargo_path, "nargo_version": nargo_version, "bb_path": bb_path, "bb_version": bb_version}
 

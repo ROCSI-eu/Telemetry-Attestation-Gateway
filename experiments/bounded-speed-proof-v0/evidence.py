@@ -78,10 +78,11 @@ def capture_evidence(output: Path) -> dict[str, Any]:
             return set()
         for package in (below, equal):
             manifest = json.loads((package / "manifest.json").read_text(encoding="utf-8"))
+            if manifest.get("proof_mode") != "zero_knowledge": raise RuntimeError("proof package does not record explicit zero-knowledge mode")
             if manifest.get("private_witness_disclosed") is not False: raise RuntimeError("proof package does not record the witness-disclosure boundary")
             if "speed_cm_s" in collect_keys(manifest): raise RuntimeError("manifest contains an unexpected private speed field")
         result = {
-            "labels": list(LABELS), "experiment": "bounded-speed-proof-v0", "predicate": "speed_cm_s <= maximum_speed_cm_s",
+            "labels": list(LABELS), "experiment": "bounded-speed-proof-v0", "predicate": "speed_cm_s <= maximum_speed_cm_s", "proof_mode": "zero_knowledge",
             "tool_versions": {"nargo": versions["nargo_version"], "bb": versions["bb_version"]},
             "cases": {
                 "below_limit": _dimension_summary(below_verify), "equality_boundary": _dimension_summary(equal_verify),

@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import stat
+import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -54,7 +55,10 @@ class FakeVerifierTests(unittest.TestCase):
             "def arg(flag): return sys.argv[sys.argv.index(flag) + 1]\n"
             "doc = json.loads(pathlib.Path(arg('-i')).read_text())\n"
             f"expected = {expected_hex!r}\n"
-            "raise SystemExit(0 if doc.get('public_inputs') == expected else 1)\n",
+            "if doc.get('public_inputs') != expected:\n"
+            "    print('Proof verification failed', file=sys.stderr)\n"
+            "    raise SystemExit(1)\n"
+            "raise SystemExit(0)\n",
             encoding="utf-8",
         )
         script.chmod(script.stat().st_mode | stat.S_IXUSR)
@@ -133,6 +137,25 @@ class FakeVerifierTests(unittest.TestCase):
             self.assertEqual(result["input"]["status"], "ACCEPTED")
             self.assertEqual(result["cryptographic"]["status"], "UNVERIFIABLE")
 
+    def test_operational_verifier_failure_is_unverifiable(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            d = Path(tmp)
+            bb = self._fake_bb(d)
+            source = bb.read_text()
+            prefix, suffix = source.rsplit("raise SystemExit(0)\n", 1)
+            bb.write_text(prefix + "raise SystemExit(9)\n" + suffix, encoding="utf-8")
+            artifact = d / "public.cbor"
+            proof_path = d / "proof"
+            vk = d / "vk"
+            artifact.write_bytes(common.BOUNDED.encode_public_artifact(1500))
+            proof_path.write_bytes(b"synthetic proof")
+            vk.write_bytes(b"synthetic vk")
+            with patch.object(verify, "EXPECTED_VK_SHA256", hashlib.sha256(b"synthetic vk").hexdigest()):
+                with patch.dict(os.environ, {"PATH": f"{d}:{os.environ.get('PATH', '')}"}):
+                    result = verify.verify_public_package(artifact, proof_path, vk)
+            self.assertEqual(result["cryptographic"]["status"], "UNVERIFIABLE")
+            self.assertEqual(result["cryptographic"]["reason"], "VERIFIER_OPERATIONAL_FAILURE")
+
 
 class BoundaryTests(unittest.TestCase):
     def test_verifier_has_no_speed_argument(self) -> None:
@@ -157,6 +180,23 @@ class BoundaryTests(unittest.TestCase):
 
     def test_manifest_writer_does_not_take_private_speed(self) -> None:
         self.assertNotIn("speed_cm_s", prove._write_manifest.__annotations__)
+
+    def test_prover_explicitly_requests_zero_knowledge(self) -> None:
+        source = Path(__file__).with_name("prove.py").read_text(encoding="utf-8")
+        self.assertIn('"prove", "--zk"', source)
+
+    def test_tool_versions_must_match_exactly(self) -> None:
+        completed = subprocess.CompletedProcess([], 0, stdout="15.2.0\n")
+        with patch.object(common.shutil, "which", return_value="/fake/bb"):
+            with patch.object(common.subprocess, "run", return_value=completed):
+                with self.assertRaises(common.ExperimentError):
+                    common.tool_version("bb", "5.2.0")
+
+        completed = subprocess.CompletedProcess([], 0, stdout="nargo version = 1.0.0-beta.260\n")
+        with patch.object(common.shutil, "which", return_value="/fake/nargo"):
+            with patch.object(common.subprocess, "run", return_value=completed):
+                with self.assertRaises(common.ExperimentError):
+                    common.tool_version("nargo", "1.0.0-beta.26")
 
 
 if __name__ == "__main__":

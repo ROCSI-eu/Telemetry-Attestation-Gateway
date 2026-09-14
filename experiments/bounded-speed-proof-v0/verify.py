@@ -18,6 +18,8 @@ from typing import Any
 
 from common import BOUNDED, ExperimentError, EXPECTED_VK_SHA256, LABELS, public_inputs_json, reconstruct_bb_public_inputs, require_bb, sha256_file
 
+PROOF_REJECTION_MARKERS = (b"proof verification failed", b"failed to verify proof")
+
 
 def _base_result() -> dict[str, Any]:
     return {
@@ -65,7 +67,11 @@ def verify_public_package(public_artifact_path: Path, proof_path: Path, verifica
         handle.write(expected_json)
         expected_path = Path(handle.name)
     try:
-        completed = subprocess.run([bb_path, "verify", "-i", str(expected_path), "-p", str(proof_path), "-k", str(verification_key_path)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        completed = subprocess.run(
+            [bb_path, "verify", "-i", str(expected_path), "-p", str(proof_path), "-k", str(verification_key_path)],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+        )
     except OSError:
         result["cryptographic"] = {"status": "UNVERIFIABLE", "reason": "VERIFIER_EXECUTION_FAILED"}
         return result
@@ -73,8 +79,10 @@ def verify_public_package(public_artifact_path: Path, proof_path: Path, verifica
         expected_path.unlink(missing_ok=True)
     if completed.returncode == 0:
         result["cryptographic"] = {"status": "VALID", "reason": None}
-    else:
+    elif any(marker in completed.stderr.lower() for marker in PROOF_REJECTION_MARKERS):
         result["cryptographic"] = {"status": "INVALID", "reason": "PROOF_REJECTED"}
+    else:
+        result["cryptographic"] = {"status": "UNVERIFIABLE", "reason": "VERIFIER_OPERATIONAL_FAILURE"}
     return result
 
 

@@ -76,7 +76,7 @@ The verifier returns separate dimensions rather than one overall validity Boolea
 
 ## Prover package minimization
 
-`prove.py` uses a temporary working copy of the Noir circuit. `Prover.toml` and the generated witness remain inside the temporary directory and are destroyed after proving. A successful output package contains only `public-artifact.cbor`, `proof`, `vk`, and `manifest.json` with public/test-only metadata and digests. The manifest does not contain the private speed.
+`prove.py` uses a temporary working copy of the Noir circuit and explicitly passes Barretenberg's `--zk` option when proving. `Prover.toml` and the generated witness remain inside the temporary directory and are destroyed after proving. A successful output package contains only `public-artifact.cbor`, `proof`, `vk`, and `manifest.json` with public/test-only metadata and digests. The manifest records `proof_mode` as `zero_knowledge` and does not contain the private speed.
 
 The prover rejects an over-limit synthetic witness before proof generation. It does not convert that policy/predicate failure into a cryptographic result.
 
@@ -107,7 +107,7 @@ Run standard-library structural/unit tests:
 python3 experiments/bounded-speed-proof-v0/test_verify.py
 ```
 
-`evidence.py` exercises the genuine proof cases with the pinned toolchain and writes a minimized result record. The committed `evidence-results.json` is captured from the PR evidence run after tool/CRS provisioning, with the measured evidence phase executed without network egress.
+`evidence.py` exercises the genuine proof cases with the pinned toolchain and writes a minimized result record. Evidence must be regenerated with the explicit zero-knowledge proving mode before a result is committed; the earlier non-ZK record has been removed rather than represented as witness-privacy evidence.
 
 ## Evidence cases
 
