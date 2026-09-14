@@ -35,6 +35,17 @@ def _verification_summary(result: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _safe_failure_details(result: dict[str, Any]) -> str:
+    return json.dumps(
+        {
+            "summary": _verification_summary(result),
+            "verification_input_reason": result["verification_input"].get("reason"),
+            "cryptographic_reason": result["cryptographic"].get("reason"),
+        },
+        sort_keys=True,
+    )
+
+
 def capture_evidence(output: Path) -> dict[str, Any]:
     accepted_capture = demo.load_capture(FIXTURES, "unsigned-consistent")
     bad_crc_capture = demo.load_capture(FIXTURES, "bad-crc")
@@ -60,9 +71,15 @@ def capture_evidence(output: Path) -> dict[str, Any]:
         )
 
         if below["cryptographic"]["status"] != "VALID":
-            raise RuntimeError("below-limit end-to-end case did not verify")
+            raise RuntimeError(
+                "below-limit end-to-end case did not verify: "
+                + _safe_failure_details(below)
+            )
         if equal["cryptographic"]["status"] != "VALID":
-            raise RuntimeError("equality-boundary end-to-end case did not verify")
+            raise RuntimeError(
+                "equality-boundary end-to-end case did not verify: "
+                + _safe_failure_details(equal)
+            )
         if above["predicate"] != "NOT_SATISFIED":
             raise RuntimeError("over-limit observation did not stop before proving")
         if malformed_telemetry["telemetry"]["status"] != "REJECTED":
