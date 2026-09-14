@@ -146,6 +146,8 @@ def capture_evidence(output: Path) -> dict[str, Any]:
                 raise RuntimeError("proof package does not preserve witness privacy")
             if manifest.get("proof_mode") != "zero_knowledge":
                 raise RuntimeError("proof package is not marked zero-knowledge")
+            if manifest.get("verifier_target") != demo.proof_prover.VERIFIER_TARGET:
+                raise RuntimeError("proof package does not pin the expected verifier target")
 
         minimized = {
             "labels": list(demo.LABELS),
@@ -175,6 +177,7 @@ def capture_evidence(output: Path) -> dict[str, Any]:
             },
             "proof_evidence": {
                 "proof_mode": "zero_knowledge",
+                "verifier_target": demo.proof_prover.VERIFIER_TARGET,
                 "proof_size_bytes": (below_package / "proof").stat().st_size,
                 "private_witness_disclosed": False,
                 "verifier_accepts_witness_input": False,
