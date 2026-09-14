@@ -1,0 +1,6 @@
+[package]
+name = "bounded_speed_proof_v0"
+type = "bin"
+authors = ["ROCSI"]
+
+[dependencies]
