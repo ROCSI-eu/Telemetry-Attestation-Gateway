@@ -204,6 +204,39 @@ class DemoPipelineTests(unittest.TestCase):
                 demo.load_capture(fixture, "anything")
         self.assertEqual(context.exception.code, "FIXTURE_UNAVAILABLE_OR_INVALID")
 
+    def test_non_utf8_fixture_is_a_typed_telemetry_rejection(self) -> None:
+        output = io.StringIO()
+        with tempfile.TemporaryDirectory() as tmp:
+            fixture = Path(tmp) / "fixture.json"
+            fixture.write_bytes(b"\xff")
+            with patch.object(
+                demo.sys,
+                "argv",
+                [
+                    "demo.py",
+                    "--capture-file",
+                    str(fixture),
+                    "--maximum-speed-cm-s",
+                    "600",
+                ],
+            ):
+                with patch("sys.stdout", output):
+                    status = demo.main()
+
+        result = json.loads(output.getvalue())
+        self.assertEqual(status, 2)
+        self.assertEqual(result["invocation"]["status"], "NOT_CHECKED")
+        self.assertEqual(
+            result["telemetry"],
+            {
+                "status": "REJECTED",
+                "reason": "FIXTURE_UNAVAILABLE_OR_INVALID",
+                "assurance_id": "A0_SYNTHETIC",
+                "source_trust": "NOT_EVALUATED",
+            },
+        )
+        self.assertEqual(result["verification_input"]["status"], "NOT_CHECKED")
+
     def test_capture_not_found_is_typed(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             fixture = Path(tmp) / "fixture.json"

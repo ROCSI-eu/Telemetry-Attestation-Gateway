@@ -57,7 +57,7 @@ def load_capture(path: Path, capture_name: str) -> dict[str, Any]:
     """Load one named synthetic capture without returning unrelated fixtures."""
     try:
         document = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
         raise DemoError("FIXTURE_UNAVAILABLE_OR_INVALID") from None
     if not isinstance(document, dict):
         raise DemoError("FIXTURE_UNAVAILABLE_OR_INVALID")
