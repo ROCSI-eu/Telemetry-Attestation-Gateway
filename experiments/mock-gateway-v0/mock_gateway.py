@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import argparse
 import copy
+from contextlib import contextmanager
+import fcntl
 import hashlib
 import importlib.util
 import json
@@ -112,6 +114,48 @@ def _load_end_to_end_demo():
     return module
 
 
+def _demo_rejection(code: str) -> dict[str, Any]:
+    invocation = {"status": "ACCEPTED", "reason": None}
+    telemetry = {
+        "status": "REJECTED",
+        "reason": code,
+        "assurance_id": "A0_SYNTHETIC",
+        "source_trust": "NOT_EVALUATED",
+    }
+    if code == "INVALID_PUBLIC_LIMIT":
+        invocation = {"status": "REJECTED", "reason": code}
+        telemetry = {
+            "status": "NOT_CHECKED",
+            "reason": None,
+            "assurance_id": "A0_SYNTHETIC",
+            "source_trust": "NOT_EVALUATED",
+        }
+    return {
+        "labels": list(LABELS),
+        "invocation": invocation,
+        "telemetry": telemetry,
+        "predicate": "NOT_EVALUATED",
+        "proof_generation": "NOT_ATTEMPTED",
+        "verification_input": {"status": "NOT_CHECKED", "reason": None},
+        "cryptographic": {"status": "NOT_CHECKED", "reason": None},
+        "policy": "NOT_EVALUATED",
+        "freshness": "NOT_EVALUATED",
+        "revocation": "NOT_EVALUATED",
+        "replay": "NOT_EVALUATED",
+        "assurance": {
+            "declared": "A0_SYNTHETIC",
+            "effective": "A0_SYNTHETIC",
+            "required": "NOT_EVALUATED",
+            "demonstrator": "A0_SYNTHETIC",
+        },
+        "publication": "NOT_PERFORMED",
+        "relying_party_decision": "NOT_MADE",
+        "proof_validity_is_telemetry_truth": False,
+        "private_witness_disclosed": False,
+        "command_path": "NONE",
+    }
+
+
 def existing_end_to_end_runner(
     capture_name: str, maximum_speed_cm_s: int, package_dir: Path
 ) -> dict[str, Any]:
@@ -124,9 +168,10 @@ def existing_end_to_end_runner(
             maximum_speed_cm_s,
             package_dir=package_dir,
         )
+    except module.DemoError as exc:
+        return _demo_rejection(exc.code)
     except Exception as exc:
-        # The underlying experiment already returns typed failures for expected cases.
-        # Unexpected failures remain retryable and do not become INVALID.
+        # Unexpected tool/process failures remain retryable and do not become INVALID.
         raise RetryableStageError("END_TO_END", "END_TO_END_EXECUTION_FAILED") from exc
 
 
@@ -319,6 +364,18 @@ class MockGateway:
             except FileNotFoundError:
                 pass
 
+    @contextmanager
+    def _state_transaction(self):
+        self.state_path.parent.mkdir(parents=True, exist_ok=True)
+        lock_path = self.state_path.with_name(self.state_path.name + ".lock")
+        with lock_path.open("a+b") as lock_file:
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX)
+            try:
+                self._state = self._load_state()
+                yield
+            finally:
+                fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
+
     def _transition(self, record: dict[str, Any], new_state: str) -> None:
         current = record["state"]
         if new_state == current:
@@ -380,15 +437,16 @@ class MockGateway:
 
     def get_status(self, idempotency_key: str) -> dict[str, Any]:
         with self._lock:
-            key_digest = _digest_idempotency_key(idempotency_key)
-            record = self._state["records"].get(key_digest)
-            if record is None:
-                return {
-                    "labels": list(LABELS),
-                    "state": "NOT_FOUND",
-                    "reason": "NOT_FOUND",
-                }
-            return self._public_view(record, replayed=True)
+            with self._state_transaction():
+                key_digest = _digest_idempotency_key(idempotency_key)
+                record = self._state["records"].get(key_digest)
+                if record is None:
+                    return {
+                        "labels": list(LABELS),
+                        "state": "NOT_FOUND",
+                        "reason": "NOT_FOUND",
+                    }
+                return self._public_view(record, replayed=True)
 
     def submit(
         self,
@@ -398,112 +456,117 @@ class MockGateway:
         maximum_speed_cm_s: int,
     ) -> dict[str, Any]:
         with self._lock:
-            key_digest = _digest_idempotency_key(idempotency_key)
-            fingerprint = _request_fingerprint(capture_name, maximum_speed_cm_s)
-            record = self._state["records"].get(key_digest)
+            with self._state_transaction():
+                key_digest = _digest_idempotency_key(idempotency_key)
+                fingerprint = _request_fingerprint(capture_name, maximum_speed_cm_s)
+                record = self._state["records"].get(key_digest)
 
-            if record is not None:
-                if record["request_fingerprint"] != fingerprint:
-                    return {
-                        "labels": list(LABELS),
-                        "state": "ERROR",
-                        "reason": "IDEMPOTENCY_CONFLICT",
-                        "idempotent_replay": False,
-                    }
-                if record["state"] in FINAL_STATES:
-                    return self._public_view(record, replayed=True)
-            else:
-                record = {
-                    "request_fingerprint": fingerprint,
-                    "state": "RECEIVED",
-                    "lifecycle": ["RECEIVED"],
-                    "attempts": [],
-                    "reason": None,
-                    "result": None,
-                    "proof_package_disposed": False,
-                }
-                self._state["records"][key_digest] = record
-                self._persist()
-
-            if record["state"] == "RECEIVED":
-                self._transition(record, "PROVING")
-            else:
-                self._reconcile_interrupted_attempt(record)
-
-            while self._attempt_count(record) < self.max_attempts:
-                attempt_number = self._attempt_count(record) + 1
-                record["attempts"].append(
-                    {
-                        "number": attempt_number,
-                        "stage": "END_TO_END",
-                        "outcome": "STARTED",
+                if record is not None:
+                    if record["request_fingerprint"] != fingerprint:
+                        return {
+                            "labels": list(LABELS),
+                            "state": "ERROR",
+                            "reason": "IDEMPOTENCY_CONFLICT",
+                            "idempotent_replay": False,
+                        }
+                    if record["state"] in FINAL_STATES:
+                        return self._public_view(record, replayed=True)
+                else:
+                    record = {
+                        "request_fingerprint": fingerprint,
+                        "state": "RECEIVED",
+                        "lifecycle": ["RECEIVED"],
+                        "attempts": [],
                         "reason": None,
+                        "result": None,
+                        "proof_package_disposed": False,
                     }
-                )
-                self._persist()
-                package_dir = Path(
-                    tempfile.mkdtemp(prefix="tag-mock-gateway-proof-")
-                )
-                try:
-                    raw = self.runner(
-                        capture_name,
-                        maximum_speed_cm_s,
-                        package_dir,
-                    )
-                    if not isinstance(raw, dict):
-                        raise RetryableStageError(
-                            "VERIFYING", "RUNNER_RESULT_UNAVAILABLE"
-                        )
-                    result = _minimal_verifier_dimensions(raw)
-                    terminal_state, reason = _classify_result(result)
-                except RetryableStageError as exc:
+                    self._state["records"][key_digest] = record
+                    self._persist()
+
+                if record["state"] == "RECEIVED":
+                    self._transition(record, "PROVING")
+                else:
+                    self._reconcile_interrupted_attempt(record)
+
+                while self._attempt_count(record) < self.max_attempts:
+                    attempt_number = self._attempt_count(record) + 1
                     record["attempts"].append(
                         {
                             "number": attempt_number,
-                            "stage": exc.stage,
-                            "outcome": "RETRYABLE_FAILURE",
-                            "reason": exc.code,
+                            "stage": "END_TO_END",
+                            "outcome": "STARTED",
+                            "reason": None,
                         }
                     )
-                    record["result"] = _failure_dimensions(exc.stage, exc.code)
-                    record["reason"] = exc.code
                     self._persist()
-                    if self._attempt_count(record) >= self.max_attempts:
-                        self._transition(record, "FAILED")
-                        return self._public_view(record)
-                    continue
-                finally:
-                    shutil.rmtree(package_dir, ignore_errors=True)
-                    record["proof_package_disposed"] = not package_dir.exists()
+                    package_dir = Path(
+                        tempfile.mkdtemp(prefix="tag-mock-gateway-proof-")
+                    )
+                    retry_error: RetryableStageError | None = None
+                    try:
+                        raw = self.runner(
+                            capture_name,
+                            maximum_speed_cm_s,
+                            package_dir,
+                        )
+                        if not isinstance(raw, dict):
+                            raise RetryableStageError(
+                                "VERIFYING", "RUNNER_RESULT_UNAVAILABLE"
+                            )
+                        result = _minimal_verifier_dimensions(raw)
+                        terminal_state, reason = _classify_result(result)
+                    except RetryableStageError as exc:
+                        retry_error = exc
+                        record["attempts"].append(
+                            {
+                                "number": attempt_number,
+                                "stage": exc.stage,
+                                "outcome": "RETRYABLE_FAILURE",
+                                "reason": exc.code,
+                            }
+                        )
+                        record["result"] = _failure_dimensions(exc.stage, exc.code)
+                        record["reason"] = exc.code
+                        self._persist()
+                    finally:
+                        shutil.rmtree(package_dir, ignore_errors=True)
+                        record["proof_package_disposed"] = not package_dir.exists()
+                        self._persist()
+
+                    if retry_error is not None:
+                        if self._attempt_count(record) >= self.max_attempts:
+                            self._transition(record, "FAILED")
+                            return self._public_view(record)
+                        continue
+
+                    record["attempts"].append(
+                        {
+                            "number": attempt_number,
+                            "stage": "END_TO_END",
+                            "outcome": "COMPLETED",
+                            "reason": reason,
+                        }
+                    )
+                    record["result"] = result
+                    record["reason"] = reason
                     self._persist()
 
-                record["attempts"].append(
-                    {
-                        "number": attempt_number,
-                        "stage": "END_TO_END",
-                        "outcome": "COMPLETED",
-                        "reason": reason,
-                    }
-                )
-                record["result"] = result
-                record["reason"] = reason
-                self._persist()
-
-                if result.get("proof_generation") == "GENERATED":
-                    self._transition(record, "PROVED")
-
-                if terminal_state == "VERIFIED":
-                    if record["state"] == "PROVING":
+                    if result.get("proof_generation") == "GENERATED":
                         self._transition(record, "PROVED")
-                    self._transition(record, "VERIFIED")
-                else:
-                    self._transition(record, "REJECTED")
-                return self._public_view(record)
 
-            record["reason"] = "RETRY_BUDGET_EXHAUSTED"
-            record["result"] = _failure_dimensions("VERIFYING", record["reason"])
-            self._transition(record, "FAILED")
-            return self._public_view(record)
+                    if terminal_state == "VERIFIED":
+                        if record["state"] == "PROVING":
+                            self._transition(record, "PROVED")
+                        self._transition(record, "VERIFIED")
+                    else:
+                        self._transition(record, "REJECTED")
+                    return self._public_view(record)
+
+                record["reason"] = "RETRY_BUDGET_EXHAUSTED"
+                record["result"] = _failure_dimensions("VERIFYING", record["reason"])
+                self._transition(record, "FAILED")
+                return self._public_view(record)
 
 
 def _cli() -> int:
