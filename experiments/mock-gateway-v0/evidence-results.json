@@ -1,0 +1,90 @@
+{
+  "cases": {
+    "bounded_retry_recovery": {
+      "attempt_count": 3,
+      "lifecycle": [
+        "RECEIVED",
+        "PROVING",
+        "PROVED",
+        "VERIFIED"
+      ],
+      "state": "VERIFIED"
+    },
+    "cryptographic_invalid": {
+      "cryptographic": "INVALID",
+      "reason": "PROOF_INVALID",
+      "state": "REJECTED"
+    },
+    "duplicate_submission": {
+      "idempotent_replay": true,
+      "runner_calls": 1,
+      "state": "VERIFIED"
+    },
+    "idempotency_conflict": {
+      "reason": "IDEMPOTENCY_CONFLICT",
+      "state": "ERROR"
+    },
+    "malformed_input": {
+      "proof_generation": "NOT_ATTEMPTED",
+      "reason": "MALFORMED_FRAME",
+      "state": "REJECTED"
+    },
+    "restart": {
+      "attempt_count_after_restart": 2,
+      "attempt_outcomes_after_restart": [
+        "STARTED",
+        "INTERRUPTED",
+        "STARTED",
+        "COMPLETED"
+      ],
+      "lifecycle_after_restart": [
+        "RECEIVED",
+        "PROVING",
+        "PROVED",
+        "VERIFIED"
+      ],
+      "lifecycle_before_restart": [
+        "RECEIVED",
+        "PROVING"
+      ],
+      "state_after_restart": "VERIFIED",
+      "state_before_restart": "PROVING"
+    },
+    "verifier_unavailable": {
+      "attempt_count": 2,
+      "cryptographic": "UNVERIFIABLE",
+      "reason": "VERIFIER_UNAVAILABLE",
+      "state": "FAILED"
+    }
+  },
+  "checks": {
+    "lifecycle_monotonicity": "PASS",
+    "proof_package_disposal": "PASS",
+    "publication_not_performed": "PASS",
+    "python_network_denied": "PASS",
+    "raw_idempotency_key_absence": "PASS",
+    "restricted_field_absence": "PASS",
+    "verifier_unavailable_distinct_from_invalid": "PASS"
+  },
+  "evidence_scope": "deterministic synthetic service-boundary behavior with controlled fault injection",
+  "experiment": "mock-gateway-v0",
+  "genuine_integration": {
+    "checked_in_service_evidence_reproved": false,
+    "runner": "experiments/end-to-end-v0/demo.py",
+    "status": "AVAILABLE_WHEN_PINNED_PROOF_TOOLING_IS_PRESENT",
+    "upstream_genuine_proof_evidence": "experiments/end-to-end-v0/evidence-results.json"
+  },
+  "labels": [
+    "EXPERIMENTAL",
+    "SYNTHETIC_ONLY",
+    "A0_SYNTHETIC",
+    "NOT VALIDATION OR PRODUCTION AUTHORIZATION"
+  ],
+  "limitations": [
+    "Synthetic local evidence only.",
+    "Controlled service-failure cases do not re-run the genuine proof toolchain.",
+    "The genuine integration runner delegates to the existing end-to-end-v0 experiment when pinned Noir/Barretenberg tooling is present.",
+    "Python network calls are denied in this evidence runner; subprocess-level isolation remains a separate execution-environment control for genuine proof measurements.",
+    "No workflow, market, safety, compliance, hardware, pilot, deployment, production, or higher-assurance claim is established."
+  ]
+}

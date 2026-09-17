@@ -22,5 +22,15 @@ jobs:
         run: python3 experiments/bounded-speed-proof-v0/test_verify.py
       - name: Run end-to-end demonstrator boundary tests
         run: python3 experiments/end-to-end-v0/test_demo.py
+      - name: Run mock gateway boundary tests
+        run: python3 experiments/mock-gateway-v0/test_mock_gateway.py
+      - name: Run mock gateway cleanup recovery test
+        run: python3 experiments/mock-gateway-v0/test_cleanup_recovery.py
+      - name: Run final mock gateway review regressions
+        run: python3 experiments/mock-gateway-v0/test_review_regressions.py
+      - name: Check mock gateway evidence reproducibility
+        run: |
+          python3 experiments/mock-gateway-v0/evidence.py > /tmp/mock-gateway-evidence.json
+          diff -u experiments/mock-gateway-v0/evidence-results.json /tmp/mock-gateway-evidence.json
       - name: Check repository documentation
         run: python3 scripts/check_docs.py
