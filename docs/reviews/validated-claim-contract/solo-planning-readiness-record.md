@@ -10,15 +10,15 @@
 | External claim level | No external assurance claim |
 | Activity | Exploration permitted within the Current work authorization |
 | Recorded on | 2026-08-30 |
-| Status | Current factual operating-context record |
-| Scope | Solo concept documentation, synthetic planning, and future-promotion readiness |
+| Status | **Current** factual operating-context record; former repository-wide milestone hold is **Superseded** |
+| Scope | Solo concept documentation, compliant synthetic exploration, and future-promotion readiness |
 | Evidence classification | Maintainer acknowledgement; no participant, customer, market, telemetry, proof, pilot, or production evidence |
 | Current-work authority | [`docs/current-work-authorization.md`](../../current-work-authorization.md) |
 | Related tracker | [Issue #49](https://github.com/ROCSI-eu/Telemetry-Attestation-Gateway/issues/49) |
 
 ## Actual operating context
 
-The repository currently has one maintainer brainstorming and documenting the concept. There is no financed project team, prospective customer, provider-side discovery participant, independent relying-party decision owner, or other external participant. Their absence blocks only the external-validation, pilot, or production activities that trigger those roles; it does not block solo M1 documentation work.
+The repository currently has one maintainer brainstorming, documenting, and conducting bounded synthetic exploration of the concept. There is no financed project team, prospective customer, provider-side discovery participant, independent relying-party decision owner, or other external participant. Their absence blocks only the external-validation, pilot, or production activities that trigger those roles; it does not block compliant solo documentation or synthetic experimental work authorized by the Current delivery plan and work authorization.
 
 The earlier `team-directory:*` and `external-tool:*` identifiers do not resolve to assigned people or approved external participants. They were planning placeholders and must not be treated as participation, accountability, review, approval, or discovery evidence.
 
@@ -28,9 +28,9 @@ This correction does not invalidate the substantive documentation inventory wher
 
 The maintainer acknowledges provisional responsibility for product, delivery, architecture, cryptography, security, privacy, safety, telemetry, and discovery **planning** only.
 
-This combination permits only the activity listed in the [Current work authorization](../../current-work-authorization.md#authorized-solo-concept-work), including drafting, reconciliation, role-definition work, recruitment preparation, and synthetic-only planning. It does not provide independent review and does not constitute approval of cryptography, security, privacy, safety, telemetry, discovery method, product scope, or a milestone gate.
+This combination permits only the activity listed in the [Current work authorization](../../current-work-authorization.md#authorized-solo-concept-work), including drafting, reconciliation, role-definition work, recruitment preparation, and the compliant experiments governed by its [experimental sandbox authorization](../../current-work-authorization.md#experimental-sandbox-authorization). It does not provide independent review and does not constitute approval of cryptography, security, privacy, safety, telemetry, discovery method, product scope, or a promotion gate.
 
-The relying-party decision-owner role remains unassigned and is a future blocker to workflow validation, not to M1. It cannot be filled by the maintainer, producer, project team, or an AI proxy.
+The relying-party decision-owner role remains unassigned and is a future blocker to workflow validation and paired discovery, not to compliant solo synthetic exploration. It cannot be filled by the maintainer, producer, project team, or an AI proxy.
 
 ## Bounded external recruitment and deferred participation
 
@@ -51,7 +51,7 @@ Until later accepted evidence changes this record:
 - `A0_SYNTHETIC` is the only demonstrator assurance tier;
 - every paper mockup states **“paper mockup — no proof generated”** on every surface and associated record;
 - every non-cryptographic prototype states **“non-cryptographic UX prototype — no proof generated or verified”** on every surface and associated record; and
-- no prototype, proof, verifier, telemetry integration, SITL execution, hardware work, command path, live publication, pilot, or production activity is authorized.
+- disposable, synthetic-only prototypes, toy proofs and local verification, fixture-driven telemetry work, and no-hardware/no-command-path SITL experiments are authorized only inside the labelled local experimental sandbox; supported or promoted prototypes, real or restricted telemetry integration, hardware work, command paths, live publication, pilots, deployment, and production activity remain unauthorized.
 
 The detailed permitted and prohibited work is owned by the [Current work authorization](../../current-work-authorization.md). This record supplies the factual reason for that rule and does not independently expand authorization.
 
@@ -63,8 +63,8 @@ Bounded horizontal speed remains a **Proposed** synthetic technical primitive on
 
 ## Current disposition
 
-M1 is authorized at the **solo concept level** and may proceed through maintainer review. Its only permitted completion label is **“solo-maintainer provisional baseline”**; no independent approval is claimed. Historical placeholder participation and approval references remain **Superseded**.
+The former `M1` reconciliation work is authorized at the **solo concept level** and may proceed through maintainer review. Its only permitted completion label is **“solo-maintainer provisional baseline”**; no independent approval is claimed, and its completion is not a prerequisite for another exploration track. Historical placeholder participation, approval references, and repository-wide numbered-milestone holds remain **Superseded**.
 
 Unavailable provider, relying-party, privacy, cryptography, security, safety, telemetry, discovery, accessibility, operational, or other roles are recorded as future promotion blockers when the [role-by-risk matrix](../../pre-m1-participant-readiness.md#role-by-risk-matrix) triggers them. They are not blockers to documentation reconciliation, synthetic experiments, or provisional decisions.
 
-`Blocked — M2 entry promotion` applies; `gate_closed=false` until real provider and relying-party participants and the reviewers triggered by its research/data risks are available. Pilot and production remain unauthorized until named accountable discipline owners, independent reviews, and separation-of-duty evidence exist.
+`Blocked — paired-discovery promotion` applies only to participant-facing provider/relying-party discovery until real participants and the reviewers triggered by its research/data risks are available. It does not block compliant solo synthetic experiments. Pilot and production remain unauthorized until named accountable discipline owners, independent reviews, and separation-of-duty evidence exist.
