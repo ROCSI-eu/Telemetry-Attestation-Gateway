@@ -686,7 +686,9 @@ class MockGateway:
                             }
                         )
                         record["reason"] = "PROOF_PACKAGE_DISPOSAL_FAILED"
-                        if record.get("result") is None:
+                        if result is not None and retry_error is None:
+                            record["result"] = copy.deepcopy(result)
+                        elif record.get("result") is None:
                             record["result"] = _failure_dimensions(
                                 "PROVING", "PROOF_PACKAGE_DISPOSAL_FAILED"
                             )
