@@ -376,6 +376,30 @@ class MockGateway:
             finally:
                 fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
 
+    def _work_root(self) -> Path:
+        return self.state_path.with_name(self.state_path.name + ".proof-work")
+
+    def _package_dir(self, key_digest: str, attempt_number: int) -> Path:
+        return self._work_root() / key_digest / f"attempt-{attempt_number}"
+
+    def _dispose_package(self, package_dir: Path) -> bool:
+        try:
+            shutil.rmtree(package_dir)
+        except FileNotFoundError:
+            pass
+        except OSError:
+            return False
+
+        if package_dir.exists():
+            return False
+
+        for parent in (package_dir.parent, self._work_root()):
+            try:
+                parent.rmdir()
+            except (FileNotFoundError, OSError):
+                pass
+        return True
+
     def _transition(self, record: dict[str, Any], new_state: str) -> None:
         current = record["state"]
         if new_state == current:
@@ -398,13 +422,23 @@ class MockGateway:
     def _attempt_finished(record: dict[str, Any], number: int) -> bool:
         return any(
             event.get("number") == number
-            and event.get("outcome") in {"COMPLETED", "RETRYABLE_FAILURE", "INTERRUPTED"}
+            and event.get("outcome")
+            in {"COMPLETED", "RETRYABLE_FAILURE", "INTERRUPTED", "CLEANUP_FAILED"}
             for event in record["attempts"]
         )
 
-    def _reconcile_interrupted_attempt(self, record: dict[str, Any]) -> None:
+    def _reconcile_interrupted_attempt(
+        self, record: dict[str, Any], key_digest: str
+    ) -> None:
         count = self._attempt_count(record)
         if count and not self._attempt_finished(record, count):
+            package_dir = self._package_dir(key_digest, count)
+            disposed = self._dispose_package(package_dir)
+            record["proof_package_disposed"] = disposed
+            if not disposed:
+                record["reason"] = "PROOF_PACKAGE_DISPOSAL_FAILED"
+                self._persist()
+                raise GatewayError("PROOF_PACKAGE_DISPOSAL_FAILED")
             record["attempts"].append(
                 {
                     "number": count,
@@ -487,10 +521,18 @@ class MockGateway:
                 if record["state"] == "RECEIVED":
                     self._transition(record, "PROVING")
                 else:
-                    self._reconcile_interrupted_attempt(record)
+                    self._reconcile_interrupted_attempt(record, key_digest)
 
                 while self._attempt_count(record) < self.max_attempts:
                     attempt_number = self._attempt_count(record) + 1
+                    package_dir = self._package_dir(key_digest, attempt_number)
+                    if not self._dispose_package(package_dir):
+                        record["reason"] = "PROOF_PACKAGE_DISPOSAL_FAILED"
+                        record["proof_package_disposed"] = False
+                        self._persist()
+                        raise GatewayError("PROOF_PACKAGE_DISPOSAL_FAILED")
+                    package_dir.mkdir(parents=True, exist_ok=False)
+                    record["proof_package_disposed"] = False
                     record["attempts"].append(
                         {
                             "number": attempt_number,
@@ -500,10 +542,11 @@ class MockGateway:
                         }
                     )
                     self._persist()
-                    package_dir = Path(
-                        tempfile.mkdtemp(prefix="tag-mock-gateway-proof-")
-                    )
+
                     retry_error: RetryableStageError | None = None
+                    result: dict[str, Any] | None = None
+                    terminal_state: str | None = None
+                    reason: str | None = None
                     try:
                         raw = self.runner(
                             capture_name,
@@ -530,15 +573,36 @@ class MockGateway:
                         record["reason"] = exc.code
                         self._persist()
                     finally:
-                        shutil.rmtree(package_dir, ignore_errors=True)
-                        record["proof_package_disposed"] = not package_dir.exists()
+                        disposed = self._dispose_package(package_dir)
+                        record["proof_package_disposed"] = disposed
                         self._persist()
+
+                    if not record["proof_package_disposed"]:
+                        record["attempts"].append(
+                            {
+                                "number": attempt_number,
+                                "stage": "CLEANUP",
+                                "outcome": "CLEANUP_FAILED",
+                                "reason": "PROOF_PACKAGE_DISPOSAL_FAILED",
+                            }
+                        )
+                        record["reason"] = "PROOF_PACKAGE_DISPOSAL_FAILED"
+                        if record.get("result") is None:
+                            record["result"] = _failure_dimensions(
+                                "PROVING", "PROOF_PACKAGE_DISPOSAL_FAILED"
+                            )
+                        self._persist()
+                        self._transition(record, "FAILED")
+                        return self._public_view(record)
 
                     if retry_error is not None:
                         if self._attempt_count(record) >= self.max_attempts:
                             self._transition(record, "FAILED")
                             return self._public_view(record)
                         continue
+
+                    if result is None or terminal_state is None:
+                        raise GatewayError("RUNNER_RESULT_UNAVAILABLE")
 
                     record["attempts"].append(
                         {
