@@ -44,25 +44,6 @@ ALLOWED_TRANSITIONS = {
     "FAILED": set(),
 }
 
-SAFE_RESULT_FIELDS = (
-    "invocation",
-    "telemetry",
-    "predicate",
-    "proof_generation",
-    "verification_input",
-    "cryptographic",
-    "policy",
-    "freshness",
-    "revocation",
-    "replay",
-    "assurance",
-    "publication",
-    "relying_party_decision",
-    "proof_validity_is_telemetry_truth",
-    "private_witness_disclosed",
-    "command_path",
-)
-
 
 class GatewayError(ValueError):
     """Stable input/state error for the local mock gateway."""
@@ -145,8 +126,8 @@ def existing_end_to_end_runner(
         )
     except Exception as exc:
         # The underlying experiment already returns typed failures for expected cases.
-        # Unexpected tool/process failures remain retryable and do not become INVALID.
-        raise RetryableStageError("PROVING", "END_TO_END_EXECUTION_FAILED") from exc
+        # Unexpected failures remain retryable and do not become INVALID.
+        raise RetryableStageError("END_TO_END", "END_TO_END_EXECUTION_FAILED") from exc
 
 
 def _copy_fields(value: Any, fields: tuple[str, ...]) -> dict[str, Any]:
@@ -201,7 +182,6 @@ def _minimal_verifier_dimensions(raw: dict[str, Any]) -> dict[str, Any]:
 
 
 def _failure_dimensions(stage: str, reason: str) -> dict[str, Any]:
-    cryptographic_status = "UNVERIFIABLE"
     return {
         "labels": list(LABELS),
         "invocation": {"status": "ACCEPTED", "reason": None},
@@ -217,7 +197,7 @@ def _failure_dimensions(stage: str, reason: str) -> dict[str, Any]:
             "status": "UNAVAILABLE" if stage == "VERIFYING" else "NOT_CHECKED",
             "reason": reason if stage == "VERIFYING" else None,
         },
-        "cryptographic": {"status": cryptographic_status, "reason": reason},
+        "cryptographic": {"status": "UNVERIFIABLE", "reason": reason},
         "policy": "NOT_EVALUATED",
         "freshness": "NOT_EVALUATED",
         "revocation": "NOT_EVALUATED",
@@ -349,6 +329,36 @@ class MockGateway:
         record["lifecycle"].append(new_state)
         self._persist()
 
+    @staticmethod
+    def _attempt_count(record: dict[str, Any]) -> int:
+        return sum(
+            1
+            for event in record["attempts"]
+            if event.get("outcome") == "STARTED"
+        )
+
+    @staticmethod
+    def _attempt_finished(record: dict[str, Any], number: int) -> bool:
+        return any(
+            event.get("number") == number
+            and event.get("outcome") in {"COMPLETED", "RETRYABLE_FAILURE", "INTERRUPTED"}
+            for event in record["attempts"]
+        )
+
+    def _reconcile_interrupted_attempt(self, record: dict[str, Any]) -> None:
+        count = self._attempt_count(record)
+        if count and not self._attempt_finished(record, count):
+            record["attempts"].append(
+                {
+                    "number": count,
+                    "stage": "END_TO_END",
+                    "outcome": "INTERRUPTED",
+                    "reason": "PROCESS_INTERRUPTED",
+                }
+            )
+            record["reason"] = "PROCESS_INTERRUPTED"
+            self._persist()
+
     def _public_view(
         self,
         record: dict[str, Any],
@@ -360,7 +370,7 @@ class MockGateway:
             "labels": list(LABELS),
             "state": record["state"],
             "lifecycle": list(record["lifecycle"]),
-            "attempt_count": len(record["attempts"]),
+            "attempt_count": self._attempt_count(record),
             "attempts": copy.deepcopy(record["attempts"]),
             "result": copy.deepcopy(record.get("result")),
             "reason": override_reason if override_reason is not None else record.get("reason"),
@@ -417,9 +427,20 @@ class MockGateway:
 
             if record["state"] == "RECEIVED":
                 self._transition(record, "PROVING")
+            else:
+                self._reconcile_interrupted_attempt(record)
 
-            while len(record["attempts"]) < self.max_attempts:
-                attempt_number = len(record["attempts"]) + 1
+            while self._attempt_count(record) < self.max_attempts:
+                attempt_number = self._attempt_count(record) + 1
+                record["attempts"].append(
+                    {
+                        "number": attempt_number,
+                        "stage": "END_TO_END",
+                        "outcome": "STARTED",
+                        "reason": None,
+                    }
+                )
+                self._persist()
                 package_dir = Path(
                     tempfile.mkdtemp(prefix="tag-mock-gateway-proof-")
                 )
@@ -447,7 +468,7 @@ class MockGateway:
                     record["result"] = _failure_dimensions(exc.stage, exc.code)
                     record["reason"] = exc.code
                     self._persist()
-                    if len(record["attempts"]) >= self.max_attempts:
+                    if self._attempt_count(record) >= self.max_attempts:
                         self._transition(record, "FAILED")
                         return self._public_view(record)
                     continue
