@@ -69,6 +69,13 @@ class CountingRunner:
         return self.result
 
 
+class WritingRunner(CountingRunner):
+    def __call__(self, capture_name: str, maximum_speed_cm_s: int, package_dir: Path):
+        self.calls += 1
+        (package_dir / "proof").write_text("synthetic-proof", encoding="utf-8")
+        return self.result
+
+
 class AssertSweptRunner(CountingRunner):
     def __init__(self, prior_package: Path) -> None:
         super().__init__()
@@ -78,6 +85,18 @@ class AssertSweptRunner(CountingRunner):
         if self.prior_package.exists():
             raise AssertionError("prior retry package was not swept before resumed work")
         return super().__call__(capture_name, maximum_speed_cm_s, package_dir)
+
+
+class FailExistingCleanupOnceGateway(gateway.MockGateway):
+    def __init__(self, *args, **kwargs) -> None:
+        self.cleanup_failure_injected = False
+        super().__init__(*args, **kwargs)
+
+    def _dispose_package(self, package_dir: Path) -> bool:
+        if package_dir.exists() and not self.cleanup_failure_injected:
+            self.cleanup_failure_injected = True
+            return False
+        return super()._dispose_package(package_dir)
 
 
 class ReviewRegressionTests(unittest.TestCase):
@@ -160,23 +179,11 @@ class ReviewRegressionTests(unittest.TestCase):
                         "state": "FAILED",
                         "lifecycle": ["RECEIVED", "PROVING", "FAILED"],
                         "attempts": [
-                            {
-                                "number": 1,
-                                "stage": "END_TO_END",
-                                "outcome": "STARTED",
-                                "reason": None,
-                            },
-                            {
-                                "number": 1,
-                                "stage": "CLEANUP",
-                                "outcome": "CLEANUP_FAILED",
-                                "reason": "PROOF_PACKAGE_DISPOSAL_FAILED",
-                            },
+                            {"number": 1, "stage": "END_TO_END", "outcome": "STARTED", "reason": None},
+                            {"number": 1, "stage": "CLEANUP", "outcome": "CLEANUP_FAILED", "reason": "PROOF_PACKAGE_DISPOSAL_FAILED"},
                         ],
                         "reason": "PROOF_PACKAGE_DISPOSAL_FAILED",
-                        "result": gateway._failure_dimensions(
-                            "PROVING", "PROOF_PACKAGE_DISPOSAL_FAILED"
-                        ),
+                        "result": gateway._failure_dimensions("PROVING", "PROOF_PACKAGE_DISPOSAL_FAILED"),
                         "proof_package_disposed": False,
                     }
                 },
@@ -185,11 +192,7 @@ class ReviewRegressionTests(unittest.TestCase):
 
             runner = CountingRunner()
             service = gateway.MockGateway(state_path, runner=runner)
-            result = service.submit(
-                idempotency_key=key,
-                capture_name=capture,
-                maximum_speed_cm_s=limit,
-            )
+            result = service.submit(idempotency_key=key, capture_name=capture, maximum_speed_cm_s=limit)
 
             self.assertEqual(result["state"], "FAILED")
             self.assertTrue(result["proof_package_disposed"])
@@ -221,23 +224,11 @@ class ReviewRegressionTests(unittest.TestCase):
                         "state": "PROVING",
                         "lifecycle": ["RECEIVED", "PROVING"],
                         "attempts": [
-                            {
-                                "number": 1,
-                                "stage": "END_TO_END",
-                                "outcome": "STARTED",
-                                "reason": None,
-                            },
-                            {
-                                "number": 1,
-                                "stage": "VERIFYING",
-                                "outcome": "RETRYABLE_FAILURE",
-                                "reason": "VERIFIER_UNAVAILABLE",
-                            },
+                            {"number": 1, "stage": "END_TO_END", "outcome": "STARTED", "reason": None},
+                            {"number": 1, "stage": "VERIFYING", "outcome": "RETRYABLE_FAILURE", "reason": "VERIFIER_UNAVAILABLE"},
                         ],
                         "reason": "VERIFIER_UNAVAILABLE",
-                        "result": gateway._failure_dimensions(
-                            "VERIFYING", "VERIFIER_UNAVAILABLE"
-                        ),
+                        "result": gateway._failure_dimensions("VERIFYING", "VERIFIER_UNAVAILABLE"),
                         "proof_package_disposed": False,
                     }
                 },
@@ -246,11 +237,7 @@ class ReviewRegressionTests(unittest.TestCase):
 
             runner = AssertSweptRunner(package_dir)
             service = gateway.MockGateway(state_path, runner=runner, max_attempts=2)
-            result = service.submit(
-                idempotency_key=key,
-                capture_name=capture,
-                maximum_speed_cm_s=limit,
-            )
+            result = service.submit(idempotency_key=key, capture_name=capture, maximum_speed_cm_s=limit)
 
             self.assertEqual(result["state"], "VERIFIED")
             self.assertEqual(result["attempt_count"], 2)
@@ -277,18 +264,8 @@ class ReviewRegressionTests(unittest.TestCase):
                         "state": "PROVING",
                         "lifecycle": ["RECEIVED", "PROVING"],
                         "attempts": [
-                            {
-                                "number": 1,
-                                "stage": "END_TO_END",
-                                "outcome": "STARTED",
-                                "reason": None,
-                            },
-                            {
-                                "number": 1,
-                                "stage": "END_TO_END",
-                                "outcome": "COMPLETED",
-                                "reason": None,
-                            },
+                            {"number": 1, "stage": "END_TO_END", "outcome": "STARTED", "reason": None},
+                            {"number": 1, "stage": "END_TO_END", "outcome": "COMPLETED", "reason": None},
                         ],
                         "reason": None,
                         "result": completed_result,
@@ -300,19 +277,33 @@ class ReviewRegressionTests(unittest.TestCase):
 
             runner = CountingRunner()
             service = gateway.MockGateway(state_path, runner=runner, max_attempts=1)
-            result = service.submit(
-                idempotency_key=key,
-                capture_name=capture,
-                maximum_speed_cm_s=limit,
-            )
+            result = service.submit(idempotency_key=key, capture_name=capture, maximum_speed_cm_s=limit)
 
             self.assertEqual(result["state"], "VERIFIED")
             self.assertEqual(runner.calls, 0)
             self.assertEqual(result["attempt_count"], 1)
             self.assertEqual(result["result"]["cryptographic"]["status"], "VALID")
-            self.assertEqual(
-                result["lifecycle"], ["RECEIVED", "PROVING", "PROVED", "VERIFIED"]
+            self.assertEqual(result["lifecycle"], ["RECEIVED", "PROVING", "PROVED", "VERIFIED"])
+
+    def test_cleanup_failure_preserves_current_typed_result(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            runner = WritingRunner(valid_result())
+            service = FailExistingCleanupOnceGateway(
+                Path(temporary) / "state.json",
+                runner=runner,
+                max_attempts=1,
             )
+            result = service.submit(
+                idempotency_key="cleanup-result-key",
+                capture_name="unsigned-consistent",
+                maximum_speed_cm_s=600,
+            )
+
+            self.assertEqual(result["state"], "FAILED")
+            self.assertEqual(result["reason"], "PROOF_PACKAGE_DISPOSAL_FAILED")
+            self.assertFalse(result["proof_package_disposed"])
+            self.assertEqual(result["result"]["proof_generation"], "GENERATED")
+            self.assertEqual(result["result"]["cryptographic"]["status"], "VALID")
 
 
 if __name__ == "__main__":
