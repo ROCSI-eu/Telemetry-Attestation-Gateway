@@ -169,6 +169,8 @@ def existing_end_to_end_runner(
             package_dir=package_dir,
         )
     except module.DemoError as exc:
+        if exc.code == "FIXTURE_UNAVAILABLE_OR_INVALID":
+            raise RetryableStageError("TELEMETRY", exc.code) from exc
         return _demo_rejection(exc.code)
     except Exception as exc:
         # Unexpected tool/process failures remain retryable and do not become INVALID.
@@ -227,6 +229,12 @@ def _minimal_verifier_dimensions(raw: dict[str, Any]) -> dict[str, Any]:
 
 
 def _failure_dimensions(stage: str, reason: str) -> dict[str, Any]:
+    if stage == "TELEMETRY":
+        proof_generation = "NOT_ATTEMPTED"
+    elif stage == "PROVING":
+        proof_generation = "UNAVAILABLE"
+    else:
+        proof_generation = "NOT_REPEATED"
     return {
         "labels": list(LABELS),
         "invocation": {"status": "ACCEPTED", "reason": None},
@@ -237,7 +245,7 @@ def _failure_dimensions(stage: str, reason: str) -> dict[str, Any]:
             "source_trust": "NOT_EVALUATED",
         },
         "predicate": "NOT_EVALUATED",
-        "proof_generation": "UNAVAILABLE" if stage == "PROVING" else "NOT_REPEATED",
+        "proof_generation": proof_generation,
         "verification_input": {
             "status": "UNAVAILABLE" if stage == "VERIFYING" else "NOT_CHECKED",
             "reason": reason if stage == "VERIFYING" else None,
@@ -259,6 +267,24 @@ def _failure_dimensions(stage: str, reason: str) -> dict[str, Any]:
         "private_witness_disclosed": False,
         "command_path": "NONE",
     }
+
+
+def _retryable_dimensions(
+    known_result: dict[str, Any] | None, stage: str, reason: str
+) -> dict[str, Any]:
+    """Retain already-known typed facts while marking an operational retry condition."""
+    if known_result is None:
+        return _failure_dimensions(stage, reason)
+    value = copy.deepcopy(known_result)
+    value["cryptographic"] = {"status": "UNVERIFIABLE", "reason": reason}
+    if stage == "VERIFYING":
+        verification_input = value.get("verification_input")
+        if not isinstance(verification_input, dict) or verification_input.get("status") in {
+            None,
+            "NOT_CHECKED",
+        }:
+            value["verification_input"] = {"status": "UNAVAILABLE", "reason": reason}
+    return value
 
 
 def _classify_result(result: dict[str, Any]) -> tuple[str, str | None]:
@@ -423,7 +449,13 @@ class MockGateway:
         return any(
             event.get("number") == number
             and event.get("outcome")
-            in {"COMPLETED", "RETRYABLE_FAILURE", "INTERRUPTED", "CLEANUP_FAILED"}
+            in {
+                "COMPLETED",
+                "RETRYABLE_FAILURE",
+                "INTERRUPTED",
+                "CLEANUP_FAILED",
+                "CLEANUP_RECOVERED",
+            }
             for event in record["attempts"]
         )
 
@@ -449,6 +481,31 @@ class MockGateway:
             )
             record["reason"] = "PROCESS_INTERRUPTED"
             self._persist()
+
+    def _reconcile_terminal_cleanup(
+        self, record: dict[str, Any], key_digest: str
+    ) -> None:
+        if (
+            record.get("state") != "FAILED"
+            or record.get("reason") != "PROOF_PACKAGE_DISPOSAL_FAILED"
+            or record.get("proof_package_disposed")
+        ):
+            return
+        count = self._attempt_count(record)
+        if not count:
+            return
+        disposed = self._dispose_package(self._package_dir(key_digest, count))
+        record["proof_package_disposed"] = disposed
+        if disposed:
+            record["attempts"].append(
+                {
+                    "number": count,
+                    "stage": "CLEANUP",
+                    "outcome": "CLEANUP_RECOVERED",
+                    "reason": None,
+                }
+            )
+        self._persist()
 
     def _public_view(
         self,
@@ -480,6 +537,7 @@ class MockGateway:
                         "state": "NOT_FOUND",
                         "reason": "NOT_FOUND",
                     }
+                self._reconcile_terminal_cleanup(record, key_digest)
                 return self._public_view(record, replayed=True)
 
     def submit(
@@ -503,6 +561,7 @@ class MockGateway:
                             "reason": "IDEMPOTENCY_CONFLICT",
                             "idempotent_replay": False,
                         }
+                    self._reconcile_terminal_cleanup(record, key_digest)
                     if record["state"] in FINAL_STATES:
                         return self._public_view(record, replayed=True)
                 else:
@@ -569,7 +628,9 @@ class MockGateway:
                                 "reason": exc.code,
                             }
                         )
-                        record["result"] = _failure_dimensions(exc.stage, exc.code)
+                        record["result"] = _retryable_dimensions(
+                            result, exc.stage, exc.code
+                        )
                         record["reason"] = exc.code
                         self._persist()
                     finally:
