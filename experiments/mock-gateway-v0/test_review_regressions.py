@@ -69,6 +69,17 @@ class CountingRunner:
         return self.result
 
 
+class AssertSweptRunner(CountingRunner):
+    def __init__(self, prior_package: Path) -> None:
+        super().__init__()
+        self.prior_package = prior_package
+
+    def __call__(self, capture_name: str, maximum_speed_cm_s: int, package_dir: Path):
+        if self.prior_package.exists():
+            raise AssertionError("prior retry package was not swept before resumed work")
+        return super().__call__(capture_name, maximum_speed_cm_s, package_dir)
+
+
 class ReviewRegressionTests(unittest.TestCase):
     def test_fixture_availability_failure_is_retryable(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -186,6 +197,122 @@ class ReviewRegressionTests(unittest.TestCase):
             self.assertEqual(runner.calls, 0)
             self.assertEqual(result["attempts"][-1]["stage"], "CLEANUP")
             self.assertEqual(result["attempts"][-1]["outcome"], "CLEANUP_RECOVERED")
+
+    def test_persisted_retry_failure_sweeps_package_before_next_attempt(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            state_path = root / "state.json"
+            key = "retry-crash-window-key"
+            capture = "unsigned-consistent"
+            limit = 600
+            key_digest = gateway._digest_idempotency_key(key)
+            fingerprint = gateway._request_fingerprint(capture, limit)
+
+            bootstrap = gateway.MockGateway(state_path, runner=CountingRunner())
+            package_dir = bootstrap._package_dir(key_digest, 1)
+            package_dir.mkdir(parents=True)
+            (package_dir / "proof").write_text("orphaned-proof", encoding="utf-8")
+            state = {
+                "schema_version": 1,
+                "labels": list(gateway.LABELS),
+                "records": {
+                    key_digest: {
+                        "request_fingerprint": fingerprint,
+                        "state": "PROVING",
+                        "lifecycle": ["RECEIVED", "PROVING"],
+                        "attempts": [
+                            {
+                                "number": 1,
+                                "stage": "END_TO_END",
+                                "outcome": "STARTED",
+                                "reason": None,
+                            },
+                            {
+                                "number": 1,
+                                "stage": "VERIFYING",
+                                "outcome": "RETRYABLE_FAILURE",
+                                "reason": "VERIFIER_UNAVAILABLE",
+                            },
+                        ],
+                        "reason": "VERIFIER_UNAVAILABLE",
+                        "result": gateway._failure_dimensions(
+                            "VERIFYING", "VERIFIER_UNAVAILABLE"
+                        ),
+                        "proof_package_disposed": False,
+                    }
+                },
+            }
+            state_path.write_text(json.dumps(state), encoding="utf-8")
+
+            runner = AssertSweptRunner(package_dir)
+            service = gateway.MockGateway(state_path, runner=runner, max_attempts=2)
+            result = service.submit(
+                idempotency_key=key,
+                capture_name=capture,
+                maximum_speed_cm_s=limit,
+            )
+
+            self.assertEqual(result["state"], "VERIFIED")
+            self.assertEqual(result["attempt_count"], 2)
+            self.assertEqual(runner.calls, 1)
+            self.assertFalse(package_dir.exists())
+            self.assertTrue(result["proof_package_disposed"])
+
+    def test_persisted_completed_result_resumes_without_reproving(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            state_path = root / "state.json"
+            key = "completed-crash-window-key"
+            capture = "unsigned-consistent"
+            limit = 600
+            key_digest = gateway._digest_idempotency_key(key)
+            fingerprint = gateway._request_fingerprint(capture, limit)
+            completed_result = gateway._minimal_verifier_dimensions(valid_result())
+            state = {
+                "schema_version": 1,
+                "labels": list(gateway.LABELS),
+                "records": {
+                    key_digest: {
+                        "request_fingerprint": fingerprint,
+                        "state": "PROVING",
+                        "lifecycle": ["RECEIVED", "PROVING"],
+                        "attempts": [
+                            {
+                                "number": 1,
+                                "stage": "END_TO_END",
+                                "outcome": "STARTED",
+                                "reason": None,
+                            },
+                            {
+                                "number": 1,
+                                "stage": "END_TO_END",
+                                "outcome": "COMPLETED",
+                                "reason": None,
+                            },
+                        ],
+                        "reason": None,
+                        "result": completed_result,
+                        "proof_package_disposed": True,
+                    }
+                },
+            }
+            state_path.write_text(json.dumps(state), encoding="utf-8")
+
+            runner = CountingRunner()
+            service = gateway.MockGateway(state_path, runner=runner, max_attempts=1)
+            result = service.submit(
+                idempotency_key=key,
+                capture_name=capture,
+                maximum_speed_cm_s=limit,
+            )
+
+            self.assertEqual(result["state"], "VERIFIED")
+            self.assertEqual(runner.calls, 0)
+            self.assertEqual(result["attempt_count"], 1)
+            self.assertEqual(result["result"]["cryptographic"]["status"], "VALID")
+            self.assertEqual(
+                result["lifecycle"], ["RECEIVED", "PROVING", "PROVED", "VERIFIED"]
+            )
 
 
 if __name__ == "__main__":
