@@ -463,7 +463,9 @@ class MockGateway:
         self, record: dict[str, Any], key_digest: str
     ) -> None:
         count = self._attempt_count(record)
-        if count and not self._attempt_finished(record, count):
+        if not count:
+            return
+        if not record.get("proof_package_disposed", False):
             package_dir = self._package_dir(key_digest, count)
             disposed = self._dispose_package(package_dir)
             record["proof_package_disposed"] = disposed
@@ -471,6 +473,8 @@ class MockGateway:
                 record["reason"] = "PROOF_PACKAGE_DISPOSAL_FAILED"
                 self._persist()
                 raise GatewayError("PROOF_PACKAGE_DISPOSAL_FAILED")
+            self._persist()
+        if not self._attempt_finished(record, count):
             record["attempts"].append(
                 {
                     "number": count,
@@ -481,6 +485,35 @@ class MockGateway:
             )
             record["reason"] = "PROCESS_INTERRUPTED"
             self._persist()
+
+    def _resume_completed_attempt(self, record: dict[str, Any]) -> bool:
+        if record.get("state") in FINAL_STATES:
+            return True
+        count = self._attempt_count(record)
+        if not count or not any(
+            event.get("number") == count and event.get("outcome") == "COMPLETED"
+            for event in record.get("attempts", [])
+        ):
+            return False
+        result = record.get("result")
+        if not isinstance(result, dict):
+            return False
+        try:
+            terminal_state, reason = _classify_result(result)
+        except RetryableStageError:
+            return False
+        record["reason"] = reason
+        self._persist()
+        if result.get("proof_generation") == "GENERATED" and record["state"] == "PROVING":
+            self._transition(record, "PROVED")
+        if terminal_state == "VERIFIED":
+            if record["state"] == "PROVING":
+                self._transition(record, "PROVED")
+            if record["state"] == "PROVED":
+                self._transition(record, "VERIFIED")
+        elif terminal_state == "REJECTED" and record["state"] in {"PROVING", "PROVED"}:
+            self._transition(record, "REJECTED")
+        return record["state"] in FINAL_STATES
 
     def _reconcile_terminal_cleanup(
         self, record: dict[str, Any], key_digest: str
@@ -538,6 +571,9 @@ class MockGateway:
                         "reason": "NOT_FOUND",
                     }
                 self._reconcile_terminal_cleanup(record, key_digest)
+                if record["state"] not in FINAL_STATES:
+                    self._reconcile_interrupted_attempt(record, key_digest)
+                    self._resume_completed_attempt(record)
                 return self._public_view(record, replayed=True)
 
     def submit(
@@ -581,6 +617,8 @@ class MockGateway:
                     self._transition(record, "PROVING")
                 else:
                     self._reconcile_interrupted_attempt(record, key_digest)
+                    if self._resume_completed_attempt(record):
+                        return self._public_view(record, replayed=True)
 
                 while self._attempt_count(record) < self.max_attempts:
                     attempt_number = self._attempt_count(record) + 1
