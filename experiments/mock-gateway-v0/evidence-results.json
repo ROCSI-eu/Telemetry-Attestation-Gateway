@@ -30,6 +30,13 @@
       "state": "REJECTED"
     },
     "restart": {
+      "attempt_count_after_restart": 2,
+      "attempt_outcomes_after_restart": [
+        "STARTED",
+        "INTERRUPTED",
+        "STARTED",
+        "COMPLETED"
+      ],
       "lifecycle_after_restart": [
         "RECEIVED",
         "PROVING",
