@@ -96,16 +96,14 @@ class FlakyRunner:
         return valid_result()
 
 
-class InterruptOnceRunner:
+class InterruptingRunner:
     def __init__(self):
         self.calls = 0
 
     def __call__(self, capture_name: str, maximum_speed_cm_s: int, package_dir: Path):
         self.calls += 1
         (package_dir / "partial-proof").write_text("restricted", encoding="utf-8")
-        if self.calls == 1:
-            raise RuntimeError("simulated process interruption")
-        return valid_result()
+        raise RuntimeError("simulated process interruption")
 
 
 class MockGatewayTests(unittest.TestCase):
@@ -175,7 +173,11 @@ class MockGatewayTests(unittest.TestCase):
             self.assertEqual(result["attempt_count"], 3)
             self.assertEqual(result["lifecycle"], ["RECEIVED", "PROVING", "PROVED", "VERIFIED"])
             self.assertEqual(
-                [attempt["outcome"] for attempt in result["attempts"]],
+                [
+                    event["outcome"]
+                    for event in result["attempts"]
+                    if event["outcome"] != "STARTED"
+                ],
                 ["RETRYABLE_FAILURE", "RETRYABLE_FAILURE", "COMPLETED"],
             )
 
@@ -224,8 +226,8 @@ class MockGatewayTests(unittest.TestCase):
     def test_restart_resumes_without_backward_transition_or_duplicate_record(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            runner = InterruptOnceRunner()
-            service = self.make_gateway(root, runner)
+            first_runner = InterruptingRunner()
+            service = self.make_gateway(root, first_runner)
             with self.assertRaisesRegex(RuntimeError, "simulated process interruption"):
                 service.submit(
                     idempotency_key="restart-key",
@@ -237,16 +239,28 @@ class MockGatewayTests(unittest.TestCase):
             only_record = next(iter(persisted_before["records"].values()))
             self.assertEqual(only_record["state"], "PROVING")
             self.assertEqual(only_record["lifecycle"], ["RECEIVED", "PROVING"])
+            self.assertEqual(
+                [event["outcome"] for event in only_record["attempts"]],
+                ["STARTED"],
+            )
             self.assertTrue(only_record["proof_package_disposed"])
 
-            restarted = self.make_gateway(root, runner)
+            second_runner = CountingRunner()
+            restarted = self.make_gateway(root, second_runner)
             result = restarted.submit(
                 idempotency_key="restart-key",
                 capture_name="unsigned-consistent",
                 maximum_speed_cm_s=600,
             )
             self.assertEqual(result["state"], "VERIFIED")
+            self.assertEqual(result["attempt_count"], 2)
             self.assertEqual(result["lifecycle"], ["RECEIVED", "PROVING", "PROVED", "VERIFIED"])
+            self.assertEqual(
+                [event["outcome"] for event in result["attempts"]],
+                ["STARTED", "INTERRUPTED", "STARTED", "COMPLETED"],
+            )
+            self.assertEqual(first_runner.calls, 1)
+            self.assertEqual(second_runner.calls, 1)
             persisted_after = json.loads((root / "state.json").read_text(encoding="utf-8"))
             self.assertEqual(len(persisted_after["records"]), 1)
 
