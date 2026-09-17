@@ -7,7 +7,10 @@ import json
 from pathlib import Path
 import socket
 import tempfile
+import threading
+import time
 import unittest
+from unittest import mock
 
 import mock_gateway as gateway
 
@@ -86,13 +89,28 @@ class FlakyRunner:
         self.failures = failures
         self.stage = stage
         self.calls = 0
+        self.package_paths: list[Path] = []
 
     def __call__(self, capture_name: str, maximum_speed_cm_s: int, package_dir: Path):
         self.calls += 1
+        self.package_paths.append(package_dir)
         (package_dir / "transient-proof").write_text("restricted", encoding="utf-8")
         if self.calls <= self.failures:
             code = "PROVER_UNAVAILABLE" if self.stage == "PROVING" else "VERIFIER_UNAVAILABLE"
             raise gateway.RetryableStageError(self.stage, code)
+        return valid_result()
+
+
+class SlowCountingRunner:
+    def __init__(self):
+        self.calls = 0
+        self._lock = threading.Lock()
+
+    def __call__(self, capture_name: str, maximum_speed_cm_s: int, package_dir: Path):
+        with self._lock:
+            self.calls += 1
+        (package_dir / "proof").write_text("restricted-proof-bytes", encoding="utf-8")
+        time.sleep(0.05)
         return valid_result()
 
 
@@ -320,6 +338,123 @@ class MockGatewayTests(unittest.TestCase):
 
             self.assertEqual(result["state"], "VERIFIED")
             self.assertEqual(runner.calls, 1)
+
+    def test_two_instances_coordinate_identical_concurrent_submission(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            runner = SlowCountingRunner()
+            first_service = self.make_gateway(root, runner)
+            second_service = self.make_gateway(root, runner)
+            barrier = threading.Barrier(2)
+            results: list[dict] = []
+            errors: list[BaseException] = []
+            results_lock = threading.Lock()
+
+            def submit(service):
+                try:
+                    barrier.wait()
+                    result = service.submit(
+                        idempotency_key="concurrent-key",
+                        capture_name="unsigned-consistent",
+                        maximum_speed_cm_s=600,
+                    )
+                    with results_lock:
+                        results.append(result)
+                except BaseException as exc:
+                    with results_lock:
+                        errors.append(exc)
+
+            first_thread = threading.Thread(target=submit, args=(first_service,))
+            second_thread = threading.Thread(target=submit, args=(second_service,))
+            first_thread.start()
+            second_thread.start()
+            first_thread.join(timeout=5)
+            second_thread.join(timeout=5)
+
+            self.assertFalse(first_thread.is_alive())
+            self.assertFalse(second_thread.is_alive())
+            self.assertEqual(errors, [])
+            self.assertEqual(runner.calls, 1)
+            self.assertEqual(len(results), 2)
+            self.assertTrue(all(result["state"] == "VERIFIED" for result in results))
+            self.assertEqual(
+                sorted(result["idempotent_replay"] for result in results),
+                [False, True],
+            )
+
+    def test_stale_instance_reloads_state_before_idempotency_conflict_check(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            runner = CountingRunner()
+            first_service = self.make_gateway(root, runner)
+            stale_service = self.make_gateway(root, runner)
+
+            first_service.submit(
+                idempotency_key="stale-conflict-key",
+                capture_name="unsigned-consistent",
+                maximum_speed_cm_s=600,
+            )
+            conflict = stale_service.submit(
+                idempotency_key="stale-conflict-key",
+                capture_name="unsigned-consistent",
+                maximum_speed_cm_s=601,
+            )
+
+            self.assertEqual(conflict["state"], "ERROR")
+            self.assertEqual(conflict["reason"], "IDEMPOTENCY_CONFLICT")
+            self.assertEqual(runner.calls, 1)
+
+    def test_delegated_demo_input_error_remains_typed_rejection(self):
+        class FakeDemoModule:
+            class DemoError(ValueError):
+                def __init__(self, code):
+                    super().__init__(code)
+                    self.code = code
+
+            @staticmethod
+            def run_fixture(*args, **kwargs):
+                raise FakeDemoModule.DemoError("CAPTURE_NOT_FOUND")
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            with mock.patch.object(
+                gateway, "_load_end_to_end_demo", return_value=FakeDemoModule
+            ):
+                service = self.make_gateway(
+                    root,
+                    gateway.existing_end_to_end_runner,
+                    max_attempts=3,
+                )
+                result = service.submit(
+                    idempotency_key="missing-capture-key",
+                    capture_name="missing-capture",
+                    maximum_speed_cm_s=600,
+                )
+
+            self.assertEqual(result["state"], "REJECTED")
+            self.assertEqual(result["reason"], "CAPTURE_NOT_FOUND")
+            self.assertEqual(result["attempt_count"], 1)
+            self.assertEqual(result["result"]["telemetry"]["status"], "REJECTED")
+            self.assertEqual(result["result"]["proof_generation"], "NOT_ATTEMPTED")
+            self.assertEqual(
+                result["result"]["cryptographic"]["status"], "NOT_CHECKED"
+            )
+
+    def test_retry_exhaustion_response_reports_cleanup_after_finally(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            runner = FlakyRunner(failures=9, stage="VERIFYING")
+            service = self.make_gateway(root, runner, max_attempts=1)
+
+            result = service.submit(
+                idempotency_key="cleanup-key",
+                capture_name="unsigned-consistent",
+                maximum_speed_cm_s=600,
+            )
+
+            self.assertEqual(result["state"], "FAILED")
+            self.assertTrue(result["proof_package_disposed"])
+            self.assertTrue(all(not path.exists() for path in runner.package_paths))
 
     def test_default_runner_is_wired_to_existing_end_to_end_experiment(self):
         self.assertEqual(gateway.END_TO_END_DEMO.name, "demo.py")
