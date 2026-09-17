@@ -102,7 +102,7 @@ class FlakyRunner:
         return valid_result()
 
 
-class InterruptOnceRunner:
+class InterruptingRunner:
     def __init__(self) -> None:
         self.calls = 0
         self.package_paths: list[Path] = []
@@ -111,9 +111,7 @@ class InterruptOnceRunner:
         self.calls += 1
         self.package_paths.append(package_dir)
         (package_dir / "partial-proof").write_text("restricted", encoding="utf-8")
-        if self.calls == 1:
-            raise RuntimeError("simulated interruption")
-        return valid_result()
+        raise RuntimeError("simulated interruption")
 
 
 def run_case(runner, key: str, *, max_attempts: int = 3, malformed: bool = False):
@@ -220,9 +218,9 @@ def main() -> int:
         restart_tmp = tempfile.TemporaryDirectory()
         temporaries.append(restart_tmp)
         restart_root = Path(restart_tmp.name)
-        restart_runner = InterruptOnceRunner()
+        first_restart_runner = InterruptingRunner()
         before = gateway.MockGateway(
-            restart_root / "state.json", runner=restart_runner, max_attempts=3
+            restart_root / "state.json", runner=first_restart_runner, max_attempts=3
         )
         try:
             before.submit(
@@ -236,15 +234,17 @@ def main() -> int:
             raise AssertionError("restart interruption was not exercised")
         mid_state = json.loads((restart_root / "state.json").read_text(encoding="utf-8"))
         mid_record = next(iter(mid_state["records"].values()))
+        second_restart_runner = CountingRunner()
         after = gateway.MockGateway(
-            restart_root / "state.json", runner=restart_runner, max_attempts=3
+            restart_root / "state.json", runner=second_restart_runner, max_attempts=3
         )
         restart_result = after.submit(
             idempotency_key="restart-private-key",
             capture_name="unsigned-consistent",
             maximum_speed_cm_s=600,
         )
-        package_paths += restart_runner.package_paths
+        package_paths += first_restart_runner.package_paths
+        package_paths += second_restart_runner.package_paths
         persisted_texts.append((restart_root / "state.json").read_text(encoding="utf-8"))
         public_results.append(restart_result)
 
@@ -312,6 +312,10 @@ def main() -> int:
                     "lifecycle_before_restart": mid_record["lifecycle"],
                     "state_after_restart": restart_result["state"],
                     "lifecycle_after_restart": restart_result["lifecycle"],
+                    "attempt_count_after_restart": restart_result["attempt_count"],
+                    "attempt_outcomes_after_restart": [
+                        event["outcome"] for event in restart_result["attempts"]
+                    ],
                 },
             },
             "checks": {
@@ -340,6 +344,22 @@ def main() -> int:
             raise AssertionError("duplicate submission reran the work")
         if mid_record["state"] != "PROVING" or restart_result["state"] != "VERIFIED":
             raise AssertionError("restart lifecycle evidence did not match expectation")
+        if restart_result["attempt_count"] != 2:
+            raise AssertionError("interrupted attempt was not retained across restart")
+        if [event["outcome"] for event in restart_result["attempts"]] != [
+            "STARTED",
+            "INTERRUPTED",
+            "STARTED",
+            "COMPLETED",
+        ]:
+            raise AssertionError("restart attempt history was not append-only/auditable")
+        for result in public_results:
+            typed = result.get("result")
+            if isinstance(typed, dict) and typed.get("publication") not in {
+                None,
+                "NOT_PERFORMED",
+            }:
+                raise AssertionError("publication changed during local gateway evidence")
 
         print(json.dumps(evidence, indent=2, sort_keys=True))
     finally:
