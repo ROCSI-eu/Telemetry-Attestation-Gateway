@@ -9,12 +9,12 @@
 | Permitted environment | Documentation-only |
 | External claim level | No external assurance claim |
 | Activity | Exploration permitted within the Current work authorization |
-| Work item | `M1` — Reconcile the documentation baseline |
+| Work item | Documentation authority routing; historically created during `M1` reconciliation |
 | Review date | 2026-08-30 |
-| Status | Current routing map; prior M1 approval record **Superseded** |
-| Accountable role | Delivery lead remains unassigned for accepted milestone purposes |
+| Status | **Current** routing map; prior M1 approval record and milestone-wide work holds **Superseded** |
+| Accountable role | Repository maintainer at solo concept level; promoted uses require only their risk-triggered accountable roles |
 | Applies to | Proposed downstream contracts, fixtures, tests, reviews, and decisions |
-| Current correction | [`solo-planning-readiness-record.md`](solo-planning-readiness-record.md#current-disposition) |
+| Current work rule | [`docs/current-work-authorization.md`](../../current-work-authorization.md) and [`docs/delivery-plan.md`](../../delivery-plan.md) |
 
 ## Precedence rule
 
@@ -22,21 +22,21 @@ Authority is **area-specific**, not a single total ordering of whole files:
 
 1. An accepted/Current ADR controls the decision it expressly makes and supersedes every conflicting Proposed or Open statement in its affected scope.
 2. Within an area not decided by an accepted ADR, the owning document in the table below controls semantics.
-3. `docs/delivery-plan.md` always controls milestone order, prerequisites, evidence, reviewers, and gate closure; it does not redefine a topic contract.
+3. `docs/delivery-plan.md` controls parallel delivery tracks, artifact dependencies, promotion gates, required evidence, and MVP declaration. Historical numbered-milestone records cannot create a repository-wide hold that conflicts with the Current exploration boundary.
 4. `docs/testing-and-operations.md` controls how evidence is executed and assessed, but expected values come from the owning contract/accepted ADR.
 5. `docs/decisions.md` controls whether a choice is Current, Proposed, Open, Deferred, or Superseded; descriptive repetition there does not replace the owning contract.
 6. `docs/README.md` controls documentation governance and routing. `docs/system-plan.md` is Superseded and has no normative precedence.
 7. Examples, diagrams, diagnostic JSON, candidates, plans, and proposed artifact paths cannot override normative prose. An unresolved Open value fails closed or waits for its closure gate; readers must not resolve it by document order.
 
-This routing rule remains useful as Current documentation governance. It is not, by itself, accepted M1 evidence.
+This routing rule remains useful as Current documentation governance. It is not an approval record and does not itself promote any artifact or activity.
 
 ## Downstream contract-area map
 
 | Contract area | Normative owner | Supporting/evidence documents | Accepted ADR precedence and conflict handling |
 | --- | --- | --- | --- |
 | Product problem, actors, relying-party decision, claim/coverage, MVP/non-goals, success measures | `docs/product-scope.md` | Discovery evidence from `docs/discovery-research-plan.md`; state in `docs/decisions.md`; gates in `docs/delivery-plan.md` | A scope-affecting ADR cannot silently change scope: product approval and synchronized scope update are also required. |
-| Discovery protocol, privacy gate, sampling, collection, synthesis, evidence promotion | `docs/discovery-research-plan.md` | Product gate outcome in `docs/product-scope.md`; phase timing in `docs/delivery-plan.md` | An ADR may decide architecture, never manufacture findings or waive discovery evidence. |
-| Milestones, phases, dependencies, entry/exit, accountable reviewers, evidence gates | `docs/delivery-plan.md` | Coordination state in `docs/management/validated-claim-contract-register.csv` | No topic ADR can reorder or waive a delivery gate unless the delivery plan is amended through its owner. |
+| Discovery protocol, privacy gate, sampling, collection, synthesis, evidence promotion | `docs/discovery-research-plan.md` | Product gate outcome in `docs/product-scope.md`; promotion timing and gates in `docs/delivery-plan.md` | An ADR may decide architecture, never manufacture findings or waive discovery evidence. |
+| Delivery tracks, artifact dependencies, promotion gates, required reviewers/evidence, MVP declaration | `docs/delivery-plan.md` | Current work rule in `docs/current-work-authorization.md`; coordination state in `docs/management/validated-claim-contract-register.csv` | No topic ADR or historical milestone record can reorder or waive a delivery gate unless the delivery plan is amended through its owner. |
 | Components, ports, dependency direction, trust/deployment boundaries, lifecycle flow | `docs/architecture.md` | Security controls and contract documents | Accepted architecture ADR controls its exact decision; affected architecture prose must be updated atomically. |
 | Telemetry normalization, units, bounds, source trust states, witness/public inputs, commitment/nullifier/circuit semantics, policy lifecycle | `docs/data-and-proof-model.md` | Envelope exchange fields; security eligibility; tests | ADR-0001 controls v1 window endpoints. Future accepted circuit/nullifier/policy ADRs supersede proposals only within their stated/versioned scope. |
 | Public envelope bytes, canonical CBOR, field map, proof/receipt shape, disclosure allowlist, public-input reconstruction, typed verifier result and precedence | `docs/claim-envelope.md` | Data/proof semantics; tests | ADR-0001 controls half-open windows; ADR-0002 controls independent typed results, derived disposition, and external business decision. |
@@ -75,11 +75,12 @@ The historical review and approval record is **Superseded**. The listed identifi
 
 The sole maintainer may use the routing map for planning, but maintainer review cannot be counted as independent discipline or relying-party approval.
 
-## M1 gate disposition and later-work hold
+## Historical M1 disposition and Current scoped blockers
 
-The historical status-change reference `TAG-M1-ACCEPTED-DOC-BASELINE-2026-08-30` remains **Superseded** because it falsely implied external approval. The authority map is now maintainer-reviewed M1 evidence at solo concept level.
+The historical status-change reference `TAG-M1-ACCEPTED-DOC-BASELINE-2026-08-30` remains **Superseded** because it falsely implied external approval. The former numbered-milestone sequence is retained only for traceability; it does not control Current work authorization.
 
-- M1 is `in_progress`; `gate_closed=false`;
-- maintainer review may finish it only as a **solo-maintainer provisional baseline**;
-- absent external discipline and relying-party roles are future promotion blockers under the role-by-risk matrix, not blockers to M1 documentation work; and
-- `Blocked — M2 entry promotion` applies until real provider and relying-party participants and its triggered discovery/privacy reviews are available.
+- Former `M1` reconciliation records may still support a **solo-maintainer provisional baseline**, but completion of `M1` is not a prerequisite for another exploration track.
+- The Current delivery plan and work-authorization document permit compliant solo, synthetic, reversible exploration where the operational register says **Exploration permitted**.
+- Missing external discipline or relying-party roles block only the promotion or external claim that triggers those roles; they do not block documentation reconciliation or synthetic technical experiments.
+- Paired provider/relying-party discovery remains **Deferred** until suitable participants, discovery-method review, and privacy/input governance exist. `Blocked — paired-discovery promotion` applies only to that participant-facing activity.
+- Real or restricted telemetry, hardware, command paths, participant/customer data, live publication, pilots, deployment, production, and higher-assurance claims remain outside the solo synthetic sandbox and require their applicable promotion gates.
