@@ -5,7 +5,10 @@ from __future__ import annotations
 
 import copy
 import json
+import os
+from pathlib import Path
 import socket
+import tempfile
 import unittest
 
 import publication_mock as publication
@@ -158,6 +161,20 @@ class PublicationMockTests(unittest.TestCase):
             socket.create_connection = original_create_connection
 
         self.assertEqual(result["publication_adapter"]["state"], "FINALIZED")
+
+    def test_publish_creates_no_files_in_clean_workspace(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            original_cwd = Path.cwd()
+            try:
+                os.chdir(temporary)
+                self.assertEqual(list(Path(".").iterdir()), [])
+                publication.publish(
+                    subject_digest=self.subject(),
+                    verifier_result=valid_verifier_result(),
+                )
+                self.assertEqual(list(Path(".").iterdir()), [])
+            finally:
+                os.chdir(original_cwd)
 
     def test_input_object_is_not_mutated(self):
         verifier = valid_verifier_result()
