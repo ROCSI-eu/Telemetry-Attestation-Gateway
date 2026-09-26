@@ -4,7 +4,10 @@
 from __future__ import annotations
 
 import json
+import os
+from pathlib import Path
 import socket
+import tempfile
 
 import publication_mock as publication
 from test_publication_mock import valid_verifier_result
@@ -52,22 +55,31 @@ def main() -> int:
         )
         verifier = valid_verifier_result()
 
-        finalized = publication.publish(
-            subject_digest=subject_digest, verifier_result=verifier
-        )
-        duplicate = publication.publish(
-            subject_digest=subject_digest, verifier_result=verifier
-        )
-        not_performed = publication.publish(
-            subject_digest=subject_digest,
-            verifier_result=verifier,
-            behavior="not_performed",
-        )
-        outage = publication.publish(
-            subject_digest=subject_digest,
-            verifier_result=verifier,
-            behavior="outage",
-        )
+        with tempfile.TemporaryDirectory() as temporary:
+            original_cwd = Path.cwd()
+            try:
+                os.chdir(temporary)
+                workspace_empty_before = list(Path(".").iterdir()) == []
+
+                finalized = publication.publish(
+                    subject_digest=subject_digest, verifier_result=verifier
+                )
+                duplicate = publication.publish(
+                    subject_digest=subject_digest, verifier_result=verifier
+                )
+                not_performed = publication.publish(
+                    subject_digest=subject_digest,
+                    verifier_result=verifier,
+                    behavior="not_performed",
+                )
+                outage = publication.publish(
+                    subject_digest=subject_digest,
+                    verifier_result=verifier,
+                    behavior="outage",
+                )
+                workspace_empty_after = list(Path(".").iterdir()) == []
+            finally:
+                os.chdir(original_cwd)
 
         public_evidence = {
             "experiment": "publication-mock-v0",
@@ -130,7 +142,9 @@ def main() -> int:
                 else "FAIL",
                 "python_network_denied": "PASS",
                 "restricted_field_absence": "PASS",
-                "no_persistent_state_created": "PASS",
+                "no_persistent_state_created": "PASS"
+                if workspace_empty_before and workspace_empty_after
+                else "FAIL",
             },
             "limitations": [
                 "Synthetic local evidence only.",
