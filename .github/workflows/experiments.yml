@@ -32,5 +32,11 @@ jobs:
         run: |
           python3 experiments/mock-gateway-v0/evidence.py > /tmp/mock-gateway-evidence.json
           diff -u experiments/mock-gateway-v0/evidence-results.json /tmp/mock-gateway-evidence.json
+      - name: Run publication mock boundary tests
+        run: python3 experiments/publication-mock-v0/test_publication_mock.py
+      - name: Check publication mock evidence reproducibility
+        run: |
+          python3 experiments/publication-mock-v0/evidence.py > /tmp/publication-mock-evidence.json
+          diff -u experiments/publication-mock-v0/evidence-results.json /tmp/publication-mock-evidence.json
       - name: Check repository documentation
         run: python3 scripts/check_docs.py

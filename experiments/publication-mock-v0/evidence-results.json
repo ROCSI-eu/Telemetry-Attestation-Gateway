@@ -1,0 +1,62 @@
+{
+  "cases": {
+    "duplicate": {
+      "same_result": true,
+      "state": "FINALIZED"
+    },
+    "finalized": {
+      "authentication": "NOT_PERFORMED",
+      "lifecycle": [
+        "SUBMITTED",
+        "FINALIZED"
+      ],
+      "mock_record_digest": "b55e1fa5772fec693c35c74420e2c644a78b4480711ca8b947b9d48546d34ab2",
+      "receipt_authentication": "NOT_PERFORMED",
+      "receipt_signature": "NOT_PERFORMED",
+      "receipt_subject_binding": "NOT_PERFORMED",
+      "receipt_verification_authority": "NONE",
+      "state": "FINALIZED",
+      "subject_binding": "NOT_PERFORMED"
+    },
+    "not_performed": {
+      "cryptographic": "VALID",
+      "receipt_present": false,
+      "state": "NOT_PERFORMED"
+    },
+    "publisher_outage": {
+      "cryptographic": "VALID",
+      "reason": "MOCK_PUBLISHER_UNAVAILABLE",
+      "receipt_present": false,
+      "state": "SUBMISSION_FAILED"
+    }
+  },
+  "checks": {
+    "deterministic_duplicate_convergence": "PASS",
+    "no_persistent_state_created": "PASS",
+    "non_cryptographic_mock_marking": "PASS",
+    "publication_failure_does_not_change_cryptographic_validity": "PASS",
+    "publication_omission_does_not_change_cryptographic_validity": "PASS",
+    "python_network_denied": "PASS",
+    "restricted_field_absence": "PASS",
+    "subject_correlation_not_emitted": "PASS",
+    "verifier_result_unchanged_after_finalize": "PASS",
+    "verifier_result_unchanged_on_outage": "PASS"
+  },
+  "experiment": "publication-mock-v0",
+  "labels": [
+    "EXPERIMENTAL",
+    "SYNTHETIC_ONLY",
+    "A0_SYNTHETIC",
+    "NOT VALIDATION OR PRODUCTION AUTHORIZATION"
+  ],
+  "limitations": [
+    "Synthetic local evidence only.",
+    "The receipt is a deterministic non-cryptographic control-flow mock; authentication, signatures, and claim binding are not performed.",
+    "The synthetic subject digest is accepted only as ephemeral invocation input and is not emitted, persisted, or reflected in the mock receipt.",
+    "No persistent publication state is created by this experiment.",
+    "No live publication service, ledger, vendor dependency, production trust root, or production credential is used.",
+    "Publication success, omission, or outage does not alter the pre-publication verifier result.",
+    "No workflow, demand, assurance, safety, compliance, pilot, deployment, or production claim is established."
+  ],
+  "marker": "NON_CRYPTOGRAPHIC_PUBLICATION_MOCK"
+}
