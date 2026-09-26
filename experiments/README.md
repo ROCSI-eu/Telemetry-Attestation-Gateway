@@ -27,6 +27,7 @@ Use [`TEMPLATE.md`](TEMPLATE.md) when useful. It is guidance, not a gate.
 - [`bounded-speed-proof-v0/`](bounded-speed-proof-v0/) — genuine bounded-speed proof plus independently invokable public-input-reconstructing offline verifier experiment.
 - [`end-to-end-v0/`](end-to-end-v0/) — local synthetic MAVLink normalization → private witness → zero-knowledge proof → independent offline verification demonstrator.
 - [`mock-gateway-v0/`](mock-gateway-v0/) — local synthetic gateway/operator-boundary experiment for idempotency, retry/restart, failure isolation, minimized state, and restricted-field absence around the existing end-to-end path.
+- [`publication-mock-v0/`](publication-mock-v0/) — stateless deterministic local publication control-flow mock that preserves verifier results, emits no subject correlation material, and explicitly performs no receipt authentication, signature, or subject binding.
 
 ## Workspace boundary
 
