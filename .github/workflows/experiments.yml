@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "experiments/**"
+      - "scripts/check_experiments.py"
       - ".github/workflows/experiments.yml"
 
 permissions:
@@ -14,35 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run bounded-speed encoding spike tests
-        run: python3 experiments/bounded-speed-v0/test_bounded_speed.py
-      - name: Run MAVLink normalization spike tests
-        run: python3 experiments/mavlink-normalization-v0/test_mavlink_normalize.py
-      - name: Run bounded-speed proof/verifier boundary tests
-        run: python3 experiments/bounded-speed-proof-v0/test_verify.py
-      - name: Run end-to-end demonstrator boundary tests
-        run: python3 experiments/end-to-end-v0/test_demo.py
-      - name: Run mock gateway boundary tests
-        run: python3 experiments/mock-gateway-v0/test_mock_gateway.py
-      - name: Run mock gateway cleanup recovery test
-        run: python3 experiments/mock-gateway-v0/test_cleanup_recovery.py
-      - name: Run final mock gateway review regressions
-        run: python3 experiments/mock-gateway-v0/test_review_regressions.py
-      - name: Check mock gateway evidence reproducibility
-        run: |
-          python3 experiments/mock-gateway-v0/evidence.py > /tmp/mock-gateway-evidence.json
-          diff -u experiments/mock-gateway-v0/evidence-results.json /tmp/mock-gateway-evidence.json
-      - name: Run publication mock boundary tests
-        run: python3 experiments/publication-mock-v0/test_publication_mock.py
-      - name: Check publication mock evidence reproducibility
-        run: |
-          python3 experiments/publication-mock-v0/evidence.py > /tmp/publication-mock-evidence.json
-          diff -u experiments/publication-mock-v0/evidence-results.json /tmp/publication-mock-evidence.json
-      - name: Run publication adapter conformance tests
-        run: python3 experiments/publication-adapter-v0/test_publication_adapter.py
-      - name: Check publication adapter evidence reproducibility
-        run: |
-          python3 experiments/publication-adapter-v0/evidence.py > /tmp/publication-adapter-evidence.json
-          diff -u experiments/publication-adapter-v0/evidence-results.json /tmp/publication-adapter-evidence.json
+      - name: Run repository-owned experiment quality gate
+        run: python3 scripts/check_experiments.py
       - name: Check repository documentation
         run: python3 scripts/check_docs.py
