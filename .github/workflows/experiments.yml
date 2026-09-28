@@ -38,5 +38,11 @@ jobs:
         run: |
           python3 experiments/publication-mock-v0/evidence.py > /tmp/publication-mock-evidence.json
           diff -u experiments/publication-mock-v0/evidence-results.json /tmp/publication-mock-evidence.json
+      - name: Run publication adapter conformance tests
+        run: python3 experiments/publication-adapter-v0/test_publication_adapter.py
+      - name: Check publication adapter evidence reproducibility
+        run: |
+          python3 experiments/publication-adapter-v0/evidence.py > /tmp/publication-adapter-evidence.json
+          diff -u experiments/publication-adapter-v0/evidence-results.json /tmp/publication-adapter-evidence.json
       - name: Check repository documentation
         run: python3 scripts/check_docs.py

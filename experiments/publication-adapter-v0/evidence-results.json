@@ -1,0 +1,90 @@
+{
+  "adapters": {
+    "deterministic_local_mock": {
+      "duplicate_retry": "PASS",
+      "payload_binding": "PASS",
+      "status_lookup": "PASS",
+      "substrate": "deterministic-local-mock-v0",
+      "success_lifecycle": [
+        "pending",
+        "recorded",
+        "final"
+      ],
+      "superseded_lifecycle": [
+        "pending",
+        "recorded",
+        "final",
+        "superseded"
+      ]
+    },
+    "disabled": {
+      "duplicate_retry": "PASS",
+      "error_code": "PUBLICATION_DISABLED",
+      "status_lookup": "PASS",
+      "substrate": "disabled-local-v0",
+      "terminal_state": "failed"
+    }
+  },
+  "cases": {
+    "cancellation_reconciliation": {
+      "initial_code": "SUBMISSION_CANCELLED",
+      "initial_state": "pending",
+      "reconciled_state": "final"
+    },
+    "definitive_failure": {
+      "classification": "definitive",
+      "code": "SUBSTRATE_REJECTED",
+      "retryable": false,
+      "state": "failed"
+    },
+    "idempotency_conflict": {
+      "changed_payload_code": "IDEMPOTENCY_CONFLICT",
+      "changed_profile_code": "IDEMPOTENCY_CONFLICT",
+      "classification": "rejected"
+    },
+    "retryable_unavailable": {
+      "classification": "retryable",
+      "code": "SUBSTRATE_UNAVAILABLE",
+      "retryable": true
+    },
+    "timeout_reconciliation": {
+      "initial_code": "SUBMISSION_TIMEOUT",
+      "initial_state": "pending",
+      "lookup_state": "pending",
+      "reconciled_lifecycle": [
+        "pending",
+        "recorded",
+        "final"
+      ],
+      "reconciled_state": "final",
+      "same_logical_record": true
+    }
+  },
+  "checks": {
+    "external_dependency_required": false,
+    "lifecycle_monotonicity": "PASS",
+    "python_network_denied": "PASS",
+    "raw_idempotency_key_absence": "PASS",
+    "relying_party_business_decision_absent": "PASS",
+    "restricted_field_absence_local_state": "PASS",
+    "restricted_field_absence_public_results": "PASS",
+    "skipped_or_reversed_transitions_rejected_by_tests": "PASS",
+    "verifier_dimensions_outside_adapter_contract": "PASS"
+  },
+  "contract_version": "TAG_PUBLICATION_ADAPTER_CONTRACT_V0_EXPERIMENTAL",
+  "evidence_scope": "provisional substrate-neutral local publication adapter conformance",
+  "experiment": "publication-adapter-v0",
+  "labels": [
+    "EXPERIMENTAL",
+    "SYNTHETIC_ONLY",
+    "A0_SYNTHETIC",
+    "NOT VALIDATION OR PRODUCTION AUTHORIZATION"
+  ],
+  "limitations": [
+    "Synthetic local evidence only; the adapter contract remains provisional experimental research.",
+    "The local record time is a fixed test clock and is not trustworthy time or external publication authority.",
+    "The mock receipt state is not authenticated, signed, independently verified, globally ordered, or a live-ledger record.",
+    "No proof validity, telemetry truth, telemetry assurance, workflow, safety, compliance, payment, demand, pilot, deployment, or production claim is established."
+  ],
+  "profile": "TAG_PUBLICATION_PROFILE_TEST_V0"
+}
