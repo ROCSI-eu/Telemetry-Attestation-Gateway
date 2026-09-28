@@ -1,6 +1,6 @@
 # Experimental research workspace
 
-> **EXPERIMENTAL · SYNTHETIC_ONLY · NOT VALIDATION OR PRODUCTION AUTHORIZATION**
+> **EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION**
 
 This directory is the lightweight workspace for disposable, reproducible technical research that is already permitted by the repository's Current parallel-exploration model.
 
@@ -18,6 +18,18 @@ Each experiment should state:
 6. the limitations and non-claims.
 
 Use [`TEMPLATE.md`](TEMPLATE.md) when useful. It is guidance, not a gate.
+
+## Local quality gate
+
+Run the repository-owned lightweight experiment checks with:
+
+```text
+python3 scripts/check_experiments.py
+```
+
+The gate uses only the Python standard library. It compiles the Python sources under `experiments/` and `scripts/`, runs the explicitly approved lightweight experiment regression suites, and regenerates the deterministic evidence that current CI can reproduce offline for byte-for-byte comparison.
+
+The gate deliberately does not re-provision Noir, Barretenberg, CRS/setup material, or remeasure the checked-in proof-system and end-to-end evidence. Those evidence captures remain separately bounded by their pinned-tool documentation; adding them to routine CI requires an explicit reproducible provisioning decision rather than hidden network or vendor dependencies.
 
 ## Current experiments
 
