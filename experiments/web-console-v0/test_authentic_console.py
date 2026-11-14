@@ -134,6 +134,14 @@ class GenuineReplayTests(unittest.TestCase):
             self.assertFalse(dest.exists())
             self.assertEqual(list(folder.iterdir()), [], "no failed staging file remains")
 
+    def test_browser_displays_recorded_rejection_reason_without_verifying(self) -> None:
+        html = HTML.read_text()
+        self.assertIn('id="authentic-reason">NOT_LOADED</dd>', html)
+        self.assertIn('setText("authentic-reason",e.cryptographic_reason===null?"NONE":e.cryptographic_reason)', html)
+        self.assertIn('e.cryptographic_reason!=="PROOF_REJECTED"', html)
+        self.assertIn("Browser verification: NOT_PERFORMED", html)
+        self.assertEqual(exporter.minimize(checked("INVALID"))["cryptographic_reason"], "PROOF_REJECTED")
+
     def test_browser_is_static_separate_strict_and_fails_closed(self) -> None:
         html = HTML.read_text()
         self.assertIn('fetch("../integrated-cli-v0/evidence-results.json"', html)
