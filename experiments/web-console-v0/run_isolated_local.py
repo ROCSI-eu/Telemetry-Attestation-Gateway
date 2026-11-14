@@ -117,6 +117,33 @@ def inspect_local_parent(parent: Path) -> int:
     return 0 if state == "CLEAR" else 2
 
 
+def print_session_resource_observation(before: resource.struct_rusage) -> None:
+    """Print minimal Linux wait-accounted child usage, never resource contents.
+
+    CPU is a delta for reaped children; ru_maxrss is a single-child high
+    watermark, not total concurrent RSS and not a production sizing metric.
+    """
+    try:
+        after = resource.getrusage(resource.RUSAGE_CHILDREN)
+        cpu_user_ms = max(0, round((after.ru_utime - before.ru_utime) * 1000))
+        cpu_system_ms = max(0, round((after.ru_stime - before.ru_stime) * 1000))
+        # ru_maxrss is a lifetime high watermark, not subtractable. A
+        # nonzero prior value prevents attribution to this single session.
+        peak = (str(after.ru_maxrss) if before.ru_maxrss == 0
+                and after.ru_maxrss >= 0 else "NOT_COMPARABLE")
+        print(
+            "LOCAL RESOURCE OBSERVATION · "
+            f"REAPED_CHILD_USER_CPU_MS={cpu_user_ms} · "
+            f"REAPED_CHILD_SYSTEM_CPU_MS={cpu_system_ms} · "
+            f"MAX_SINGLE_REAPED_CHILD_RSS_KIB={peak} · "
+            "NON_AGGREGATE · NOT DEPLOYMENT EVIDENCE",
+            flush=True,
+        )
+    except (OSError, OverflowError, ValueError):
+        print("LOCAL RESOURCE OBSERVATION · UNAVAILABLE · NOT DEPLOYMENT EVIDENCE",
+              flush=True)
+
+
 def isolated_env(runtime: Path) -> dict[str, str]:
     """Do not inherit user, provider, production or credential variables."""
     value = str(runtime)
@@ -157,7 +184,8 @@ def stop_owned(proc: subprocess.Popen[bytes]) -> None:
         proc.wait(timeout=3)
 
 
-def run(seconds: int, parent: Path, check_only: bool) -> int:
+def run(seconds: int, parent: Path, check_only: bool,
+        report_resources: bool = False) -> int:
     private_parent(parent)
     bridge.trusted_bwrap()  # fail before any listener or process
     old_umask = os.umask(0o077)
@@ -187,6 +215,8 @@ def run(seconds: int, parent: Path, check_only: bool) -> int:
             for sig in (signal.SIGTERM, signal.SIGHUP):
                 previous[sig] = signal.signal(sig, on_stop)
             try:
+                before = (resource.getrusage(resource.RUSAGE_CHILDREN)
+                          if report_resources else None)
                 proc = subprocess.Popen(
                     cmd, stdin=subprocess.DEVNULL,
                     stdout=None, stderr=subprocess.DEVNULL,
@@ -199,7 +229,15 @@ def run(seconds: int, parent: Path, check_only: bool) -> int:
                         raise Unavailable
                     return 0
                 finally:
-                    stop_owned(proc)
+                    try:
+                        stop_owned(proc)
+                    finally:
+                        if before is not None:
+                            if proc.poll() is None:
+                                print("LOCAL RESOURCE OBSERVATION · UNAVAILABLE · "
+                                      "NOT DEPLOYMENT EVIDENCE", flush=True)
+                            else:
+                                print_session_resource_observation(before)
             finally:
                 for sig, handler in previous.items():
                     signal.signal(sig, handler)
@@ -218,13 +256,18 @@ def main(argv: list[str] | None = None) -> int:
                       help="validate isolation prerequisites without starting the bridge")
     mode.add_argument("--inspect-only", action="store_true",
                       help="read-only local lease/leftover diagnosis, no bwrap or listener")
+    parser.add_argument("--report-resources", action="store_true",
+                        help="opt-in post-session Linux child CPU/RSS observation")
     args = parser.parse_args(argv)
     if not 1 <= args.seconds <= 300:
         parser.error("preview lifetime must be 1-300 seconds")
+    if args.report_resources and (args.check_only or args.inspect_only):
+        parser.error("resource observation requires a foreground local session")
     if args.inspect_only:
         return inspect_local_parent(args.runtime_parent)
     try:
-        return run(args.seconds, args.runtime_parent, args.check_only)
+        return run(args.seconds, args.runtime_parent, args.check_only,
+                   args.report_resources)
     except (Unavailable, bridge.Rejected, OSError, ValueError,
             subprocess.TimeoutExpired, subprocess.SubprocessError):
         print("UNAVAILABLE · local isolation or lifecycle preflight failed", file=sys.stderr)

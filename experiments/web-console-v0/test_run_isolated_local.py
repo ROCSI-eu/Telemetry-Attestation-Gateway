@@ -11,6 +11,7 @@ import fcntl
 import io
 import os
 from pathlib import Path
+from types import SimpleNamespace
 import signal
 import subprocess
 import tempfile
@@ -227,6 +228,59 @@ class LocalSessionTests(unittest.TestCase):
         with contextlib.redirect_stderr(io.StringIO()):
             with self.assertRaises(SystemExit):
                 pkg.main(["--inspect-only", "--check-only"])
+        self.assertEqual(list(self.parent.iterdir()), [])
+
+    def test_resource_observation_is_explicit_and_redacted(self) -> None:
+        before = SimpleNamespace(ru_utime=1.0, ru_stime=0.1, ru_maxrss=0)
+        after = SimpleNamespace(ru_utime=1.125, ru_stime=0.145, ru_maxrss=34567)
+        child = Mock()
+        child.pid = 32459
+        child.wait.return_value = 0
+        child.poll.return_value = 0
+        output = io.StringIO()
+        with patch.object(pkg.bridge, "trusted_bwrap", return_value="/usr/bin/bwrap"), \
+             patch.object(pkg.subprocess, "Popen", return_value=child) as spawn, \
+             patch.object(pkg.resource, "getrusage", side_effect=[before, after]) as usage, \
+             contextlib.redirect_stdout(output):
+            self.assertEqual(pkg.main(["--runtime-parent", str(self.parent),
+                                      "--seconds", "4", "--report-resources"]), 0)
+        spawn.assert_called_once()
+        self.assertEqual(usage.call_count, 2)
+        self.assertEqual(output.getvalue().count("LOCAL RESOURCE OBSERVATION"), 1)
+        self.assertIn("REAPED_CHILD_USER_CPU_MS=125", output.getvalue())
+        self.assertIn("REAPED_CHILD_SYSTEM_CPU_MS=45", output.getvalue())
+        self.assertIn("MAX_SINGLE_REAPED_CHILD_RSS_KIB=34567", output.getvalue())
+        self.assertIn("NON_AGGREGATE · NOT DEPLOYMENT EVIDENCE", output.getvalue())
+        self.assertIn("SYNTHETIC_ONLY", output.getvalue())
+        self.assertNotIn(str(self.parent), output.getvalue())
+        self.assertEqual(list(self.parent.iterdir()), [])
+
+    def test_resource_observation_refuses_false_rss_attribution(self) -> None:
+        before = SimpleNamespace(ru_utime=1.0, ru_stime=2.0, ru_maxrss=99999)
+        after = SimpleNamespace(ru_utime=1.02, ru_stime=2.03, ru_maxrss=99999)
+        output = io.StringIO()
+        with patch.object(pkg.resource, "getrusage", return_value=after), \
+             contextlib.redirect_stdout(output):
+            pkg.print_session_resource_observation(before)
+        self.assertIn("MAX_SINGLE_REAPED_CHILD_RSS_KIB=NOT_COMPARABLE",
+                      output.getvalue())
+        self.assertNotIn("99999", output.getvalue())
+
+    def test_resource_observation_failure_is_redacted(self) -> None:
+        before = SimpleNamespace(ru_utime=0.0, ru_stime=0.0, ru_maxrss=0)
+        output = io.StringIO()
+        with patch.object(pkg.resource, "getrusage",
+                          side_effect=OSError("private/test/resource-path")), \
+             contextlib.redirect_stdout(output):
+            pkg.print_session_resource_observation(before)
+        self.assertIn("LOCAL RESOURCE OBSERVATION · UNAVAILABLE", output.getvalue())
+        self.assertNotIn("private/test", output.getvalue())
+
+    def test_resource_observation_cannot_mix_with_inspection(self) -> None:
+        for flag in ("--inspect-only", "--check-only"):
+            with self.subTest(flag=flag), contextlib.redirect_stderr(io.StringIO()):
+                with self.assertRaises(SystemExit):
+                    pkg.main([flag, "--report-resources"])
         self.assertEqual(list(self.parent.iterdir()), [])
 
     def test_invalid_lifetime_fails_before_any_session(self) -> None:
