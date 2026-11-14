@@ -93,3 +93,23 @@ The local preview was tested using an **ephemeral loopback-only** HTTP server on
 - The browser **does not verify or authenticate** proof material. These smoke tests are not WCAG certification, real phone testing, screen-reader testing, accessibility audits, performance benchmarks or evidence of cross-platform production readiness. WebKit and real mobile hardware remain untested.
 
 The actual CLI refresh, strict privacy allowlist, `A0_SYNTHETIC` and independent offline verifier boundaries are unchanged by this CSS-only fix.
+
+## One-command disposable Qube preview (experimental)
+
+> **EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION**
+
+`run_private_preview.py` is a **small orchestrator**, not another prover, verifier, network service or persistent deployment. It consumes a **previously generated demonstrably synthetic proof package** (created only with the existing pinned offline Noir/Barretenberg workflow and synthetic private inputs). It invokes the **existing** `refresh_local_console.py` and its independent verifier inside `bwrap --unshare-net` with a read-only filesystem except for one private ephemeral directory. No additional dependencies beyond Python, `bwrap` and the already provisioned pinned verifier/CRS are introduced. On success it starts a temporary **loopback-only, allowlisted static** view of the minimized copy, with a bounded lifespan; at timeout it closes the listener and deletes its own private session. The source package, public CRS and repository are read-only and never served.
+
+The parent directory must already exist, be owned by the current user with mode `0700`, be an **absolute non-symlink path outside** the repository and proof package, and contain no restricted customer material. Example from a Qube checkout, with abstract private paths:
+
+```text
+python3 experiments/web-console-v0/run_private_preview.py   --package-dir /private/test-only/proof-package   --private-parent /private/disposable-tag-sessions   --seconds 60
+```
+
+Open the printed `http://127.0.0.1:<ephemeral-port>/web-console-v0/` **on the same Qube machine** before the preview expires. Before opening HTTP, the server checks the entire private session against the existing strict CLI contract and freezes only the three allowlisted, minimized/static assets into an immutable in-memory snapshot. Requests never re-open mutable session files, including after a same-user process modifies a file. The server only permits the HTML, mock JSON and minimized authentic JSON paths and rejects directory listings and any other path. No tunnel, external proxy, fixed public port, browser-triggered proof, command endpoint, remote API or hosted URL is authorized. The preview lifetime must be **1–300 seconds**; `--no-serve` verifies and constructs then immediately deletes a private session without opening a port. The Qube runner requires a root-owned, non-group/world-writable **`/usr/bin/bwrap`**, not an arbitrary executable found earlier in `PATH`. A successful child exit without an independently verified, structurally valid private session is rejected.
+
+For an invalid-but-well-formed **synthetic** proof, the reused independent verifier may return `INVALID / PROOF_REJECTED`; the minimized browser replay preserves that dimension separately from mock. Invalid packages, unavailable verification material, path/permission errors and verifier failures fail closed. A failed run leaves no created preview directory, and never deletes the user-provided proof package or parent. After process termination the server is closed and only the temporary directory it created is removed; if interrupted forcefully (for example SIGKILL), a leftover directory may require explicit inspection and safe manual cleanup. Never automatically recursively delete an arbitrary user-provided path.
+
+This wrapper makes **no claim to generate a new proof, observe telemetry, verify in the browser, prove source truth, provide a continuous interval, offer production-ready assurance, or validate a customer workflow**. Real witness generation stays within the existing separately documented private, offline proof workflow. `A0_SYNTHETIC` is the only demonstrator tier.
+
+Run the offline-default checks through `python3 scripts/check_experiments.py`, plus `python3 scripts/check_docs.py`.
