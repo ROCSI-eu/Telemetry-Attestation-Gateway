@@ -86,6 +86,14 @@ Open `http://127.0.0.1:8765/web-console-v0/` in a browser **on the same machine*
 
 The session is disposable; deletion of its private directory after inspection is a local cleanup action. The checked-in `authentic-evidence.json` is a historical research fixture and is **not rewritten** by this CLI. It cannot verify telemetry truth, real assurance, fresh source information, interval coverage, replay resistance, customer demand, safety, regulatory compliance or production readiness. `browser_verified` remains false; `A0_SYNTHETIC` remains the only demonstrator tier.
 
+## Explicit recorded-result reload (experimental)
+
+> **EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION**
+
+The authentic-evidence panel now includes **Reload recorded result**. After an authorized operator separately invokes `refresh_local_console.py` against an isolated synthetic package and the independent offline verifier, this button fetches the same allowlisted `authentic-evidence.json` again from the local session server without a full page reload. It disables during the request and hides previously displayed evidence before loading; malformed or unavailable input stays hidden with an error. No browser execution, remote proof job, authentication, polling, history, witness access or server-side API has been introduced. The mock scenario selection is unaffected.
+
+**Important distinction:** `run_private_preview.py` intentionally freezes HTTP assets at startup. Its replay cannot change while that preview instance runs, so pressing reload there returns the same snapshot. To see a newly refreshed offline CLI record, use the separate static session server described above or restart a new authorized disposable preview. A live interactive CLI-controlled monitor still remains **Proposed** and requires a separately reviewed local operator boundary.
+
 ## Local browser QA checkpoint — 2026-11-14
 
 > **EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION**
