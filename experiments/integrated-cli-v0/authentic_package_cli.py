@@ -15,6 +15,7 @@ import json
 from pathlib import Path
 import stat
 import sys
+import tempfile
 from typing import Any
 
 PROOF_DIR = Path(__file__).resolve().parents[1] / "bounded-speed-proof-v0"
@@ -82,7 +83,7 @@ def _file_bytes(path: Path, maximum: int) -> bytes:
         raise PackageRejected from exc
 
 
-def _preflight(package: Path) -> None:
+def _preflight(package: Path) -> dict[str, bytes]:
     try:
         if package.is_symlink() or not package.is_dir():
             raise PackageRejected
@@ -127,6 +128,7 @@ def _preflight(package: Path) -> None:
                 raise PackageRejected
             if name in ("proof", "vk") and item.get("size_bytes") != len(raw[name]):
                 raise PackageRejected
+        return {name: raw[name] for name in ("public-artifact.cbor", "proof", "vk")}
     except (OSError, ValueError, TypeError, KeyError, UnicodeError, PackageRejected,
             independent_verifier.BOUNDED.EncodingError) as exc:
         raise PackageRejected from exc
@@ -136,16 +138,24 @@ def check_package(package: Path) -> dict[str, Any]:
     """Never accept a cryptographic status or public ordering from the manifest."""
     result = _result()
     try:
-        _preflight(package)
+        checked_bytes = _preflight(package)
     except PackageRejected:
         result["package"] = {"status": "REJECTED", "reason": "UNTRUSTED_OR_INCOMPATIBLE_PACKAGE"}
         return result
 
     result["package"] = {"status": "ACCEPTED", "reason": None}
     try:
-        verified = independent_verifier.verify_public_package(
-            package / "public-artifact.cbor", package / "proof", package / "vk"
-        )
+        # The verifier must consume precisely the bytes checked above, not files
+        # that another process could replace between validation and verification.
+        with tempfile.TemporaryDirectory(prefix="tag-authentic-check-") as tmp:
+            snapshot = Path(tmp)
+            for name, data in checked_bytes.items():
+                target = snapshot / name
+                target.write_bytes(data)
+                target.chmod(0o600)
+            verified = independent_verifier.verify_public_package(
+                snapshot / "public-artifact.cbor", snapshot / "proof", snapshot / "vk"
+            )
         result["verification_input"] = {
             "status": verified["input"]["status"],
             "reason": verified["input"].get("reason"),
