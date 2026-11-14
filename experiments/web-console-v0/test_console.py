@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Structural safety and fixture checks for local mock-only web console.
+"""Structural safety and privacy checks for separate local console evidence types.
 
 EXPERIMENTAL
 SYNTHETIC_ONLY
@@ -32,12 +32,16 @@ class ConsoleFixtureTests(unittest.TestCase):
             self.assertIn(label, html)
             self.assertIn(label, evidence["labels"])
 
-    def test_only_local_mock_evidence_is_referenced(self) -> None:
+    def test_only_separate_local_mock_and_precomputed_evidence_are_referenced(self) -> None:
         html = PAGE.read_text(encoding="utf-8")
         self.assertIn('fetch("../integrated-cli-v0/evidence-results.json"', html)
+        self.assertIn('fetch("authentic-evidence.json"', html)
+        self.assertIn('"PRECOMPUTED_GENUINE_SYNTHETIC_VERIFICATION"', html)
+        self.assertIn('"browser_verified"', (PAGE.parent / "authentic-evidence.json").read_text())
+        self.assertIn(".layout[hidden]{display:none}", html)
         self.assertIn('"deterministic orchestration/control-flow evidence"', html)
         self.assertIn("LOCAL PREVIEW", html)
-        self.assertIn("NO LIVE PROOF", html)
+        self.assertIn("PRECOMPUTED ONLY", html)
         self.assertNotIn("http://", html)
         self.assertNotIn("https://", html)
         self.assertNotIn("WebSocket(", html)
