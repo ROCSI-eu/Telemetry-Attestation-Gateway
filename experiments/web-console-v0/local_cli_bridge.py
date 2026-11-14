@@ -122,6 +122,9 @@ def minimize(document: dict, scenario: str, status: int) -> dict:
             or document["claim"]["private_observation_disclosed"] is not False
             or document["proof"]["generation"] != "NOT_ATTEMPTED"
             or document["proof"]["cryptographic"]["status"] != "NOT_CHECKED"
+            or document["publication"]["mode"] != "disabled"
+            or document["publication"]["state"] != "NOT_PERFORMED"
+            or set(document["disclosure"]) != {"raw_telemetry", "exact_normalized_speed", "private_witness", "proof_secrets", "stable_identity"}
             or document["claim"]["status"] != expected_claim
             or any(document["disclosure"].values())):
             raise Rejected
