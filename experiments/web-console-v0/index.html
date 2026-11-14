@@ -19,6 +19,11 @@
     .notice{margin:25px 0;padding:13px 16px;background:#193045;border-left:3px solid #81d9e7;color:#e8f8ff;font-size:.79rem;border-radius:5px}
     .layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(270px,1fr);gap:18px}
     .layout[hidden]{display:none}
+    /* Prevent long test-only evidence labels from widening narrow mobile viewports. */
+    #authentic-data > div{min-width:0}
+    #authentic-data dl{grid-template-columns:minmax(0,1fr) auto}
+    #authentic-data dt{overflow-wrap:anywhere}
+    #authentic-panel{overflow-wrap:anywhere}
     .card{background:#111f30;border:1px solid #2f4860;border-radius:16px;padding:23px;min-width:0;box-shadow:0 14px 45px #02060b30}
     h2{font-size:1.08rem;margin:0 0 17px;letter-spacing:-.01em}
     .small{font-size:.8rem;color:#b0c3d2}.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin:0 0 22px}
