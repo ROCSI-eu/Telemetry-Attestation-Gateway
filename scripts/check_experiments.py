@@ -27,6 +27,7 @@ APPROVED_TESTS = (
     "experiments/integrated-cli-v0/test_authentic_package_cli.py",
     "experiments/web-console-v0/test_console.py",
     "experiments/web-console-v0/test_authentic_console.py",
+    "experiments/web-console-v0/test_refresh_local_console.py",
 )
 
 DETERMINISTIC_EVIDENCE = (
