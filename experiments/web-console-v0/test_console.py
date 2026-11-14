@@ -42,6 +42,28 @@ class ConsoleFixtureTests(unittest.TestCase):
         self.assertNotIn("https://", html)
         self.assertNotIn("WebSocket(", html)
 
+    def test_browser_facing_fixture_has_exact_allowlisted_shape(self) -> None:
+        """Reject new fields before they can reach the browser over local HTTP."""
+        evidence = json.loads(EVIDENCE.read_text(encoding="utf-8"))
+        self.assertEqual(
+            set(evidence),
+            {"boundaries", "cases", "evidence_kind", "evidence_note", "experiment", "labels"},
+        )
+        allowed_case = {
+            "assurance", "claim", "command_path", "cryptographic",
+            "proof_generation", "publication", "relying_party_decision",
+            "restricted_fields_disclosed", "source", "source_trust",
+            "verification_input",
+        }
+        allowed_publication = {"attempts", "error_code", "mode", "reconciled", "state"}
+        for name, case in evidence["cases"].items():
+            with self.subTest(case=name):
+                self.assertEqual(set(case), allowed_case)
+                self.assertEqual(set(case["publication"]), allowed_publication)
+                self.assertIs(type(case["restricted_fields_disclosed"]), bool)
+                self.assertIs(type(case["publication"]["reconciled"]), bool)
+                self.assertIs(type(case["publication"]["attempts"]), int)
+
     def test_recorded_states_are_minimized_and_typed(self) -> None:
         evidence = json.loads(EVIDENCE.read_text(encoding="utf-8"))
         self.assertTrue(evidence["cases"])
