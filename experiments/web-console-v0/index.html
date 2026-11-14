@@ -18,6 +18,7 @@
     .pill{border:1px solid #53758d;border-radius:99px;padding:6px 12px;color:#bde4f1;font-size:.75rem;white-space:nowrap}
     .notice{margin:25px 0;padding:13px 16px;background:#193045;border-left:3px solid #81d9e7;color:#e8f8ff;font-size:.79rem;border-radius:5px}
     .layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(270px,1fr);gap:18px}
+    .layout[hidden]{display:none}
     .card{background:#111f30;border:1px solid #2f4860;border-radius:16px;padding:23px;min-width:0;box-shadow:0 14px 45px #02060b30}
     h2{font-size:1.08rem;margin:0 0 17px;letter-spacing:-.01em}
     .small{font-size:.8rem;color:#b0c3d2}.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin:0 0 22px}
@@ -46,8 +47,8 @@
 <body>
 <main class="wrap">
   <header>
-    <div><div class="eyebrow">ROCSI / Telemetry Attestation Gateway</div><h1>Synthetic research console</h1><p class="sub">Explore the orchestration states of privacy-preserving bounded-speed attestation. This local preview replays deterministic mock results; it does not run a prover.</p></div>
-    <div class="pill">LOCAL PREVIEW · NO LIVE PROOF</div>
+    <div><div class="eyebrow">ROCSI / Telemetry Attestation Gateway</div><h1>Synthetic research console</h1><p class="sub">Explore the orchestration states of privacy-preserving bounded-speed attestation. Two strictly separate local views: deterministic mock orchestration and a precomputed genuine synthetic verifier result. Neither executes a prover in the browser.</p></div>
+    <div class="pill">LOCAL PREVIEW · PRECOMPUTED ONLY</div>
   </header>
   <div class="notice" role="note">EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION</div>
   <div class="layout">
@@ -89,7 +90,38 @@
       <p class="small">Verification is not a relying party's decision. Publication is not cryptographic verification. A0_SYNTHETIC does not establish real-world telemetry assurance.</p>
     </aside>
   </div>
-  <footer>Local/offline demonstration preview only. No analytics, remote APIs, uploads, external fonts, or proof jobs. Source: integrated-cli-v0 deterministic orchestration evidence.</footer>
+  <section class="card" id="authentic-panel" aria-labelledby="authentic-title" style="margin-top:18px">
+    <div class="eyebrow">Separate evidence type · no live prover</div>
+    <h2 id="authentic-title">Precomputed genuine synthetic proof verification</h2>
+    <p class="small">This is a recorded result from the independent local Noir/Barretenberg verifier, not an orchestration mock. Verification happened offline before export, not in this browser. A local JSON replay is not an authenticated proof or an independently verifiable receipt. No proof, witness, key, raw telemetry, or private observation is supplied to the page.</p>
+    <p id="authentic-error" role="status" aria-live="polite">Loading minimized offline verification replay…</p>
+    <div class="layout" id="authentic-data" hidden>
+      <div>
+        <div class="metric"><span class="kicker">Recorded offline cryptographic outcome</span><b><span class="status" id="authentic-crypto">NOT_LOADED</span></b><p class="small">Evidence kind: PRECOMPUTED_GENUINE_SYNTHETIC_VERIFICATION. Proof generation was not observed by this verifier.</p></div>
+        <dl>
+          <dt>Input reconstruction</dt><dd id="authentic-input">NOT_LOADED</dd>
+          <dt>Proof generation</dt><dd id="authentic-generation">NOT_OBSERVED</dd>
+          <dt>Source trust</dt><dd id="authentic-trust">NOT_EVALUATED</dd>
+          <dt>Assurance</dt><dd id="authentic-assurance">A0_SYNTHETIC</dd>
+        </dl>
+      </div>
+      <div>
+        <h2>Independent dimensions</h2>
+        <dl>
+          <dt>Policy</dt><dd id="authentic-policy">NOT_EVALUATED</dd>
+          <dt>Freshness</dt><dd id="authentic-freshness">NOT_EVALUATED</dd>
+          <dt>Revocation</dt><dd id="authentic-revocation">NOT_EVALUATED</dd>
+          <dt>Replay</dt><dd id="authentic-replay">NOT_EVALUATED</dd>
+          <dt>Publication</dt><dd id="authentic-publication">NOT_PERFORMED</dd>
+          <dt>Relying-party decision</dt><dd id="authentic-decision">NOT_MADE</dd>
+          <dt>Browser cryptographic verification</dt><dd>NOT_PERFORMED</dd>
+          <dt>Restricted disclosure</dt><dd>NONE</dd>
+        </dl>
+      </div>
+    </div>
+    <p class="small">Proof validity is not telemetry truth. One synthetic observation does not establish interval coverage, flight/safety, contractual, payment or regulatory compliance. The source record has no customer or commercial validation.</p>
+  </section>
+  <footer>Local/offline demonstration preview only. No analytics, remote APIs, uploads, external fonts, or proof jobs. Sources are separately labeled: deterministic mock orchestration and an offline-verifier-generated, minimized synthetic replay. The browser does not verify proofs.</footer>
 </main>
 <script>
 "use strict";
@@ -135,7 +167,42 @@ async function initialize() {
     replay();
   } catch (error) {$("error").textContent="Local evidence could not be loaded. Serve the experiments/ directory over loopback HTTP; no external service is required.";}
 }
+// Strictly separate from the deterministic mock replay above.
+// This surface displays a precomputed minimized export; it never verifies a proof.
+async function initializeAuthentic() {
+  const unavailable = () => { $("authentic-error").textContent="Authentic replay unavailable or incompatible. Mock orchestration remains separate; no cryptographic verification is implied."; $("authentic-data").hidden=true; };
+  try {
+    const response = await fetch("authentic-evidence.json",{cache:"no-store"});
+    if (!response.ok) throw new Error("unavailable");
+    const e = await response.json();
+    const keys = ["assurance","browser_verified","command_path","cryptographic","cryptographic_reason","evidence_kind","freshness","labels","policy","private_fields_disclosed","proof_generation","proof_validity_is_telemetry_truth","publication","relying_party_decision","replay","revocation","schema_version","source_trust","verification_basis","verification_input"];
+    const fixed = {
+      schema_version:"TAG_PRECOMPUTED_SYNTHETIC_VERIFIER_REPLAY_V0_EXPERIMENTAL",
+      evidence_kind:"PRECOMPUTED_GENUINE_SYNTHETIC_VERIFICATION",
+      verification_basis:"INDEPENDENT_OFFLINE_CHECK_AT_EXPORT",
+      verification_input:"ACCEPTED",
+      proof_generation:"NOT_OBSERVED",source_trust:"NOT_EVALUATED",assurance:"A0_SYNTHETIC",
+      policy:"NOT_EVALUATED",freshness:"NOT_EVALUATED",revocation:"NOT_EVALUATED",replay:"NOT_EVALUATED",
+      publication:"NOT_PERFORMED",relying_party_decision:"NOT_MADE",command_path:"NONE",
+      private_fields_disclosed:false,browser_verified:false,proof_validity_is_telemetry_truth:false
+    };
+    const labels=["EXPERIMENTAL","SYNTHETIC_ONLY","A0_SYNTHETIC","NOT VALIDATION OR PRODUCTION AUTHORIZATION"];
+    if (!e || typeof e!=="object" || Array.isArray(e)
+      || Object.keys(e).length!==keys.length || !keys.every(k=>Object.hasOwn(e,k))
+      || !Array.isArray(e.labels) || JSON.stringify(e.labels)!==JSON.stringify(labels)
+      || !Object.entries(fixed).every(([k,v])=>e[k]===v)
+      || !["VALID","INVALID"].includes(e.cryptographic)
+      || (e.cryptographic==="VALID" && e.cryptographic_reason!==null)
+      || (e.cryptographic==="INVALID" && e.cryptographic_reason!=="PROOF_REJECTED")) throw new Error("invalid contract");
+    setText("authentic-crypto",e.cryptographic);
+    $("authentic-crypto").dataset.tone=e.cryptographic==="VALID"?"good":"warn";
+    for(const [id,key] of [["authentic-input","verification_input"],["authentic-generation","proof_generation"],["authentic-trust","source_trust"],["authentic-assurance","assurance"],["authentic-policy","policy"],["authentic-freshness","freshness"],["authentic-revocation","revocation"],["authentic-replay","replay"],["authentic-publication","publication"],["authentic-decision","relying_party_decision"]])setText(id,e[key]);
+    $("authentic-data").hidden=false;
+    $("authentic-error").textContent="Precomputed offline verifier result loaded. Browser verification: NOT_PERFORMED.";
+  } catch (error) { unavailable(); }
+}
 initialize();
+initializeAuthentic();
 </script>
 </body>
 </html>

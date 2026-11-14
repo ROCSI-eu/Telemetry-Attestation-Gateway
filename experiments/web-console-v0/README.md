@@ -4,7 +4,7 @@
 
 **Status:** experimental local UI increment for #87, not public hosting or an accepted product/operator console.
 
-This is a static, dependency-free, responsive browser presentation of the **deterministic orchestration/control-flow mock** already recorded in `../integrated-cli-v0/evidence-results.json`. The result source uses mocks for proof generation and verification. **Neither this page nor that source proves that a genuine cryptographic proof was freshly generated or verified.** No background jobs, live MAVLink, browser-to-Qube/MCP connection, raw telemetry, witness material, keys, private speed or persistent browser storage.
+This is a static, dependency-free, responsive **local** browser presentation of two separately labeled sources: (1) deterministic orchestration **mock** evidence from `../integrated-cli-v0/evidence-results.json` and (2) a precomputed genuine synthetic verifier replay in `authentic-evidence.json`, exported after an isolated, pinned Noir/Barretenberg verifier run. **The browser does not verify cryptographic proofs and cannot independently authenticate a JSON replay.** The mock source is never promoted into the authentic source. No background jobs, live MAVLink, browser-to-Qube/MCP connection, raw telemetry, witness material, keys, private speed or persistent browser storage.
 
 ## Run locally
 
@@ -18,7 +18,7 @@ In the **same machine's browser**, open:
 
 `http://127.0.0.1:8765/web-console-v0/`
 
-The browser fetches only `../integrated-cli-v0/evidence-results.json` from the same loopback server. **Do not bind a public interface, expose the server through a tunnel/proxy or deploy this page to a public hostname.** Stop the temporary server when the inspection ends. There is no independent live backend or proof-generation endpoint in this increment.
+The browser fetches only the two fixed, separately versioned, minimized files `../integrated-cli-v0/evidence-results.json` (mock) and `authentic-evidence.json` (precomputed authentic local verification result) from the same loopback server. **Do not bind a public interface, expose the server through a tunnel/proxy or deploy this page to a public hostname.** Stop the temporary server when the inspection ends. There is no independent live backend or proof-generation endpoint in this increment.
 
 ## UI scope
 
@@ -29,13 +29,29 @@ The browser fetches only `../integrated-cli-v0/evidence-results.json` from the s
 - Avoid animation that implies a live run. Use responsive CSS, native keyboard/touch controls and reduced-motion-safe behavior.
 - Fail closed with a visible error if the expected labeled evidence is missing or incompatible.
 
-This UI deliberately does not expose exact normalized speed, raw telemetry, coordinates, identities, witnesses, credentials, hidden correlation data or a MAVLink command path.
+This UI deliberately does not expose exact normalized speed, raw telemetry, coordinates, identities, witness material, proof bytes, verification keys, proof hashes, credentials, hidden correlation data or a MAVLink command path. The precomputed replay contains no proof/verification key and thus is not independently verifiable from the browser. It was derived from a genuine synthetic test package on Qube, checked with a separately invoked pinned verifier offline (2026-11-14). It does **not** claim proof generation observation, source truth, time, interval coverage, safety, compliance, or commercial validation.
 
 ## Next increments (Proposed)
 
-1. Use genuine synthetic proof/independent-verifier evidence generated with the pinned experimental Noir and Barretenberg toolchain **only after a verified isolated run**, with a provenance and kind discriminator. Never blend mock and genuine results.
+1. The separately versioned precomputed genuine synthetic verifier replay is now included locally. It is a presentation of an independently checked outcome, not a live run, signed attestation, browser-verifiable proof, or production service.
 2. Design a narrow allowlisted local runner/status interface for authenticated, bounded operator-triggered synthetic jobs without shipping witnesses to the browser.
 3. Verify browser behavior on Chromium, Firefox and WebKit-family engines; assess performance and accessibility before making platform support claims.
 4. Keep any public static showcase at `tag.rocsi.eu` governed by #89. Live proving, Production/shared-VM execution and public routing are not authorized by this file.
 
 Proof validity is not telemetry truth. This project is observational only; no flight control or MAVLink command generation/forwarding is permitted.
+
+## Reproduce the minimized authentic synthetic replay
+
+> **EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION**
+
+Use only the pinned local Noir/Barretenberg binaries and pre-provisioned public CRS described in the [Qube reproduction procedure](../bounded-speed-proof-v0/qube-offline-reproduction.md). Run the exporter in the same local network-disabled test environment as the independent verifier. This command takes an already-generated test-only package and writes only an allowlisted result (not the witness, proof, key or public claim limit). It never runs proof generation or makes network requests:
+
+```text
+python3 experiments/web-console-v0/export_authentic.py --package-dir /private/test-only/proof-package --output /private/empty-directory/authentic-evidence.json
+```
+
+The output fails closed unless the **independently executed** verifier reports cryptographic VALID or INVALID for an accepted test package; metadata or a manifest-only status cannot authorize the export. The local replay has `verification_basis: INDEPENDENT_OFFLINE_CHECK_AT_EXPORT` and `browser_verified: false`: these are truthful process labels, **not cryptographic authentication of the exported JSON**. This limitation remains Open before anyone may treat a public-facing replay as externally verifiable proof evidence.
+
+The checked-in `authentic-evidence.json` is a single precomputed, strictly minimized A0_SYNTHETIC positive outcome from the isolated Qube proof/check. It is **not** a customer, hardware, market, compliance or production artifact, and is separate from the mock-only integrated CLI fixture. Never commit or serve the source proof package, witness, any private exact telemetry, public proof artifacts, verification key, raw CLI result, paths, identifiers, nonces, salts or correlated data. A new export should be reviewed against the exact privacy allowlist before use.
+
+Offline checks: `python3 experiments/web-console-v0/test_authentic_console.py`, `python3 scripts/check_experiments.py`, `python3 scripts/check_docs.py`. Missing, extra-field, wrong-version, or unverifiable replay must close only the authentic panel, never masquerade as mock evidence. No public deployment, Qube-to-browser live API, or Production integration is authorized.

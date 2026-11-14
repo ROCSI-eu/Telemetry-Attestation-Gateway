@@ -1,0 +1,27 @@
+{
+  "assurance": "A0_SYNTHETIC",
+  "browser_verified": false,
+  "command_path": "NONE",
+  "cryptographic": "VALID",
+  "cryptographic_reason": null,
+  "evidence_kind": "PRECOMPUTED_GENUINE_SYNTHETIC_VERIFICATION",
+  "freshness": "NOT_EVALUATED",
+  "labels": [
+    "EXPERIMENTAL",
+    "SYNTHETIC_ONLY",
+    "A0_SYNTHETIC",
+    "NOT VALIDATION OR PRODUCTION AUTHORIZATION"
+  ],
+  "policy": "NOT_EVALUATED",
+  "private_fields_disclosed": false,
+  "proof_generation": "NOT_OBSERVED",
+  "proof_validity_is_telemetry_truth": false,
+  "publication": "NOT_PERFORMED",
+  "relying_party_decision": "NOT_MADE",
+  "replay": "NOT_EVALUATED",
+  "revocation": "NOT_EVALUATED",
+  "schema_version": "TAG_PRECOMPUTED_SYNTHETIC_VERIFIER_REPLAY_V0_EXPERIMENTAL",
+  "source_trust": "NOT_EVALUATED",
+  "verification_basis": "INDEPENDENT_OFFLINE_CHECK_AT_EXPORT",
+  "verification_input": "ACCEPTED"
+}
