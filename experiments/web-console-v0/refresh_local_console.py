@@ -132,7 +132,23 @@ def refresh(package: Path, session: Path) -> None:
         if session.exists():
             # Validate again immediately before replacing the one managed record.
             _existing_session_safe(session)
-            os.replace(view / REPLAY, session / "web-console-v0" / REPLAY)
+            # Bind the commit to the verified directory inode. Reopening the
+            # destination path inside os.replace would follow a swapped symlink.
+            destination_dir = session / "web-console-v0"
+            before = destination_dir.lstat()
+            directory_fd = os.open(
+                destination_dir, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+            )
+            try:
+                current = os.fstat(directory_fd)
+                if ((current.st_dev, current.st_ino) != (before.st_dev, before.st_ino)
+                        or current.st_uid != os.getuid()
+                        or stat.S_IMODE(current.st_mode) != 0o700
+                        or not stat.S_ISDIR(current.st_mode)):
+                    raise SessionRejected
+                os.replace(view / REPLAY, REPLAY, dst_dir_fd=directory_fd)
+            finally:
+                os.close(directory_fd)
         else:
             # Create the complete viewer at once, without touching the Git tree.
             os.rename(stage, session)
