@@ -257,6 +257,27 @@ class IntegratedCliTests(unittest.TestCase):
         self.assertIn("Restricted fields disclosed: no", rendered)
         self.assertNotIn("500 cm/s", rendered)
 
+    def test_cli_rejects_arbitrary_capture_file_before_execution(self) -> None:
+        with patch.object(
+            cli.sys,
+            "argv",
+            [
+                "cli.py",
+                "--maximum-speed-cm-s",
+                "600",
+                "--capture-file",
+                "unreviewed-input.json",
+            ],
+        ):
+            with patch.object(cli, "run_integrated") as run_call:
+                with patch("sys.stderr", new_callable=io.StringIO) as stderr:
+                    with self.assertRaises(SystemExit) as caught:
+                        cli.main()
+
+        self.assertEqual(caught.exception.code, 2)
+        self.assertIn("unrecognized arguments: --capture-file", stderr.getvalue())
+        run_call.assert_not_called()
+
     def test_cli_json_output_is_machine_readable(self) -> None:
         output = io.StringIO()
         with patch.object(cli.demo, "run_fixture", side_effect=fake_run_fixture):
