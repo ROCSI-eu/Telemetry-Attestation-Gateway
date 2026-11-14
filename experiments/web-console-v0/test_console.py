@@ -46,6 +46,17 @@ class ConsoleFixtureTests(unittest.TestCase):
         self.assertNotIn("https://", html)
         self.assertNotIn("WebSocket(", html)
 
+    def test_narrow_viewport_evidence_labels_wrap_without_hiding_outcomes(self) -> None:
+        html = PAGE.read_text(encoding="utf-8")
+        # The very long synthetic evidence-kind token has no natural spaces.
+        # Grid min-content sizing previously expanded a 320px viewport.
+        self.assertIn("#authentic-panel{overflow-wrap:anywhere}", html)
+        self.assertIn("#authentic-data > div{min-width:0}", html)
+        self.assertIn("#authentic-data dl{grid-template-columns:minmax(0,1fr) auto}", html)
+        self.assertIn("#authentic-data dt{overflow-wrap:anywhere}", html)
+        self.assertIn('@media(max-width:750px)', html)
+        self.assertIn('id="authentic-data" hidden', html)
+
     def test_browser_facing_fixture_has_exact_allowlisted_shape(self) -> None:
         """Reject new fields before they can reach the browser over local HTTP."""
         evidence = json.loads(EVIDENCE.read_text(encoding="utf-8"))
