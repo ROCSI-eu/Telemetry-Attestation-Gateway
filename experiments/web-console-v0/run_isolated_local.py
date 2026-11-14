@@ -32,6 +32,14 @@ class Unavailable(Exception):
     """Fail without disclosing private paths, process details, or credentials."""
 
 
+class SessionBusy(Unavailable):
+    """The parent lease is currently unavailable; ownership is not inferred."""
+
+
+class SessionEntriesPresent(Unavailable):
+    """A reserved-name entry exists; it is neither opened nor removed."""
+
+
 class StopRequested(Exception):
     """Foreground termination requested; owned child still needs cleanup."""
 
@@ -74,16 +82,39 @@ def exclusive_session_parent(parent: Path):
             raise Unavailable
         try:
             fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as exc:
+            raise SessionBusy from exc
         except OSError as exc:
             raise Unavailable from exc
         # Treat directories, files, and symlinks with this reserved prefix as
         # blockers. Never follow or delete a suspicious leftover.
         with os.scandir(parent) as entries:
             if any(item.name.startswith("tag-synthetic-") for item in entries):
-                raise Unavailable
+                raise SessionEntriesPresent
         yield
     finally:
         os.close(fd)
+
+
+def inspect_local_parent(parent: Path) -> int:
+    """Diagnose a blocked restart without spawning, deleting, or disclosing paths.
+
+    A CLEAR result is only a point-in-time local lease/entry observation,
+    never a proof that the system or shared host is safe for deployment.
+    """
+    try:
+        private_parent(parent)
+        with exclusive_session_parent(parent):
+            state = "CLEAR"
+    except SessionBusy:
+        state = "LEASE_BUSY_OR_UNCERTAIN"
+    except SessionEntriesPresent:
+        state = "RESERVED_ENTRIES_PRESENT"
+    except (Unavailable, OSError):
+        state = "UNAVAILABLE"
+    print(LABEL, flush=True)
+    print(f"LOCAL INSPECTION · {state} · NO PROCESS STARTED · NO CLEANUP", flush=True)
+    return 0 if state == "CLEAR" else 2
 
 
 def isolated_env(runtime: Path) -> dict[str, str]:
@@ -182,11 +213,16 @@ def main(argv: list[str] | None = None) -> int:
                         help="opt-in foreground lifetime (1-300 seconds)")
     parser.add_argument("--runtime-parent", type=Path, default=Path.home(),
                         help="existing owner-controlled, non-writable-by-others parent")
-    parser.add_argument("--check-only", action="store_true",
-                        help="validate isolation prerequisites without starting the bridge")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--check-only", action="store_true",
+                      help="validate isolation prerequisites without starting the bridge")
+    mode.add_argument("--inspect-only", action="store_true",
+                      help="read-only local lease/leftover diagnosis, no bwrap or listener")
     args = parser.parse_args(argv)
     if not 1 <= args.seconds <= 300:
         parser.error("preview lifetime must be 1-300 seconds")
+    if args.inspect_only:
+        return inspect_local_parent(args.runtime_parent)
     try:
         return run(args.seconds, args.runtime_parent, args.check_only)
     except (Unavailable, bridge.Rejected, OSError, ValueError,
