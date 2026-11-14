@@ -68,9 +68,11 @@ class AuthenticResultContractTests(unittest.TestCase):
             with patch.object(authentic.independent_verifier, "verify_public_package",
                               return_value=verifier_result("VALID")) as verify:
                 result = authentic.check_package(package)
-            verify.assert_called_once_with(
-                package / "public-artifact.cbor", package / "proof", package / "vk"
-            )
+            verify.assert_called_once()
+            verified_paths = verify.call_args.args
+            self.assertEqual([p.name for p in verified_paths], ["public-artifact.cbor", "proof", "vk"])
+            self.assertNotEqual(verified_paths[1], package / "proof")
+            self.assertFalse(verified_paths[1].exists(), "temporary verification snapshot cleaned up")
         self.assertEqual(result["cryptographic"]["status"], "VALID")
         self.assertTrue(result["verification_performed"])
         self.assertFalse(result["mock"])
@@ -85,6 +87,29 @@ class AuthenticResultContractTests(unittest.TestCase):
         self.assertNotIn("FAKE_NOT_A_PROOF", encoded)
         self.assertNotIn("FAKE_NOT_A_KEY", encoded)
         self.assertNotIn("speed_cm_s\": 1200", encoded)
+
+    def test_file_replaced_after_validation_cannot_change_verified_bytes(self) -> None:
+        """Regression: verifier must not reopen mutable source package paths."""
+        with tempfile.TemporaryDirectory() as root:
+            package = Path(root) / "package"
+            synthetic_package(package)
+            original = (package / "proof").read_bytes()
+            observed = []
+
+            def raced_verifier(public_artifact: Path, proof: Path, key: Path) -> dict:
+                (package / "proof").write_bytes(b"REPLACED_AFTER_PREFLIGHT")
+                observed.append(proof.read_bytes())
+                self.assertNotEqual(proof.parent, package)
+                self.assertNotEqual(public_artifact.parent, package)
+                self.assertNotEqual(key.parent, package)
+                return verifier_result("INVALID", "PROOF_REJECTED")
+
+            with patch.object(authentic.independent_verifier, "verify_public_package",
+                              side_effect=raced_verifier):
+                result = authentic.check_package(package)
+            self.assertEqual(observed, [original])
+            self.assertEqual(result["cryptographic"]["status"], "INVALID")
+            self.assertEqual(authentic.exit_code(result), 4)
 
     def test_rejected_digest_does_not_invoke_verifier(self) -> None:
         with tempfile.TemporaryDirectory() as root:
