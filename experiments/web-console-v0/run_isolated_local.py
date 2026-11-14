@@ -10,6 +10,8 @@ provisioning, proof creation, or persistent job is performed by this launcher.
 from __future__ import annotations
 
 import argparse
+from contextlib import contextmanager
+import fcntl
 import os
 from pathlib import Path
 import resource
@@ -49,6 +51,39 @@ def private_parent(parent: Path) -> None:
     if (not stat.S_ISDIR(info.st_mode) or info.st_uid != os.geteuid()
             or stat.S_IMODE(info.st_mode) & 0o022):
         raise Unavailable
+
+
+@contextmanager
+def exclusive_session_parent(parent: Path):
+    """Non-persistent advisory lease and fail-closed stale-runtime check.
+
+    No lock files or cleanup of prior sessions; a killed session's private
+    directory must be inspected by its owner before any new launch.
+    """
+    fd = os.open(
+        parent, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC
+    )
+    try:
+        path_info = parent.lstat()
+        opened = os.fstat(fd)
+        if (not stat.S_ISDIR(opened.st_mode)
+                or opened.st_uid != os.geteuid()
+                or stat.S_IMODE(opened.st_mode) & 0o022
+                or (opened.st_dev, opened.st_ino) !=
+                   (path_info.st_dev, path_info.st_ino)):
+            raise Unavailable
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError as exc:
+            raise Unavailable from exc
+        # Treat directories, files, and symlinks with this reserved prefix as
+        # blockers. Never follow or delete a suspicious leftover.
+        with os.scandir(parent) as entries:
+            if any(item.name.startswith("tag-synthetic-") for item in entries):
+                raise Unavailable
+        yield
+    finally:
+        os.close(fd)
 
 
 def isolated_env(runtime: Path) -> dict[str, str]:
@@ -96,7 +131,9 @@ def run(seconds: int, parent: Path, check_only: bool) -> int:
     bridge.trusted_bwrap()  # fail before any listener or process
     old_umask = os.umask(0o077)
     try:
-        with tempfile.TemporaryDirectory(prefix="tag-synthetic-", dir=parent) as private:
+        with exclusive_session_parent(parent), tempfile.TemporaryDirectory(
+            prefix="tag-synthetic-", dir=parent
+        ) as private:
             runtime = Path(private)
             mode = runtime.lstat()
             if (mode.st_uid != os.geteuid()
