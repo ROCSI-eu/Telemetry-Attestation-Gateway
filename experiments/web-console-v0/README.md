@@ -26,6 +26,20 @@ This is a **local operator short-circuit demonstration**, **not** the requested 
 
 Run regression checks with `python3 experiments/web-console-v0/test_local_cli_bridge.py` and the standard offline `python3 scripts/check_experiments.py`, `python3 scripts/check_docs.py`.
 
+## Conditional genuine synthetic proof through the local CLI (Proposed, offline-only)
+
+> **EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION**
+
+The same one-shot local operator bridge now offers a third **predefined** option, `verified_synthetic`. Unlike the two earlier short-circuit scenarios, this option invokes the existing integrated CLI with the checked-in, demonstrably synthetic `unsigned-consistent` capture, public maximum `600 cm/s`, publication **disabled** and normal verification case. The existing Noir/Barretenberg prover generates a real **synthetic** proof; the separately implemented verifier module reconstructs canonical public inputs from the public CBOR artifact, then checks the proof offline without accepting a witness argument. This is not separate-process verifier isolation; that is a later reviewable boundary. The CLI's disposable workspace holds the synthetic witness and proof and is removed when the subprocess finishes; neither enters the browser response.
+
+The operator must **explicitly** provide `--offline-toolchain-root /ABSOLUTE/PRIVATE/TOOLCHAIN` when starting `local_cli_bridge.py`. The root must exist, be owned by the invoking user, have mode `0700`, and contain `bin/nargo`, `bin/bb` and `cache/crs` under that root. Symlinked executables must resolve **inside** that private root. The integrated CLI checks pinned Nargo `1.0.0-beta.26` and Barretenberg `5.2.0` versions; its `bb` wrapper must use the **already provisioned** public CRS cache, never fetch anything. See [the Qube offline reproduction record](../bounded-speed-proof-v0/qube-offline-reproduction.md) for prior research-only provisioning evidence and explicit external-network prerequisites. **No installation, network download, CRS provisioning, fallback verifier or external connection is performed by this bridge.** An absent, untrusted or incompatible toolchain returns an `UNAVAILABLE` outcome and never `VALID`.
+
+The sandbox remains loopback-only, one authenticated operator request per session, with `bwrap --unshare-net`, private `/tmp`, read-only experiment sources and read-only bind of only the explicitly supplied toolchain root. The real-proof execution has an explicit 90-second wall bound and the same child-process stdout cap, CPU, memory and file-size limits as the short-circuit scenarios. Operator input never selects witness values, arbitrary fixture paths, commands, publication mode, network destination, or private data; the browser selects only the fixed scenario identifier.
+
+The bridge **reconstructs** an allowlisted outcome and accepts `GENERATED / ACCEPTED / VALID` only when the real integrated CLI exits successfully with exact expected labels, schema, capture, claim, proof, assurance, unsigned source, non-evaluated independent dimensions, no disclosures, `publication=NOT_PERFORMED`, `command_path=NONE` and `relying_party_decision=NOT_MADE`. Failure, absence of the offline toolchain or any incompatible data **fails closed**. The browser never verifies or authenticates the recorded JSON response; it is not a portable independently authenticated receipt.
+
+**Evidence limitation at this increment:** the connected Qube has not retained `nargo`, `bb` and a provisioned CRS in the expected runtime paths. Unit tests cover the allowlist, fail-closed and sandbox invocation contracts; only previously exercised short-circuit scenarios have a real CLI/HTTP end-to-end execution on the current machine. The new genuine-proof path must be exercised with a separately approved, locally provisioned pinned toolchain before claiming an observed genuine proof from this browser control. No participant-facing or production promotion is authorized.
+
 ## Run locally
 
 From the repository root:
