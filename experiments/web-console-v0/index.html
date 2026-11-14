@@ -71,7 +71,7 @@
 <main class="wrap">
   <header>
     <div><div class="eyebrow">ROCSI / Telemetry Attestation Gateway</div><h1>Synthetic research console</h1><p class="sub">Explore the orchestration states of privacy-preserving bounded-speed attestation. Recorded mock orchestration and offline verifier evidence remain separate. On the authenticated local CLI preview only, this same console also enables one bounded synthetic execution. No proof or verification runs in the browser.</p></div>
-    <div class="pill">LOCAL PREVIEW · PRECOMPUTED ONLY</div>
+    <div class="pill" id="console-mode">LOCAL PREVIEW · PRECOMPUTED ONLY</div>
   </header>
   <div class="notice" role="note">EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION</div>
   <section class="scope" aria-label="Scope and limitations of synthetic evidence">
@@ -203,7 +203,7 @@
     </div>
     <p class="small">Proof validity is not telemetry truth. One synthetic observation does not establish interval coverage, flight/safety, contractual, payment or regulatory compliance. The source record has no customer or commercial validation.</p>
   </section>
-  <footer>Local/offline demonstration preview only. No analytics, remote APIs, uploads, external fonts, or proof jobs. Sources are separately labeled: deterministic mock orchestration and an offline-verifier-generated, minimized synthetic replay. The browser does not verify proofs.</footer>
+  <footer id="console-footer">Local/offline demonstration preview only. No analytics, remote APIs, uploads, external fonts, or proof jobs. Sources are separately labeled: deterministic mock orchestration and an offline-verifier-generated, minimized synthetic replay. The browser does not verify proofs.</footer>
 </main>
 <script>
 "use strict";
@@ -340,6 +340,8 @@ async function initializeOperator() {
       ||JSON.stringify(e.labels)!==JSON.stringify(OPERATOR_LABELS)
       ||e.mode!=="ONE_SHOT_LOCAL_CLI"
       ||JSON.stringify(e.scenarios)!==JSON.stringify(Object.keys(OPERATOR_CASES)))return;
+    setText("console-mode","LOCAL PREVIEW · ACTIVE ONE-SHOT CLI");
+    setText("console-footer","Local/offline experimental operator mode: one authenticated synthetic CLI invocation can run inside the isolated sandbox. The genuine synthetic proof scenario requires the explicitly provisioned private toolchain. The browser displays only the final minimized CLI result and does not prove or verify. No live progress stream, analytics, external APIs, uploads, external fonts or public proof endpoint. Recorded mock orchestration and precomputed offline-verifier replay remain separate.");
     $("operator-panel").hidden=false;
   }catch(_) { /* Static replay remains usable with no operator bridge. */ }
 }
