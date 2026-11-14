@@ -6,41 +6,21 @@ Sandbox contributions must use demonstrably synthetic data, remain inside the do
 
 Executable synthetic research belongs in the lightweight [experimental research workspace](experiments/README.md). Use its short experiment record and template rather than creating new milestone or governance paperwork for each disposable technical spike.
 
-## Developer Certificate of Origin
+## Contribution attribution and provenance
 
-Every contribution must be certified under Developer Certificate of Origin 1.1 with a `Signed-off-by` trailer. The sign-off certifies the contributor's right to submit the work under the applicable project license; it is not a copyright assignment.
+Effective only after this policy change is merged into main. Contributions made before that point remain subject to the DCO 1.1 requirement in force when they were made. This change does not retroactively certify or waive any unsigned contribution.
 
-Create a signed-off commit with:
+For contributions made by the repository's solo maintainer after this policy becomes effective, a per-commit Signed-off-by trailer is not required.
 
-```sh
-git commit -s
-```
+The maintainer remains responsible for confirming the right to submit each contribution under the applicable project license, including AI-assisted contributions. Material third-party sources, their licenses, relevant modifications, and restrictions must remain traceable in the corresponding pull request.
 
-The trailer must use a real name and reachable email, for example `Signed-off-by: Example Contributor <contributor@example.org>`. To repair the latest local commit, run `git commit --amend --signoff`; repair older unpublished commits with an interactive rebase. Coordinate with maintainers rather than rewriting shared history.
+Authenticated GitHub attribution provides traceability but is not, by itself, a legal certification of contribution rights.
 
-By making a contribution to this project, I certify that:
+External contributors must provide a truthful rights-to-submit declaration acceptable to the maintainer before integration. Until a separately accepted contribution policy establishes another mechanism, external contributions continue to require DCO 1.1 sign-off on each commit.
 
-> (a) The contribution was created in whole or in part by me and I
-> have the right to submit it under the open source license
-> indicated in the file; or
->
-> (b) The contribution is based upon previous work that, to the best
-> of my knowledge, is covered under an appropriate open source
-> license and I have the right under that license to submit that work
-> with modifications, whether created in whole or in part by me,
-> under the same open source license (unless I am permitted to submit
-> under a different license), as indicated in the file; or
->
-> (c) The contribution was provided directly to me by some other
-> person who certified (a), (b) or (c) and I have not modified it.
->
-> (d) I understand and agree that this project and the contribution
-> are public and that a record of the contribution (including all
-> personal information I submit with it, including my sign-off) is
-> maintained indefinitely and may be redistributed consistent with
-> this project or the open source license(s) involved.
+No agent may fabricate, impersonate, backfill, or attribute a personal DCO certification without the contributor's actual authorization and certification.
 
-That is the official DCO 1.1 certification text, also published at [developercertificate.org](https://developercertificate.org/).
+All contributions must respect the project's effective licensing, intellectual-property, privacy, experimental-safety, and technical authorization requirements.
 
 ## Licensing and provenance
 
