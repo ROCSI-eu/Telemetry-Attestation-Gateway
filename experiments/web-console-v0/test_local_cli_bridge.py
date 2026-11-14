@@ -8,6 +8,9 @@ from __future__ import annotations
 
 import http.client
 import json
+import socket
+import subprocess
+import time
 from pathlib import Path
 import sys
 import threading
@@ -87,21 +90,42 @@ class BridgeUnitTests(unittest.TestCase):
                 with self.assertRaises(bridge.Rejected):
                     bridge.minimize(item, "over_limit", exit_code)
 
+    def test_bounded_stdout_rejects_oversize_and_kills_process_group(self):
+        oversized = ("import sys; sys.stdout.write('X'*"
+                     + str(bridge.MAX_OUTPUT + 8192) + "); sys.stdout.flush()")
+        with self.assertRaises(bridge.Rejected):
+            bridge._bounded_run([sys.executable, "-c", oversized])
+
+    def test_bounded_stdout_timeout_rejects_with_no_leaking_child(self):
+        with patch.object(bridge, "RUN_SECONDS", 0.15):
+            started = time.monotonic()
+            with self.assertRaises(bridge.Rejected):
+                bridge._bounded_run([sys.executable, "-c",
+                                     "import time; time.sleep(5)"])
+            self.assertLess(time.monotonic() - started, 2.0)
+
     def test_runtime_invokes_only_pinned_args_inside_bwrap(self):
         scenario = "over_limit"
         fake = cli_result(scenario)
-        completed = type("P", (), {
-            "stdout": json.dumps(fake).encode(), "returncode": 3})()
         with patch.object(bridge, "trusted_bwrap", return_value="/usr/bin/bwrap"):
-            with patch.object(bridge.subprocess, "run", return_value=completed) as run:
+            with patch.object(bridge, "_bounded_run",
+                              return_value=(json.dumps(fake).encode(), 3)) as run:
                 result = bridge.execute(scenario)
         args = run.call_args.args[0]
         self.assertEqual(args[0], "/usr/bin/bwrap")
         self.assertIn("--unshare-net", args)
+        self.assertIn("--die-with-parent", args)
+        self.assertNotIn("--ro-bind", args[:1])
+        self.assertNotIn("--dev-bind", args)
+        self.assertNotIn("/", [args[i + 1] for i, arg in enumerate(args[:-2])
+                                if arg == "--ro-bind"])
+        self.assertEqual([args[i + 1] for i, arg in enumerate(args[:-2])
+                          if arg == "--ro-bind"],
+                         ["/usr", str(bridge.HERE.parent)])
         self.assertEqual(args[-8:], ["--capture-name", "unsigned-consistent",
                                      "--maximum-speed-cm-s", "499", "--format",
                                      "json", "--publication", "disabled"])
-        self.assertEqual(run.call_args.kwargs["timeout"], bridge.RUN_SECONDS)
+        self.assertEqual(run.call_count, 1)
         self.assertEqual(result["state"], "COMPLETED")
         with self.assertRaises(bridge.Rejected):
             bridge.execute("arbitrary-command")
@@ -144,6 +168,30 @@ class BridgeHttpTests(unittest.TestCase):
                     self.assertEqual(code, 403)
             execute.assert_not_called()
             self.assertFalse(self.server.used)
+
+    def test_incomplete_http_body_times_out_and_does_not_consume_run(self):
+        with patch.object(bridge, "HTTP_READ_SECONDS", 0.2):
+            # The socket timeout is set when the handler is initialized.
+            # Rebind setup for this one request only through the class constant.
+            conn = socket.create_connection(("127.0.0.1", self.server.server_port), 2)
+            try:
+                headers = (
+                    f"POST /execute HTTP/1.1\r\n"
+                    f"Host: 127.0.0.1:{self.server.server_port}\r\n"
+                    f"Origin: http://127.0.0.1:{self.server.server_port}\r\n"
+                    "Sec-Fetch-Site: same-origin\r\n"
+                    "Content-Type: application/json\r\n"
+                    "X-TAG-Local-Token: synthetic-test-only-token\r\n"
+                    "Content-Length: 64\r\n\r\n"
+                    '{"scenario":"over_limit"}'
+                )
+                conn.sendall(headers.encode())
+                conn.settimeout(2)
+                reply = conn.recv(4096)
+                self.assertIn(b"503", reply)
+                self.assertFalse(self.server.used)
+            finally:
+                conn.close()
 
     def test_single_operator_run_and_no_raw_fields(self):
         with patch.object(bridge, "execute", return_value=bridge.minimize(
