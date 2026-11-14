@@ -193,66 +193,61 @@ class BridgeHttpTests(unittest.TestCase):
             finally:
                 conn.close()
 
-    def test_slow_drip_headers_have_absolute_deadline(self):
-        with patch.object(bridge, "HTTP_READ_SECONDS", 0.22):
-            conn = socket.create_connection(("127.0.0.1", self.server.server_port), 2)
-            started = time.monotonic()
-            try:
-                conn.settimeout(1.5)
-                # Deliberately send less than one complete HTTP header line;
-                # each byte arrives before the previous per-recv timeout.
-                conn.sendall(b"POST /execute HTTP/1.1\r\n")
-                for byte in b"Host: 127.0.0.1":
-                    try:
-                        conn.sendall(bytes((byte,)))
-                    except (BrokenPipeError, ConnectionResetError, OSError):
-                        break
-                    time.sleep(0.045)
+    def _assert_drip_does_not_hold_server(self, prefix: bytes):
+        """A peer keeps sending data, yet the next request must be accepted."""
+        with patch.object(bridge, "HTTP_READ_SECONDS", 0.18):
+            conn = socket.create_connection(
+                ("127.0.0.1", self.server.server_port), 2
+            )
+            stop = threading.Event()
+            started = threading.Event()
+            def drip():
                 try:
-                    response = conn.recv(4096)
-                except (ConnectionResetError, OSError):
-                    response = b""
-                self.assertNotIn(b"200 OK", response)
-                self.assertLess(time.monotonic() - started, 1.5)
+                    conn.sendall(prefix)
+                    started.set()
+                    while not stop.wait(0.04):
+                        conn.sendall(b"X")
+                except OSError:
+                    started.set()
+
+            worker = threading.Thread(target=drip, daemon=True)
+            worker.start()
+            try:
+                self.assertTrue(started.wait(timeout=1))
+                # Original per-read socket timeout did not help: a slow peer
+                # could indefinitely occupy the single-threaded HTTPServer.
+                time.sleep(0.32)
+                began = time.monotonic()
+                self.assertEqual(self.request(token="wrong")[0], 403)
+                self.assertLess(time.monotonic() - began, 0.7)
+                self.assertFalse(self.server.used)
             finally:
+                stop.set()
+                try:
+                    conn.shutdown(socket.SHUT_RDWR)
+                except OSError:
+                    pass
                 conn.close()
-            self.assertFalse(self.server.used)
-            # HTTPServer must be available to the next connection.
-            self.assertEqual(self.request(token="wrong")[0], 403)
+                worker.join(timeout=1)
+                self.assertFalse(worker.is_alive())
+
+    def test_slow_drip_headers_have_absolute_deadline(self):
+        self._assert_drip_does_not_hold_server(
+            b"POST /execute HTTP/1.1\r\nX-Partial: "
+        )
 
     def test_slow_drip_body_cannot_consume_operator_run(self):
-        with patch.object(bridge, "HTTP_READ_SECONDS", 0.25):
-            conn = socket.create_connection(("127.0.0.1", self.server.server_port), 2)
-            started = time.monotonic()
-            try:
-                conn.settimeout(1.5)
-                body = b'{"scenario":"over_limit"}'
-                headers = (
-                    f"POST /execute HTTP/1.1\r\n"
-                    f"Host: 127.0.0.1:{self.server.server_port}\r\n"
-                    f"Origin: http://127.0.0.1:{self.server.server_port}\r\n"
-                    "Sec-Fetch-Site: same-origin\r\n"
-                    "Content-Type: application/json\r\n"
-                    "X-TAG-Local-Token: synthetic-test-only-token\r\n"
-                    f"Content-Length: {len(body)}\r\n\r\n"
-                )
-                conn.sendall(headers.encode())
-                for byte in body:
-                    try:
-                        conn.sendall(bytes((byte,)))
-                    except (BrokenPipeError, ConnectionResetError, OSError):
-                        break
-                    time.sleep(0.05)
-                try:
-                    response = conn.recv(4096)
-                except (ConnectionResetError, OSError):
-                    response = b""
-                self.assertNotIn(b"200 OK", response)
-                self.assertLess(time.monotonic() - started, 1.5)
-            finally:
-                conn.close()
-            self.assertFalse(self.server.used)
-            self.assertEqual(self.request(token="wrong")[0], 403)
+        prefix = (
+            f"POST /execute HTTP/1.1\r\n"
+            f"Host: 127.0.0.1:{self.server.server_port}\r\n"
+            f"Origin: http://127.0.0.1:{self.server.server_port}\r\n"
+            "Sec-Fetch-Site: same-origin\r\n"
+            "Content-Type: application/json\r\n"
+            "X-TAG-Local-Token: synthetic-test-only-token\r\n"
+            "Content-Length: 64\r\n\r\n"
+            '{"scenario":'
+        ).encode()
+        self._assert_drip_does_not_hold_server(prefix)
 
     def test_single_operator_run_and_no_raw_fields(self):
         with patch.object(bridge, "execute", return_value=bridge.minimize(
