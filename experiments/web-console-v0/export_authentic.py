@@ -123,17 +123,27 @@ def export(package: Path, destination: Path) -> None:
     encoded = (json.dumps(minimized, indent=2, sort_keys=True, ensure_ascii=True) + "\n").encode("ascii")
     if len(encoded) > 4096:
         raise ExportRejected
+    # Complete the file privately before atomically creating the final path.
+    # A hard link cannot overwrite an existing destination (unlike rename).
+    # Failure leaves neither a partial result nor a leftover staging file.
     fd = None
+    staging = None
     try:
-        fd = os.open(destination, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        fd, staging_name = tempfile.mkstemp(prefix=".tag-authentic-", dir=destination_parent)
+        staging = Path(staging_name)
         with os.fdopen(fd, "wb") as stream:
             fd = None
             stream.write(encoded)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.link(staging, destination)
     except OSError as exc:
         raise ExportRejected from exc
     finally:
         if fd is not None:
             os.close(fd)
+        if staging is not None:
+            staging.unlink(missing_ok=True)
 
 
 def main() -> int:
