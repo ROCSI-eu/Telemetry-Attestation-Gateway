@@ -42,6 +42,7 @@ MAX_OUTPUT = 16384
 RUN_SECONDS = 20
 HTTP_READ_SECONDS = 3
 PROOF_RUN_SECONDS = 90
+PROOF_AS_MIB = 2560  # Lowest tested passing finite cap on Qube; research-only.
 PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>TAG — local synthetic CLI control</title>
@@ -118,6 +119,13 @@ def trusted_bwrap() -> str:
 def _resource_limits() -> None:
     resource.setrlimit(resource.RLIMIT_CPU, (12, 12))
     resource.setrlimit(resource.RLIMIT_AS, (1024 * 1024 * 1024,) * 2)
+    resource.setrlimit(resource.RLIMIT_FSIZE, (1024 * 1024,) * 2)
+
+
+def _proof_resource_limits() -> None:
+    """Bounded synthetic-only research profile; short-circuits retain 1 GiB."""
+    resource.setrlimit(resource.RLIMIT_CPU, (12, 12))
+    resource.setrlimit(resource.RLIMIT_AS, (PROOF_AS_MIB * 1024 * 1024,) * 2)
     resource.setrlimit(resource.RLIMIT_FSIZE, (1024 * 1024,) * 2)
 
 
@@ -233,7 +241,8 @@ def minimize(document: dict, scenario: str, status: int) -> dict:
 
 
 def _bounded_run(cmd: list[str], *, timeout: float | None = None,
-                 extra_path: str = "/usr/bin:/bin") -> tuple[bytes, int]:
+                 extra_path: str = "/usr/bin:/bin",
+                 proof_profile: bool = False) -> tuple[bytes, int]:
     """Read only MAX_OUTPUT bytes while running; kill the child process group on failure."""
     try:
         proc = subprocess.Popen(
@@ -241,7 +250,8 @@ def _bounded_run(cmd: list[str], *, timeout: float | None = None,
             stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
             env={"PATH": extra_path, "PYTHONDONTWRITEBYTECODE": "1",
                  "LANG": "C.UTF-8"},
-            preexec_fn=_resource_limits, start_new_session=True,
+            preexec_fn=_proof_resource_limits if proof_profile else _resource_limits,
+            start_new_session=True,
         )
     except OSError as exc:
         raise Rejected from exc
@@ -302,7 +312,8 @@ def execute(scenario: str, toolchain_root: Path | None = None) -> dict:
             output, exit_status = _bounded_run(cmd)
         else:
             output, exit_status = _bounded_run(
-                cmd, timeout=PROOF_RUN_SECONDS, extra_path=path)
+                cmd, timeout=PROOF_RUN_SECONDS, extra_path=path,
+                proof_profile=True)
         return minimize(json.loads(output), scenario, exit_status)
     except (ValueError, TypeError) as exc:
         raise Rejected from exc
