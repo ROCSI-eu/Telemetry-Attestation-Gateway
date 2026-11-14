@@ -164,6 +164,71 @@ class LocalSessionTests(unittest.TestCase):
             self.assertEqual(pkg.run(20, self.parent, True), 0)
         self.assertEqual(list(self.parent.iterdir()), [])
 
+    def test_inspect_clear_is_read_only_without_bwrap_or_listener(self) -> None:
+        output = io.StringIO()
+        with patch.object(pkg.bridge, "trusted_bwrap",
+                          side_effect=AssertionError("must not require bwrap")), \
+             patch.object(pkg.subprocess, "Popen",
+                          side_effect=AssertionError("must not spawn")), \
+             contextlib.redirect_stdout(output):
+            code = pkg.main(["--inspect-only", "--runtime-parent", str(self.parent)])
+        self.assertEqual(code, 0)
+        self.assertIn("LOCAL INSPECTION · CLEAR", output.getvalue())
+        self.assertIn("SYNTHETIC_ONLY", output.getvalue())
+        self.assertIn("NO PROCESS STARTED · NO CLEANUP", output.getvalue())
+        self.assertNotIn(str(self.parent), output.getvalue())
+        self.assertEqual(list(self.parent.iterdir()), [])
+
+    def test_inspect_busy_lease_reports_no_owner_or_path(self) -> None:
+        fd = os.open(self.parent, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            output = io.StringIO()
+            with patch.object(pkg.subprocess, "Popen",
+                              side_effect=AssertionError("must not spawn")), \
+                 contextlib.redirect_stdout(output):
+                code = pkg.main(["--inspect-only", "--runtime-parent", str(self.parent)])
+            self.assertEqual(code, 2)
+            self.assertIn("LEASE_BUSY_OR_UNCERTAIN", output.getvalue())
+            self.assertNotIn(str(self.parent), output.getvalue())
+            self.assertEqual(list(self.parent.iterdir()), [])
+        finally:
+            os.close(fd)
+
+    def test_inspect_reserved_entries_never_opens_or_deletes_them(self) -> None:
+        private_target = self.parent / "unrelated"
+        private_target.mkdir(mode=0o700)
+        marker = self.parent / "tag-synthetic-residual"
+        marker.symlink_to(private_target, target_is_directory=True)
+        output = io.StringIO()
+        with patch.object(pkg.subprocess, "Popen",
+                          side_effect=AssertionError("must not spawn")), \
+             contextlib.redirect_stdout(output):
+            code = pkg.main(["--inspect-only", "--runtime-parent", str(self.parent)])
+        self.assertEqual(code, 2)
+        self.assertIn("RESERVED_ENTRIES_PRESENT", output.getvalue())
+        self.assertNotIn(str(marker), output.getvalue())
+        self.assertNotIn("residual", output.getvalue())
+        self.assertTrue(marker.is_symlink())
+        self.assertTrue(private_target.is_dir())
+
+    def test_inspect_unsafe_parent_fails_closed(self) -> None:
+        link = self.parent / "private-parent-link"
+        link.symlink_to(self.parent, target_is_directory=True)
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            code = pkg.main(["--inspect-only", "--runtime-parent", str(link)])
+        self.assertEqual(code, 2)
+        self.assertIn("LOCAL INSPECTION · UNAVAILABLE", output.getvalue())
+        self.assertNotIn(str(link), output.getvalue())
+        self.assertTrue(link.is_symlink())
+
+    def test_inspect_and_check_only_are_mutually_exclusive(self) -> None:
+        with contextlib.redirect_stderr(io.StringIO()):
+            with self.assertRaises(SystemExit):
+                pkg.main(["--inspect-only", "--check-only"])
+        self.assertEqual(list(self.parent.iterdir()), [])
+
     def test_invalid_lifetime_fails_before_any_session(self) -> None:
         for seconds in (0, 301):
             with self.subTest(seconds=seconds), contextlib.redirect_stderr(io.StringIO()):
