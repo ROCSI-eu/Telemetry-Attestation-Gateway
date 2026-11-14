@@ -535,12 +535,6 @@ def exit_code(result: dict[str, Any]) -> int:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--capture-file",
-        type=Path,
-        default=MAVLINK_DIR / "fixtures.json",
-        help="checked-in deterministic synthetic capture fixture file",
-    )
-    parser.add_argument(
         "--capture-name",
         default="unsigned-consistent",
         help="named synthetic capture from the fixture file",
@@ -587,7 +581,7 @@ def main() -> int:
         parser.error("--publication-fault requires --publication local")
 
     result = run_integrated(
-        args.capture_file,
+        MAVLINK_DIR / "fixtures.json",
         args.capture_name,
         args.maximum_speed_cm_s,
         publication_mode=args.publication,
