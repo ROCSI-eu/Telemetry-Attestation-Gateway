@@ -35,7 +35,7 @@ This UI deliberately does not expose exact normalized speed, raw telemetry, coor
 
 1. The separately versioned precomputed genuine synthetic verifier replay is now included locally. It is a presentation of an independently checked outcome, not a live run, signed attestation, browser-verifiable proof, or production service.
 2. Design a narrow allowlisted local runner/status interface for authenticated, bounded operator-triggered synthetic jobs without shipping witnesses to the browser.
-3. Verify browser behavior on Chromium, Firefox and WebKit-family engines; assess performance and accessibility before making platform support claims.
+3. Chromium/Firefox local browser smoke tests have now been run (details below); WebKit, real mobile hardware, assistive technology and comprehensive accessibility/performance evaluation remain Open before broader platform claims.
 4. Keep any public static showcase at `tag.rocsi.eu` governed by #89. Live proving, Production/shared-VM execution and public routing are not authorized by this file.
 
 Proof validity is not telemetry truth. This project is observational only; no flight control or MAVLink command generation/forwarding is permitted.
@@ -79,3 +79,16 @@ python3 -m http.server 8765 --bind 127.0.0.1 --directory /private/temporary/cons
 Open `http://127.0.0.1:8765/web-console-v0/` in a browser **on the same machine**. After another CLI refresh, reload the page to read the newly precomputed synthetic result. Stop the temporary server when finished. **Never** bind non-loopback interfaces, expose the session via a proxy/tunnel, or point the server at the proof/CRS/test-input directory. The CLI does not offer web-triggered verification, server-side jobs, scheduled execution, HTTP endpoints, or live streaming; those would require separate evidence and authorization.
 
 The session is disposable; deletion of its private directory after inspection is a local cleanup action. The checked-in `authentic-evidence.json` is a historical research fixture and is **not rewritten** by this CLI. It cannot verify telemetry truth, real assurance, fresh source information, interval coverage, replay resistance, customer demand, safety, regulatory compliance or production readiness. `browser_verified` remains false; `A0_SYNTHETIC` remains the only demonstrator tier.
+
+## Local browser QA checkpoint — 2026-11-14
+
+> **EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION**
+
+The local preview was tested using an **ephemeral loopback-only** HTTP server on Qube, Chrome/Chromium 157 and Firefox 157 headless, with test-only evidence and disposable browser profiles. No hosted site, participant data, real telemetry or production system was accessed. Findings:
+
+- Chromium: viewport sizes **1366, 768, 390 and 320 CSS px**, all loaded the separately labeled precomputed `VALID` result with unchanged mock scenario controls. At 320 px before this change, the long unbroken authentic evidence-kind token caused **368–384 px** effective/scrollable layout width and mobile horizontal overflow. The narrow-viewport CSS wrapping/grid-minimum fix restored **320 px document and layout width** in both desktop-width simulation and mobile viewport emulation.
+- Firefox headless: **1366 and 768 CSS px** passed without horizontal overflow, including precomputed `VALID`, mock controls, missing/extra-field fail-closed responses, `INVALID` outcome and keyboard Tab focus on the scenario selector. The Firefox WebDriver session did not permit a window narrower than **500 px**; its attempted 390/320 tests are **not evidence** of Firefox mobile compatibility.
+- Chromium: `INVALID` remains a distinct authentic result, and extra-field/missing authentic JSON fails closed only the authentic panel; the mock selector remains usable. Basic keyboard Tab focus reaches the selector.
+- The browser **does not verify or authenticate** proof material. These smoke tests are not WCAG certification, real phone testing, screen-reader testing, accessibility audits, performance benchmarks or evidence of cross-platform production readiness. WebKit and real mobile hardware remain untested.
+
+The actual CLI refresh, strict privacy allowlist, `A0_SYNTHETIC` and independent offline verifier boundaries are unchanged by this CSS-only fix.
