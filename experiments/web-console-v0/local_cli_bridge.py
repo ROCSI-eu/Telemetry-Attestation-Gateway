@@ -16,10 +16,14 @@ import os
 from pathlib import Path
 import resource
 import secrets
+import selectors
+import signal
+import socket
 import stat
 import subprocess
 import sys
 import threading
+import time
 
 HERE = Path(__file__).resolve().parent
 CLI = HERE.parent / "integrated-cli-v0" / "cli.py"
@@ -34,6 +38,7 @@ PRESETS = {
 MAX_INPUT = 64
 MAX_OUTPUT = 16384
 RUN_SECONDS = 20
+HTTP_READ_SECONDS = 3
 PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>TAG — local synthetic CLI control</title>
@@ -145,31 +150,75 @@ def minimize(document: dict, scenario: str, status: int) -> dict:
     }
 
 
+def _bounded_run(cmd: list[str]) -> tuple[bytes, int]:
+    """Read only MAX_OUTPUT bytes while running; kill the child process group on failure."""
+    try:
+        proc = subprocess.Popen(
+            cmd, cwd="/", stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+            env={"PATH": "/usr/bin:/bin", "PYTHONDONTWRITEBYTECODE": "1",
+                 "LANG": "C.UTF-8"},
+            preexec_fn=_resource_limits, start_new_session=True,
+        )
+    except OSError as exc:
+        raise Rejected from exc
+    try:
+        deadline = time.monotonic() + RUN_SECONDS
+        output = bytearray()
+        with selectors.DefaultSelector() as selector:
+            selector.register(proc.stdout, selectors.EVENT_READ)
+            while True:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0 or not selector.select(remaining):
+                    raise Rejected
+                chunk = os.read(proc.stdout.fileno(),
+                                min(4096, MAX_OUTPUT + 1 - len(output)))
+                if not chunk:
+                    break
+                output.extend(chunk)
+                if len(output) > MAX_OUTPUT:
+                    raise Rejected
+        proc.wait(timeout=max(0.01, deadline - time.monotonic()))
+        return bytes(output), proc.returncode
+    except (OSError, subprocess.TimeoutExpired, Rejected) as exc:
+        # Kill the whole bounded process group; a CLI-descendant cannot outlive it.
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        proc.wait()
+        raise Rejected from exc
+    finally:
+        proc.stdout.close()
+
+
 def execute(scenario: str) -> dict:
     if scenario not in PRESETS:
         raise Rejected
     capture, bound, _, _ = PRESETS[scenario]
-    cmd = [trusted_bwrap(), "--unshare-net", "--ro-bind", "/", "/",
-           "--tmpfs", "/tmp", "--dev-bind", "/dev", "/dev", "--proc", "/proc",
+    # Expose only system Python and the repository's synthetic experiment tree.
+    # In particular: never bind host /, /home, /etc or the full /dev tree.
+    experiments = HERE.parent
+    cmd = [trusted_bwrap(), "--unshare-net", "--die-with-parent",
+           "--ro-bind", "/usr", "/usr",
+           "--ro-bind", str(experiments), str(experiments),
+           "--tmpfs", "/tmp", "--dev", "/dev", "--proc", "/proc",
            "--setenv", "HOME", "/tmp", "--setenv", "TMPDIR", "/tmp",
            "--setenv", "PATH", "/usr/bin:/bin", "--",
            sys.executable, str(CLI), "--capture-name", capture,
            "--maximum-speed-cm-s", bound, "--format", "json",
            "--publication", "disabled"]
     try:
-        proc = subprocess.run(cmd, cwd="/", stdin=subprocess.DEVNULL,
-                              stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-                              timeout=RUN_SECONDS, check=False,
-                              env={"PATH": "/usr/bin:/bin", "PYTHONDONTWRITEBYTECODE": "1",
-                                   "LANG": "C.UTF-8"}, preexec_fn=_resource_limits)
-        if len(proc.stdout) > MAX_OUTPUT:
-            raise Rejected
-        return minimize(json.loads(proc.stdout), scenario, proc.returncode)
-    except (OSError, subprocess.TimeoutExpired, ValueError, TypeError) as exc:
+        output, exit_status = _bounded_run(cmd)
+        return minimize(json.loads(output), scenario, exit_status)
+    except (ValueError, TypeError) as exc:
         raise Rejected from exc
 
-
 class Handler(http.server.BaseHTTPRequestHandler):
+    def setup(self) -> None:
+        self.request.settimeout(HTTP_READ_SECONDS)
+        super().setup()
+
     def log_message(self, *args) -> None:
         pass  # No access logs, tokens, request content or private paths.
 
@@ -209,7 +258,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self._send(403, b'{"error":"REJECTED"}', "application/json")
             return
         try:
-            body = self.rfile.read(int(self.headers["Content-Length"]))
+            expected_bytes = int(self.headers["Content-Length"])
+            body = self.rfile.read(expected_bytes)
+            if len(body) != expected_bytes:
+                raise Rejected
             payload = json.loads(body)
             if (type(payload) is not dict or set(payload) != {"scenario"}
                 or type(payload["scenario"]) is not str
