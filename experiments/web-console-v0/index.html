@@ -120,6 +120,7 @@
         <div class="metric"><span class="kicker">Recorded offline cryptographic outcome</span><b><span class="status" id="authentic-crypto">NOT_LOADED</span></b><p class="small">Evidence kind: PRECOMPUTED_GENUINE_SYNTHETIC_VERIFICATION. Proof generation was not observed by this verifier.</p></div>
         <dl>
           <dt>Input reconstruction</dt><dd id="authentic-input">NOT_LOADED</dd>
+          <dt>Recorded proof rejection reason</dt><dd id="authentic-reason">NOT_LOADED</dd>
           <dt>Proof generation</dt><dd id="authentic-generation">NOT_OBSERVED</dd>
           <dt>Source trust</dt><dd id="authentic-trust">NOT_EVALUATED</dd>
           <dt>Assurance</dt><dd id="authentic-assurance">A0_SYNTHETIC</dd>
@@ -215,6 +216,7 @@ async function initializeAuthentic() {
       || (e.cryptographic==="VALID" && e.cryptographic_reason!==null)
       || (e.cryptographic==="INVALID" && e.cryptographic_reason!=="PROOF_REJECTED")) throw new Error("invalid contract");
     setText("authentic-crypto",e.cryptographic);
+    setText("authentic-reason",e.cryptographic_reason===null?"NONE":e.cryptographic_reason);
     $("authentic-crypto").dataset.tone=e.cryptographic==="VALID"?"good":"warn";
     for(const [id,key] of [["authentic-input","verification_input"],["authentic-generation","proof_generation"],["authentic-trust","source_trust"],["authentic-assurance","assurance"],["authentic-policy","policy"],["authentic-freshness","freshness"],["authentic-revocation","revocation"],["authentic-replay","replay"],["authentic-publication","publication"],["authentic-decision","relying_party_decision"]])setText(id,e[key]);
     $("authentic-data").hidden=false;
