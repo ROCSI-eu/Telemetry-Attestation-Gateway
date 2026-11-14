@@ -219,6 +219,36 @@ class BridgeUnitTests(unittest.TestCase):
         self.assertEqual(worker.call_args.kwargs["timeout"], bridge.PROOF_RUN_SECONDS)
         self.assertEqual(worker.call_args.kwargs["extra_path"],
                          "/private/offline/bin:/usr/bin:/bin")
+        self.assertIs(worker.call_args.kwargs["proof_profile"], True)
+
+    def test_proof_address_space_is_finite_and_short_circuit_unchanged(self):
+        with patch.object(bridge.resource, "setrlimit") as limits:
+            bridge._resource_limits()
+            short_calls = list(limits.call_args_list)
+            limits.reset_mock()
+            bridge._proof_resource_limits()
+            proof_calls = list(limits.call_args_list)
+        self.assertEqual(bridge.PROOF_AS_MIB, 2560)
+        self.assertEqual(
+            short_calls,
+            [
+                unittest.mock.call(bridge.resource.RLIMIT_CPU, (12, 12)),
+                unittest.mock.call(bridge.resource.RLIMIT_AS, (1024**3,)*2),
+                unittest.mock.call(bridge.resource.RLIMIT_FSIZE, (1024**2,)*2),
+            ],
+        )
+        self.assertEqual(
+            proof_calls,
+            [
+                unittest.mock.call(bridge.resource.RLIMIT_CPU, (12, 12)),
+                unittest.mock.call(
+                    bridge.resource.RLIMIT_AS, (2560 * 1024**2,)*2),
+                unittest.mock.call(bridge.resource.RLIMIT_FSIZE, (1024**2,)*2),
+            ],
+        )
+        self.assertEqual(bridge.RUN_SECONDS, 20)
+        self.assertEqual(bridge.PROOF_RUN_SECONDS, 90)
+        self.assertEqual(bridge.MAX_OUTPUT, 16384)
 
     def test_bounded_stdout_rejects_oversize_and_kills_process_group(self):
         oversized = ("import sys; sys.stdout.write('X'*"
