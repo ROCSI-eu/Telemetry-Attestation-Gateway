@@ -218,8 +218,39 @@ def execute(scenario: str) -> dict:
 
 class Handler(http.server.BaseHTTPRequestHandler):
     def setup(self) -> None:
+        # One wall-clock deadline covers both request headers and body.
+        # A per-recv socket timeout alone does not stop slow-drip clients.
+        self._input_deadline = time.monotonic() + HTTP_READ_SECONDS
+        self._input_expired = threading.Event()
         self.request.settimeout(HTTP_READ_SECONDS)
-        super().setup()
+        self._input_timer = threading.Timer(HTTP_READ_SECONDS, self._expire_input)
+        self._input_timer.daemon = True
+        self._input_timer.start()
+        try:
+            super().setup()
+        except BaseException:
+            self._input_timer.cancel()
+            raise
+
+    def _expire_input(self) -> None:
+        self._input_expired.set()
+        try:
+            # Interrupt a buffered readline or body read, even when a peer
+            # has been sending bytes continuously.
+            self.request.shutdown(socket.SHUT_RD)
+        except OSError:
+            pass
+
+    def _finish_input(self) -> bool:
+        self._input_timer.cancel()
+        return (not self._input_expired.is_set()
+                and time.monotonic() < self._input_deadline)
+
+    def finish(self) -> None:
+        try:
+            super().finish()
+        finally:
+            self._input_timer.cancel()
 
     def log_message(self, *args) -> None:
         pass  # No access logs, tokens, request content or private paths.
@@ -244,6 +275,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 and self.headers.get("Sec-Fetch-Site", "same-origin") == "same-origin")
 
     def do_GET(self) -> None:
+        if not self._finish_input():
+            return
         if (self.path != "/" or
                 self.headers.get("Host") != f"127.0.0.1:{self.server.server_port}"):
             self._send(404, b"Not found", "text/plain")
@@ -251,7 +284,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self._send(200, PAGE.encode(), "text/html; charset=utf-8")
 
     def do_POST(self) -> None:
-        if (self.path != "/execute" or not self._origin_ok()
+        if (self._input_expired.is_set() or time.monotonic() >= self._input_deadline
+            or self.path != "/execute" or not self._origin_ok()
             or self.headers.get("Content-Type") != "application/json"
             or not secrets.compare_digest(
                 self.headers.get("X-TAG-Local-Token", ""), self.server.token)
@@ -262,7 +296,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         try:
             expected_bytes = int(self.headers["Content-Length"])
             body = self.rfile.read(expected_bytes)
-            if len(body) != expected_bytes:
+            if len(body) != expected_bytes or not self._finish_input():
                 raise Rejected
             payload = json.loads(body)
             if (type(payload) is not dict or set(payload) != {"scenario"}
