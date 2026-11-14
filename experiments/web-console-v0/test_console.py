@@ -77,6 +77,21 @@ class ConsoleFixtureTests(unittest.TestCase):
             self.assertIn(boundary, html)
         self.assertIn("@media(max-width:620px){.scope{grid-template-columns:1fr}}", html)
 
+    def test_shared_operator_panel_is_one_shot_progressive_enhancement(self) -> None:
+        html = PAGE.read_text(encoding="utf-8")
+        self.assertIn('id="operator-panel" aria-labelledby="operator-title" hidden', html)
+        self.assertIn('fetch("operator-capabilities",{cache:"no-store"})', html)
+        self.assertIn('fetch("execute",{method:"POST",cache:"no-store"', html)
+        self.assertIn("OPERATOR_KEYS.every(k=>Object.hasOwn(e,k))", html)
+        self.assertIn("operatorResultAllowed(outcome,selected)", html)
+        self.assertIn("waiting for complete isolated CLI result", html)
+        self.assertIn("no stage progress reported", html)
+        self.assertIn("one-shot may have been consumed", html)
+        self.assertIn('"NOT_ATTEMPTED","NOT_CHECKED","NOT_PERFORMED"', html)
+        for forbidden in ("localStorage", "sessionStorage", "WebSocket(", "EventSource(",
+                          "setInterval(", "navigator.sendBeacon"):
+            self.assertNotIn(forbidden, html)
+
     def test_browser_facing_fixture_has_exact_allowlisted_shape(self) -> None:
         """Reject new fields before they can reach the browser over local HTTP."""
         evidence = json.loads(EVIDENCE.read_text(encoding="utf-8"))
