@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2712%27 fill=%27%230a1220%27/%3E%3Cpath d=%27M14 18h36M32 18v28%27 stroke=%27%2387dcde%27 stroke-width=%278%27 stroke-linecap=%27round%27/%3E%3C/svg%3E">
+  <title>TAG — Synthetic Research Console</title>
+  <style>
+    :root{font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;color:#edf4ff;background:#0a1220}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 60% -20%,#1f4161 0,transparent 52%),#0a1220;min-height:100vh}
+    a{color:#93d8ed}button,select{font:inherit}button:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #9ee9fb;outline-offset:3px}
+    .wrap{max-width:1120px;padding:32px 20px 70px;margin:auto}
+    .eyebrow{font-size:.72rem;font-weight:750;letter-spacing:.13em;color:#b5d6e9;text-transform:uppercase}
+    header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+    h1{font-size:clamp(1.65rem,3.2vw,2.65rem);margin:.4rem 0;font-weight:760;letter-spacing:-.04em}
+    .sub{color:#b4c6d6;max-width:64ch;margin:0}
+    .pill{border:1px solid #53758d;border-radius:99px;padding:6px 12px;color:#bde4f1;font-size:.75rem;white-space:nowrap}
+    .notice{margin:25px 0;padding:13px 16px;background:#193045;border-left:3px solid #81d9e7;color:#e8f8ff;font-size:.79rem;border-radius:5px}
+    .layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(270px,1fr);gap:18px}
+    .card{background:#111f30;border:1px solid #2f4860;border-radius:16px;padding:23px;min-width:0;box-shadow:0 14px 45px #02060b30}
+    h2{font-size:1.08rem;margin:0 0 17px;letter-spacing:-.01em}
+    .small{font-size:.8rem;color:#b0c3d2}.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin:0 0 22px}
+    .controls label{display:block;flex:1;min-width:190px;font-size:.78rem;font-weight:650;color:#bfd0de}
+    select{display:block;margin-top:6px;width:100%;padding:12px;background:#0a1828;color:#edf4ff;border:1px solid #658198;border-radius:9px}
+    button{border:0;border-radius:9px;padding:12px 18px;background:#87dcde;color:#09222e;font-weight:760;cursor:pointer}
+    button:hover:not(:disabled){background:#b4f1ee}button:disabled{opacity:.5;cursor:not-allowed}
+    .flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:24px 0}
+    .step{border:1px solid #355069;background:#0c1a2b;border-radius:11px;padding:14px 8px;text-align:center}
+    .step strong{display:block;font-size:.78rem}.step span{color:#9cb7c9;font-size:.68rem}
+    .step[data-state="complete"]{border-color:#4d9f98;background:#153634}.step[data-state="stopped"]{border-color:#a47c59;background:#382a20}
+    .metric{background:#0b192a;border:1px solid #2d425a;border-radius:12px;padding:15px;margin:10px 0}
+    .metric b{display:block;font-size:1.08rem;margin-top:3px;overflow-wrap:anywhere}
+    .kicker{font-size:.7rem;color:#abc1d2;letter-spacing:.05em;text-transform:uppercase}
+    .status{display:inline-block;border-radius:6px;padding:3px 9px;background:#2d4652;color:#effbff;font-size:.75rem;font-weight:700}
+    .status[data-tone="good"]{background:#194c43;color:#abffdb}.status[data-tone="warn"]{background:#654527;color:#ffdb9f}
+    dl{display:grid;grid-template-columns:1fr auto;gap:9px;margin:0;font-size:.85rem}dt{color:#b2c7d6}dd{margin:0;font-weight:700;text-align:right;overflow-wrap:anywhere;max-width:170px}
+    hr{border:0;border-top:1px solid #2d445c;margin:20px 0}
+    details{border-top:1px solid #324c63;padding-top:16px;margin-top:18px}summary{cursor:pointer;font-weight:650}
+    footer{color:#a7c0d1;font-size:.77rem;margin-top:24px}
+    #error{color:#ffd3b5;min-height:1.5em}
+    @media(max-width:750px){.layout{grid-template-columns:1fr}.wrap{padding:20px 12px}.card{padding:17px}.flow{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(prefers-reduced-motion:no-preference){button{transition:background .16s ease}.step{transition:border-color .16s ease,background .16s ease}}
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <div><div class="eyebrow">ROCSI / Telemetry Attestation Gateway</div><h1>Synthetic research console</h1><p class="sub">Explore the orchestration states of privacy-preserving bounded-speed attestation. This local preview replays deterministic mock results; it does not run a prover.</p></div>
+    <div class="pill">LOCAL PREVIEW · NO LIVE PROOF</div>
+  </header>
+  <div class="notice" role="note">EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION</div>
+  <div class="layout">
+    <section class="card" aria-labelledby="scenario-title">
+      <h2 id="scenario-title">Scenario replay <span class="small">/ orchestration mock</span></h2>
+      <div class="controls">
+        <label for="scenario">Synthetic test case<select id="scenario" disabled><option>Loading deterministic evidence…</option></select></label>
+        <button id="replay" type="button" disabled>Show result</button>
+      </div>
+      <p id="error" role="status" aria-live="polite"></p>
+      <div class="flow" aria-label="Conceptual pipeline">
+        <div class="step" id="stage-source"><strong>01 · Normalize</strong><span>Source state</span></div>
+        <div class="step" id="stage-proof"><strong>02 · Prove</strong><span>Generation state</span></div>
+        <div class="step" id="stage-verify"><strong>03 · Verify</strong><span>Crypto state</span></div>
+        <div class="step" id="stage-publish"><strong>04 · Publish</strong><span>Optional mock</span></div>
+      </div>
+      <div class="metric"><span class="kicker">Public policy predicate</span><b>speed_cm_s ≤ maximum_speed_cm_s</b><div class="small">The private normalized speed is never displayed. This preview does not expose a public limit for each recorded case.</div></div>
+      <div class="metric"><span class="kicker">Recorded cryptographic dimension</span><b><span class="status" id="crypto">NOT_LOADED</span></b><div class="small">Recorded mock orchestration result, not independently verified proof evidence.</div></div>
+      <details><summary>What this does — and does not — demonstrate</summary>
+        <p class="small">This preview demonstrates how separate typed outcomes can be presented. Its source data comes from deterministic tests that mock proof generation and verification. It does not demonstrate a newly generated genuine proof, telemetry truth, trustworthy source/time, whole-flight coverage, safety, compliance, customer demand or production readiness.</p>
+      </details>
+    </section>
+    <aside class="card" aria-labelledby="outcomes-title">
+      <h2 id="outcomes-title">Recorded typed outcomes</h2>
+      <dl>
+        <dt>Source normalization</dt><dd id="source">NOT_LOADED</dd>
+        <dt>Source trust</dt><dd id="trust">NOT_LOADED</dd>
+        <dt>Claim eligibility</dt><dd id="claim">NOT_LOADED</dd>
+        <dt>Proof generation</dt><dd id="proof">NOT_LOADED</dd>
+        <dt>Verification input</dt><dd id="verify-input">NOT_LOADED</dd>
+        <dt>Assurance</dt><dd id="assurance">A0_SYNTHETIC</dd>
+      </dl>
+      <hr>
+      <h2>Optional publication mock</h2>
+      <dl><dt>State</dt><dd id="publication">NOT_LOADED</dd><dt>Attempts</dt><dd id="attempts">—</dd><dt>Reconciled</dt><dd id="reconciled">—</dd></dl>
+      <hr>
+      <h2>Trust boundaries</h2>
+      <dl><dt>Business decision</dt><dd id="decision">NOT_MADE</dd><dt>MAVLink command path</dt><dd id="command">NONE</dd><dt>Restricted disclosure</dt><dd id="disclosure">NONE</dd></dl>
+      <p class="small">Verification is not a relying party's decision. Publication is not cryptographic verification. A0_SYNTHETIC does not establish real-world telemetry assurance.</p>
+    </aside>
+  </div>
+  <footer>Local/offline demonstration preview only. No analytics, remote APIs, uploads, external fonts, or proof jobs. Source: integrated-cli-v0 deterministic orchestration evidence.</footer>
+</main>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const label = key => key.replaceAll("_"," ").toLowerCase().replace(/^./,x=>x.toUpperCase());
+const safe = (v) => typeof v === "string" || typeof v === "number" ? String(v) : "NOT_RECORDED";
+const setText = (id, value) => { $(id).textContent = safe(value); };
+function stage(id, value, success) {
+  $(id).dataset.state = value === success ? "complete" : "stopped";
+}
+function render(e) {
+  setText("source",e.source); setText("trust",e.source_trust);
+  setText("claim",e.claim); setText("proof",e.proof_generation);
+  setText("verify-input",e.verification_input); setText("assurance",e.assurance);
+  setText("crypto",e.cryptographic);
+  $("crypto").dataset.tone = e.cryptographic === "VALID" ? "good" : "warn";
+  setText("publication",e.publication.state);
+  setText("attempts",e.publication.attempts);
+  setText("reconciled",e.publication.reconciled ? "YES" : "NO");
+  setText("decision",e.relying_party_decision);
+  setText("command",e.command_path);
+  setText("disclosure",e.restricted_fields_disclosed ? "RECORDED" : "NONE");
+  stage("stage-source",e.source,"NORMALIZED");
+  stage("stage-proof",e.proof_generation,"GENERATED");
+  stage("stage-verify",e.cryptographic,"VALID");
+  stage("stage-publish",e.publication.state,"final");
+}
+async function initialize() {
+  try {
+    const response = await fetch("../integrated-cli-v0/evidence-results.json",{cache:"no-store"});
+    if (!response.ok) throw new Error("Evidence file unavailable");
+    const evidence = await response.json();
+    const required = ["EXPERIMENTAL","SYNTHETIC_ONLY","A0_SYNTHETIC","NOT VALIDATION OR PRODUCTION AUTHORIZATION"];
+    if (!required.every(s => evidence.labels?.includes(s)) || evidence.evidence_kind !== "deterministic orchestration/control-flow evidence" || !evidence.cases) throw new Error("Unsupported or unlabeled evidence");
+    const cases = Object.entries(evidence.cases);
+    if (!cases.length) throw new Error("No test cases available");
+    const select = $("scenario");
+    select.replaceChildren();
+    for (const [id] of cases) {const opt = document.createElement("option");opt.value=id;opt.textContent=label(id);select.append(opt);}
+    const replay = () => {const scenario=evidence.cases[select.value];if(scenario)render(scenario);};
+    select.disabled=false;$("replay").disabled=false;
+    $("replay").addEventListener("click",replay);select.addEventListener("change",replay);
+    replay();
+  } catch (error) {$("error").textContent="Local evidence could not be loaded. Serve the experiments/ directory over loopback HTTP; no external service is required.";}
+}
+initialize();
+</script>
+</body>
+</html>

@@ -24,6 +24,7 @@ APPROVED_TESTS = (
     "experiments/publication-mock-v0/test_publication_mock.py",
     "experiments/publication-adapter-v0/test_publication_adapter.py",
     "experiments/integrated-cli-v0/test_cli.py",
+    "experiments/web-console-v0/test_console.py",
 )
 
 DETERMINISTIC_EVIDENCE = (
