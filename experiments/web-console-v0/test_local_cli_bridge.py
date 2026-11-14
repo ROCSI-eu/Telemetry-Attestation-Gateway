@@ -18,6 +18,7 @@ import unittest
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "integrated-cli-v0"))
 import local_cli_bridge as bridge  # noqa: E402
 
 
@@ -97,6 +98,13 @@ class BridgeUnitTests(unittest.TestCase):
         doc["proof"]["verification_input"] = {"status": "ACCEPTED", "reason": None}
         doc["source"]["assurance_id"] = "A0_SYNTHETIC"
         doc["source"]["source_trust"] = "UNSIGNED"
+        doc["publication"] = {
+            "mode": "disabled", "state": "failed", "status": "FAILED",
+            "attempts": 1, "reconciled": True, "receipt_state": "NOT_ISSUED",
+            "record_id": "rec_internal_synthetic_only",
+            "error": {"code": "PUBLICATION_DISABLED",
+                      "classification": "definitive", "retryable": False},
+        }
         doc["verification_dimensions"] = {
             "policy": "NOT_EVALUATED", "freshness": "NOT_EVALUATED",
             "revocation": "NOT_EVALUATED", "replay": "NOT_EVALUATED",
@@ -111,10 +119,15 @@ class BridgeUnitTests(unittest.TestCase):
         self.assertEqual(output["verification_input"], "ACCEPTED")
         self.assertFalse(output["browser_verified"])
         self.assertFalse(output["proof_validity_is_telemetry_truth"])
+        self.assertEqual(output["publication"], "NOT_PERFORMED")
+        self.assertNotIn("rec_internal_synthetic_only", json.dumps(output))
         for name in ("witness", "proof_bytes", "private_speed", "capture_case"):
             self.assertNotIn(name, output)
         for mutation in ("wrong_exit", "missing_verification", "fake_crypto",
-                         "bad_trust", "bad_assurance", "bad_policy"):
+                         "bad_trust", "bad_assurance", "bad_policy",
+                         "publication_mode", "publication_state", "publication_code",
+                         "publication_class", "publication_retry", "publication_attempts",
+                         "publication_receipt", "publication_reconciliation"):
             candidate = json.loads(json.dumps(doc))
             code = 0
             if mutation == "wrong_exit": code = 5
@@ -128,9 +141,61 @@ class BridgeUnitTests(unittest.TestCase):
                 candidate["verification_dimensions"]["assurance"]["effective"] = "A1"
             elif mutation == "bad_policy":
                 candidate["verification_dimensions"]["policy"] = "ACCEPTED"
+            elif mutation == "publication_mode":
+                candidate["publication"]["mode"] = "local"
+            elif mutation == "publication_state":
+                candidate["publication"]["state"] = "final"
+            elif mutation == "publication_code":
+                candidate["publication"]["error"]["code"] = "SUBSTRATE_REJECTED"
+            elif mutation == "publication_class":
+                candidate["publication"]["error"]["classification"] = "retryable"
+            elif mutation == "publication_retry":
+                candidate["publication"]["error"]["retryable"] = True
+            elif mutation == "publication_attempts":
+                candidate["publication"]["attempts"] = 2
+            elif mutation == "publication_receipt":
+                candidate["publication"]["receipt_state"] = "MOCK_FINAL"
+            elif mutation == "publication_reconciliation":
+                candidate["publication"]["reconciled"] = False
             with self.subTest(mutation=mutation):
                 with self.assertRaises(bridge.Rejected):
                     bridge.minimize(candidate, "verified_synthetic", code)
+
+    def test_disabled_adapter_real_contract_is_accepted_without_exposing_record_id(self):
+        """Use the actual repository DisabledAdapter, not an invented publication status."""
+        import cli as integrated
+        pub = integrated.publication
+        request = pub.PublicationRequest(
+            idempotency_key="idk_" + "a" * 32,
+            payload_digest=pub.synthetic_payload_digest("proof-contract-regression"),
+            metadata={"scenario": "synthetic-proof-contract"},
+        )
+        adapter = pub.DisabledAdapter()
+        submitted = adapter.submit(request)
+        checked = adapter.status(submitted["record_id"])
+        actual = integrated._summarize_publication(
+            "disabled", checked, attempts=1, reconciled=True)
+        self.assertEqual(actual["state"], "failed")
+        self.assertEqual(actual["error"]["code"], "PUBLICATION_DISABLED")
+        doc = cli_result("verified_synthetic")
+        doc["proof"]["generation"] = "GENERATED"
+        doc["proof"]["cryptographic"] = {"status": "VALID", "reason": None}
+        doc["proof"]["verification_input"] = {"status": "ACCEPTED", "reason": None}
+        doc["source"].update({"assurance_id": "A0_SYNTHETIC", "source_trust": "UNSIGNED"})
+        doc["verification_dimensions"] = {
+            "policy": "NOT_EVALUATED", "freshness": "NOT_EVALUATED",
+            "revocation": "NOT_EVALUATED", "replay": "NOT_EVALUATED",
+            "assurance": {
+                "declared": "A0_SYNTHETIC", "effective": "A0_SYNTHETIC",
+                "required": "NOT_EVALUATED", "demonstrator": "A0_SYNTHETIC",
+            },
+        }
+        doc["publication"] = actual
+        minimized = bridge.minimize(doc, "verified_synthetic", 0)
+        self.assertEqual(minimized["cryptographic"], "VALID")
+        self.assertEqual(minimized["publication"], "NOT_PERFORMED")
+        self.assertNotIn(checked["record_id"], json.dumps(minimized))
+        self.assertNotIn("record_id", minimized)
 
     def test_proof_cannot_start_without_explicit_private_toolchain(self):
         with patch.object(bridge, "_bounded_run") as worker:
