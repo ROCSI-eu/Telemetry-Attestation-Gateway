@@ -114,6 +114,8 @@
     <div class="eyebrow">Separate evidence type · no live prover</div>
     <h2 id="authentic-title">Precomputed genuine synthetic proof verification</h2>
     <p class="small">This is a recorded result from the independent local Noir/Barretenberg verifier, not an orchestration mock. Verification happened offline before export, not in this browser. A local JSON replay is not an authenticated proof or an independently verifiable receipt. No proof, witness, key, raw telemetry, or private observation is supplied to the page.</p>
+    <p class="small">To update this panel, first run the separate private offline CLI refresh, then reload its recorded result below. This button never runs the CLI, proves a claim or starts verification.</p>
+    <button id="authentic-reload" type="button">Reload recorded result</button>
     <p id="authentic-error" role="status" aria-live="polite">Loading minimized offline verification replay…</p>
     <div class="layout" id="authentic-data" hidden>
       <div>
@@ -191,6 +193,9 @@ async function initialize() {
 // Strictly separate from the deterministic mock replay above.
 // This surface displays a precomputed minimized export; it never verifies a proof.
 async function initializeAuthentic() {
+  $("authentic-reload").disabled=true;
+  $("authentic-data").hidden=true;
+  $("authentic-error").textContent="Loading precomputed offline result; no verification is performed in this browser.";
   const unavailable = () => { $("authentic-error").textContent="Authentic replay unavailable or incompatible. Mock orchestration remains separate; no cryptographic verification is implied."; $("authentic-data").hidden=true; };
   try {
     const response = await fetch("authentic-evidence.json",{cache:"no-store"});
@@ -222,7 +227,9 @@ async function initializeAuthentic() {
     $("authentic-data").hidden=false;
     $("authentic-error").textContent="Precomputed offline verifier result loaded. Browser verification: NOT_PERFORMED.";
   } catch (error) { unavailable(); }
+  finally { $("authentic-reload").disabled=false; }
 }
+$("authentic-reload").addEventListener("click",initializeAuthentic);
 initialize();
 initializeAuthentic();
 </script>

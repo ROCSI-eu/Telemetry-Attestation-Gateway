@@ -142,6 +142,17 @@ class GenuineReplayTests(unittest.TestCase):
         self.assertIn("Browser verification: NOT_PERFORMED", html)
         self.assertEqual(exporter.minimize(checked("INVALID"))["cryptographic_reason"], "PROOF_REJECTED")
 
+    def test_explicit_reload_is_display_only_and_fails_closed(self) -> None:
+        html = HTML.read_text()
+        self.assertIn('id="authentic-reload" type="button"', html)
+        self.assertIn('addEventListener("click",initializeAuthentic)', html)
+        self.assertIn('fetch("authentic-evidence.json",{cache:"no-store"})', html)
+        self.assertIn('$("authentic-data").hidden=true;', html)
+        self.assertIn('finally { $("authentic-reload").disabled=false; }', html)
+        self.assertIn('This button never runs the CLI', html)
+        self.assertNotIn('fetch("/run', html)
+        self.assertNotIn('WebSocket(', html)
+
     def test_browser_is_static_separate_strict_and_fails_closed(self) -> None:
         html = HTML.read_text()
         self.assertIn('fetch("../integrated-cli-v0/evidence-results.json"', html)
