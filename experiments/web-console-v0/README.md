@@ -20,6 +20,12 @@ In the **same machine's browser**, open:
 
 The browser fetches only the two fixed, separately versioned, minimized files `../integrated-cli-v0/evidence-results.json` (mock) and `authentic-evidence.json` (precomputed authentic local verification result) from the same loopback server. **Do not bind a public interface, expose the server through a tunnel/proxy or deploy this page to a public hostname.** Stop the temporary server when the inspection ends. There is no independent live backend or proof-generation endpoint in this increment.
 
+## Visible evidence-scope explanation (experimental)
+
+**EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION**
+
+The existing static console now places a two-column (single-column on narrow screens), always-visible explanation before the result panels. It distinguishes the historical, precomputed genuine synthetic verifier outcome from mock orchestration and states explicitly that unauthenticated JSON replay is not browser proof verification. The adjacent non-claims cover telemetry/source truth, time, coverage, safety, compliance, independent policy/freshness/revocation/replay decisions, publication and relying-party acceptance. No evidence shape, verifier, runtime, network behavior, browser storage or dependency has changed. This is a presentation-only increment for local exploration under #87, with potential reuse for the **Proposed** #89 showcase; it does not authorize public activation. Structural tests check the explanation's static visibility, location and narrow-viewport CSS. Browser/assistive-technology acceptance remains separate and unverified for this increment.
+
 ## UI scope
 
 - Choose and replay pre-recorded synthetic orchestration cases without executing them.
