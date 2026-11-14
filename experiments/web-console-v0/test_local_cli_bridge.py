@@ -314,6 +314,15 @@ class BridgeHttpTests(unittest.TestCase):
         ).encode()
         self._assert_drip_does_not_hold_server(prefix)
 
+    def test_genuine_proof_http_fails_closed_without_offline_toolchain(self):
+        with patch.object(bridge, "_bounded_run") as worker:
+            code, response = self.request(scenario="verified_synthetic")
+        self.assertEqual(code, 503)
+        self.assertEqual(json.loads(response), {"error": "UNAVAILABLE"})
+        self.assertTrue(self.server.used)
+        worker.assert_not_called()
+        self.assertEqual(self.request(scenario="over_limit")[0], 503)
+
     def test_single_operator_run_and_no_raw_fields(self):
         with patch.object(bridge, "execute", return_value=bridge.minimize(
                 cli_result(), "over_limit", 3)) as execute:
