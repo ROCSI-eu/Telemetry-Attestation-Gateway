@@ -209,18 +209,32 @@ def preview(package: Path, parent: Path, seconds: int, serve: bool = True,
     # TemporaryDirectory closes after the loopback HTTP server closes.
 
 
+def default_private_parent() -> Path:
+    """Select an existing owner-private runtime directory, never generic /tmp.
+
+    XDG_RUNTIME_DIR is accepted only after the same strict parent validation
+    that applies to an explicit --private-parent. A supplied unsafe XDG value
+    must fail closed; it must not silently fall back to another location.
+    """
+    configured = os.environ.get("XDG_RUNTIME_DIR")
+    if configured is not None:
+        return Path(configured)
+    return Path(f"/run/user/{os.getuid()}")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--package-dir", type=Path, required=True)
-    parser.add_argument("--private-parent", type=Path, required=True,
-                        help="existing 0700 owner-only directory outside Git and package")
+    parser.add_argument("--private-parent", type=Path,
+                        help="existing private 0700 directory (default: validated XDG_RUNTIME_DIR or /run/user/UID)")
     parser.add_argument("--seconds", type=int, default=30,
                         help="bounded preview lifetime: 0-300 seconds, default 30")
     parser.add_argument("--no-serve", action="store_true",
                         help="offline verification + ephemeral export + cleanup only")
     args = parser.parse_args()
     try:
-        preview(args.package_dir, args.private_parent, args.seconds,
+        parent = args.private_parent if args.private_parent is not None else default_private_parent()
+        preview(args.package_dir, parent, args.seconds,
                 serve=not args.no_serve)
     except (Rejected, session_cli.SessionRejected, OSError, ValueError):
         print(f"{LABEL}: preview not started; no persistent session", file=sys.stderr)

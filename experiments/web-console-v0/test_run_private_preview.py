@@ -177,6 +177,45 @@ class PreviewTests(unittest.TestCase):
                     with self.assertRaises(runner.Rejected):
                         runner.offline_refresh(self.package, self.private / "console", self.private)
 
+    def test_default_private_parent_uses_approved_runtime(self):
+        import os
+
+        with patch.dict(os.environ, {"XDG_RUNTIME_DIR": str(self.private)}):
+            selected = runner.default_private_parent()
+            self.assertEqual(selected, self.private)
+            runner.private_parent(selected, self.package)
+
+        with patch.dict(os.environ, {"XDG_RUNTIME_DIR": ""}):
+            with self.assertRaises(runner.Rejected):
+                runner.private_parent(runner.default_private_parent(), self.package)
+
+        with patch.dict(os.environ, {"XDG_RUNTIME_DIR": str(self.root)}):
+            with self.assertRaises(runner.Rejected):
+                runner.private_parent(runner.default_private_parent(), self.package)
+
+    def test_runtime_fallback_uses_existing_private_user_directory(self):
+        import os
+        env = dict(os.environ)
+        env.pop("XDG_RUNTIME_DIR", None)
+        with patch.dict(os.environ, env, clear=True):
+            self.assertEqual(runner.default_private_parent(), Path(f"/run/user/{os.getuid()}"))
+
+    def test_default_parent_is_passed_to_cli_and_explicit_override_wins(self):
+        import os
+
+        argv = ["run_private_preview.py", "--package-dir", str(self.package), "--no-serve"]
+        with patch.dict(os.environ, {"XDG_RUNTIME_DIR": str(self.private)}):
+            with patch.object(runner.sys, "argv", argv):
+                with patch.object(runner, "preview") as invoke:
+                    self.assertEqual(runner.main(), 0)
+                    self.assertEqual(invoke.call_args.args[:3],
+                                     (self.package, self.private, 30))
+            with patch.object(runner.sys, "argv", argv + [
+                "--private-parent", str(self.root)]):
+                with patch.object(runner, "preview") as invoke:
+                    self.assertEqual(runner.main(), 0)
+                    self.assertEqual(invoke.call_args.args[1], self.root)
+
     def test_offline_invocation_has_network_and_file_isolation(self):
         recorded = []
 
