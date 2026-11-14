@@ -1,0 +1,213 @@
+{
+  "boundaries": {
+    "exact_normalized_speed_disclosed": false,
+    "hardware_required": false,
+    "mavlink_command_path": false,
+    "network_required": false,
+    "private_witness_disclosed": false,
+    "raw_telemetry_disclosed": false,
+    "relying_party_business_decision": false,
+    "stable_identity_disclosed": false
+  },
+  "cases": {
+    "altered_public_input": {
+      "assurance": "A0_SYNTHETIC",
+      "claim": "SATISFIED",
+      "command_path": "NONE",
+      "cryptographic": "INVALID",
+      "proof_generation": "GENERATED",
+      "publication": {
+        "attempts": 0,
+        "error_code": "VERIFICATION_NOT_VALID",
+        "mode": "disabled",
+        "reconciled": false,
+        "state": "NOT_PERFORMED"
+      },
+      "relying_party_decision": "NOT_MADE",
+      "restricted_fields_disclosed": false,
+      "source": "NORMALIZED",
+      "source_trust": "UNSIGNED",
+      "verification_input": "ACCEPTED"
+    },
+    "below_limit_local_publication": {
+      "assurance": "A0_SYNTHETIC",
+      "claim": "SATISFIED",
+      "command_path": "NONE",
+      "cryptographic": "VALID",
+      "proof_generation": "GENERATED",
+      "publication": {
+        "attempts": 1,
+        "error_code": null,
+        "mode": "local",
+        "reconciled": true,
+        "state": "final"
+      },
+      "relying_party_decision": "NOT_MADE",
+      "restricted_fields_disclosed": false,
+      "source": "NORMALIZED",
+      "source_trust": "UNSIGNED",
+      "verification_input": "ACCEPTED"
+    },
+    "equality_publication_disabled": {
+      "assurance": "A0_SYNTHETIC",
+      "claim": "SATISFIED",
+      "command_path": "NONE",
+      "cryptographic": "VALID",
+      "proof_generation": "GENERATED",
+      "publication": {
+        "attempts": 1,
+        "error_code": "PUBLICATION_DISABLED",
+        "mode": "disabled",
+        "reconciled": true,
+        "state": "failed"
+      },
+      "relying_party_decision": "NOT_MADE",
+      "restricted_fields_disclosed": false,
+      "source": "NORMALIZED",
+      "source_trust": "UNSIGNED",
+      "verification_input": "ACCEPTED"
+    },
+    "malformed_source": {
+      "assurance": "A0_SYNTHETIC",
+      "claim": "NOT_EVALUATED",
+      "command_path": "NONE",
+      "cryptographic": "NOT_CHECKED",
+      "proof_generation": "NOT_ATTEMPTED",
+      "publication": {
+        "attempts": 0,
+        "error_code": "SOURCE_NOT_ELIGIBLE",
+        "mode": "local",
+        "reconciled": false,
+        "state": "NOT_PERFORMED"
+      },
+      "relying_party_decision": "NOT_MADE",
+      "restricted_fields_disclosed": false,
+      "source": "REJECTED",
+      "source_trust": "NOT_EVALUATED",
+      "verification_input": "NOT_CHECKED"
+    },
+    "over_limit": {
+      "assurance": "A0_SYNTHETIC",
+      "claim": "NOT_SATISFIED",
+      "command_path": "NONE",
+      "cryptographic": "NOT_CHECKED",
+      "proof_generation": "NOT_ATTEMPTED",
+      "publication": {
+        "attempts": 0,
+        "error_code": "CLAIM_NOT_ELIGIBLE",
+        "mode": "local",
+        "reconciled": false,
+        "state": "NOT_PERFORMED"
+      },
+      "relying_party_decision": "NOT_MADE",
+      "restricted_fields_disclosed": false,
+      "source": "NORMALIZED",
+      "source_trust": "UNSIGNED",
+      "verification_input": "NOT_CHECKED"
+    },
+    "publication_definitive_failure": {
+      "assurance": "A0_SYNTHETIC",
+      "claim": "SATISFIED",
+      "command_path": "NONE",
+      "cryptographic": "VALID",
+      "proof_generation": "GENERATED",
+      "publication": {
+        "attempts": 1,
+        "error_code": "SUBSTRATE_REJECTED",
+        "mode": "local",
+        "reconciled": true,
+        "state": "failed"
+      },
+      "relying_party_decision": "NOT_MADE",
+      "restricted_fields_disclosed": false,
+      "source": "NORMALIZED",
+      "source_trust": "UNSIGNED",
+      "verification_input": "ACCEPTED"
+    },
+    "publication_timeout_retry_reconciliation": {
+      "assurance": "A0_SYNTHETIC",
+      "claim": "SATISFIED",
+      "command_path": "NONE",
+      "cryptographic": "VALID",
+      "proof_generation": "GENERATED",
+      "publication": {
+        "attempts": 2,
+        "error_code": null,
+        "mode": "local",
+        "reconciled": true,
+        "state": "final"
+      },
+      "relying_party_decision": "NOT_MADE",
+      "restricted_fields_disclosed": false,
+      "source": "NORMALIZED",
+      "source_trust": "UNSIGNED",
+      "verification_input": "ACCEPTED"
+    },
+    "publication_unavailable": {
+      "assurance": "A0_SYNTHETIC",
+      "claim": "SATISFIED",
+      "command_path": "NONE",
+      "cryptographic": "VALID",
+      "proof_generation": "GENERATED",
+      "publication": {
+        "attempts": 1,
+        "error_code": "SUBSTRATE_UNAVAILABLE",
+        "mode": "local",
+        "reconciled": false,
+        "state": "NOT_RECORDED"
+      },
+      "relying_party_decision": "NOT_MADE",
+      "restricted_fields_disclosed": false,
+      "source": "NORMALIZED",
+      "source_trust": "UNSIGNED",
+      "verification_input": "ACCEPTED"
+    },
+    "tampered_proof": {
+      "assurance": "A0_SYNTHETIC",
+      "claim": "SATISFIED",
+      "command_path": "NONE",
+      "cryptographic": "INVALID",
+      "proof_generation": "GENERATED",
+      "publication": {
+        "attempts": 0,
+        "error_code": "VERIFICATION_NOT_VALID",
+        "mode": "disabled",
+        "reconciled": false,
+        "state": "NOT_PERFORMED"
+      },
+      "relying_party_decision": "NOT_MADE",
+      "restricted_fields_disclosed": false,
+      "source": "NORMALIZED",
+      "source_trust": "UNSIGNED",
+      "verification_input": "ACCEPTED"
+    },
+    "unsupported_public_version": {
+      "assurance": "A0_SYNTHETIC",
+      "claim": "SATISFIED",
+      "command_path": "NONE",
+      "cryptographic": "NOT_CHECKED",
+      "proof_generation": "GENERATED",
+      "publication": {
+        "attempts": 0,
+        "error_code": "VERIFICATION_NOT_VALID",
+        "mode": "disabled",
+        "reconciled": false,
+        "state": "NOT_PERFORMED"
+      },
+      "relying_party_decision": "NOT_MADE",
+      "restricted_fields_disclosed": false,
+      "source": "NORMALIZED",
+      "source_trust": "UNSIGNED",
+      "verification_input": "REJECTED"
+    }
+  },
+  "evidence_kind": "deterministic orchestration/control-flow evidence",
+  "evidence_note": "This file checks deterministic integration semantics only. Genuine proof generation/verification evidence remains owned by end-to-end-v0 with its separately pinned Noir/Barretenberg/CRS provisioning.",
+  "experiment": "integrated-cli-v0",
+  "labels": [
+    "EXPERIMENTAL",
+    "SYNTHETIC_ONLY",
+    "A0_SYNTHETIC",
+    "NOT VALIDATION OR PRODUCTION AUTHORIZATION"
+  ]
+}

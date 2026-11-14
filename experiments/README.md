@@ -41,6 +41,7 @@ The gate deliberately does not re-provision Noir, Barretenberg, CRS/setup materi
 - [`mock-gateway-v0/`](mock-gateway-v0/) — local synthetic gateway/operator-boundary experiment for idempotency, retry/restart, failure isolation, minimized state, and restricted-field absence around the existing end-to-end path.
 - [`publication-mock-v0/`](publication-mock-v0/) — stateless deterministic local publication control-flow mock that preserves verifier results, emits no subject correlation material, and explicitly performs no receipt authentication, signature, or subject binding.
 - [`publication-adapter-v0/`](publication-adapter-v0/) — provisional substrate-neutral local adapter conformance experiment covering disabled/local-mock adapters, idempotency conflicts, status lookup, typed failure classification, timeout/cancellation reconciliation, lifecycle monotonicity, payload binding, and restricted-field absence.
+- [`integrated-cli-v0/`](integrated-cli-v0/) — one-command synthetic CLI that reuses normalization, genuine proof, independent verification, and provisional publication boundaries while emitting redacted human-readable and machine-readable typed state.
 
 ## Workspace boundary
 

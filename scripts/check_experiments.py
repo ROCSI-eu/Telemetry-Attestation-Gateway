@@ -23,6 +23,7 @@ APPROVED_TESTS = (
     "experiments/mock-gateway-v0/test_review_regressions.py",
     "experiments/publication-mock-v0/test_publication_mock.py",
     "experiments/publication-adapter-v0/test_publication_adapter.py",
+    "experiments/integrated-cli-v0/test_cli.py",
 )
 
 DETERMINISTIC_EVIDENCE = (
@@ -37,6 +38,10 @@ DETERMINISTIC_EVIDENCE = (
     (
         "experiments/publication-adapter-v0/evidence.py",
         "experiments/publication-adapter-v0/evidence-results.json",
+    ),
+    (
+        "experiments/integrated-cli-v0/evidence.py",
+        "experiments/integrated-cli-v0/evidence-results.json",
     ),
 )
 
