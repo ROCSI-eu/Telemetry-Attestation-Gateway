@@ -2,6 +2,7 @@
 """Offline-only tests of disposable A0_SYNTHETIC preview orchestration."""
 from pathlib import Path
 import stat
+import shutil
 import tempfile
 import threading
 import unittest
@@ -31,12 +32,12 @@ class PreviewTests(unittest.TestCase):
         mock = session / "integrated-cli-v0"
         view.mkdir(parents=True, mode=0o700)
         mock.mkdir(mode=0o700)
-        for target, body in (
-            (view / "index.html", "<h1>EXPERIMENTAL SYNTHETIC_ONLY A0_SYNTHETIC</h1>"),
-            (view / "authentic-evidence.json", '{"cryptographic":"VALID"}'),
-            (mock / "evidence-results.json", '{"mock":true}'),
+        for target, source in (
+            (view / "index.html", runner.session_cli.SOURCE_INDEX),
+            (view / "authentic-evidence.json", runner.HERE / "authentic-evidence.json"),
+            (mock / "evidence-results.json", runner.session_cli.SOURCE_MOCK),
         ):
-            target.write_text(body)
+            shutil.copyfile(source, target)
             target.chmod(0o600)
 
     def test_cleanup_success(self):
@@ -109,6 +110,73 @@ class PreviewTests(unittest.TestCase):
         self.assertEqual(outcomes, ["PASS"])
         self.assertEqual(list(self.private.iterdir()), [])
 
+    def test_modified_file_after_snapshot_cannot_be_served(self):
+        observed = []
+        errors = []
+
+        def ready(port, session):
+            target = session / "web-console-v0/authentic-evidence.json"
+            expected = target.read_bytes()
+            target.write_text("TEST_ONLY_RESTRICTED_SENTINEL_NEVER_FOR_BROWSER")
+            target.chmod(0o600)
+
+            def inspect():
+                try:
+                    with urllib.request.urlopen(
+                        f"http://127.0.0.1:{port}/web-console-v0/authentic-evidence.json",
+                        timeout=2,
+                    ) as response:
+                        observed.append(response.read())
+                    self.assertEqual(observed, [expected])
+                except Exception as exc:
+                    errors.append(exc)
+
+            self.worker = threading.Thread(target=inspect)
+            self.worker.start()
+
+        with patch.object(runner, "offline_refresh", side_effect=self._fake_refresh):
+            runner.preview(self.package, self.private, 1, ready=ready)
+        self.worker.join()
+        self.assertFalse(errors)
+        self.assertEqual(len(observed), 1)
+        self.assertEqual(list(self.private.iterdir()), [])
+
+    def test_modified_file_before_snapshot_refuses_to_serve(self):
+        def modified(package, session, temporary_root):
+            self._fake_refresh(package, session, temporary_root)
+            replay = session / "web-console-v0/authentic-evidence.json"
+            replay.write_text("TEST_ONLY_RESTRICTED_SENTINEL_NEVER_FOR_BROWSER")
+            replay.chmod(0o600)
+
+        with patch.object(runner, "offline_refresh", side_effect=modified):
+            with self.assertRaises(runner.session_cli.SessionRejected):
+                runner.preview(self.package, self.private, 1)
+        self.assertEqual(list(self.private.iterdir()), [])
+
+    def test_system_isolation_tool_must_be_root_owned_and_nonwritable(self):
+        import os
+
+        actual_path = Path("/usr/bin/bwrap")
+        with patch.dict(os.environ, {"PATH": str(self.root) + os.pathsep + "/usr/bin"}):
+            with patch.object(Path, "lstat", autospec=True) as metadata:
+                metadata.return_value = type("Meta", (), {
+                    "st_mode": stat.S_IFREG | 0o755, "st_uid": 0
+                })()
+                self.assertEqual(runner.trusted_bwrap(), actual_path)
+                metadata.assert_called_once_with(actual_path)
+                metadata.return_value = type("Meta", (), {
+                    "st_mode": stat.S_IFREG | 0o777, "st_uid": 1000
+                })()
+                with self.assertRaises(runner.Rejected):
+                    runner.trusted_bwrap()
+
+    def test_zero_exit_without_validated_session_is_rejected(self):
+        with patch.object(runner, "trusted_bwrap", return_value=Path("/usr/bin/bwrap")):
+            with patch.object(runner.subprocess, "run", return_value=type("Result", (), {"returncode": 0})()):
+                with patch.object(runner, "approved_assets", side_effect=runner.session_cli.SessionRejected):
+                    with self.assertRaises(runner.Rejected):
+                        runner.offline_refresh(self.package, self.private / "console", self.private)
+
     def test_offline_invocation_has_network_and_file_isolation(self):
         recorded = []
 
@@ -116,9 +184,10 @@ class PreviewTests(unittest.TestCase):
             recorded.append((args, kwargs))
             return type("Completed", (), {"returncode": 0})()
 
-        with patch.object(runner.shutil, "which", return_value="/usr/bin/bwrap"):
+        with patch.object(runner, "trusted_bwrap", return_value=Path("/usr/bin/bwrap")):
             with patch.object(runner.subprocess, "run", side_effect=fake_run):
-                runner.offline_refresh(self.package, self.private / "console", self.private)
+                with patch.object(runner, "approved_assets", return_value={}):
+                    runner.offline_refresh(self.package, self.private / "console", self.private)
         args, kwargs = recorded[0]
         self.assertIn("--unshare-net", args)
         self.assertIn("--ro-bind", args)

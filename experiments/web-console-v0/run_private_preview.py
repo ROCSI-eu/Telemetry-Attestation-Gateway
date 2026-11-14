@@ -14,12 +14,13 @@ import argparse
 import http.server
 import os
 from pathlib import Path
-import shutil
 import stat
 import subprocess
 import sys
 import tempfile
 import threading
+
+import refresh_local_console as session_cli
 
 HERE = Path(__file__).resolve().parent
 REFRESH = HERE / "refresh_local_console.py"
@@ -54,9 +55,54 @@ def private_parent(parent: Path, package: Path) -> None:
         raise Rejected
 
 
+def approved_assets(session: Path) -> dict[str, tuple[bytes, str]]:
+    """Freeze verified public display bytes before exposing any HTTP endpoint.
+
+    Session directories are private but another same-UID process could modify
+    one while the viewer runs. Never re-open a mutable path during a request.
+    """
+    session_cli._existing_session_safe(session)
+    result = {}
+    for uri, (name, content_type) in ROUTES.items():
+        if name in result:
+            continue
+        path = session / name
+        meta = path.lstat()
+        if (not stat.S_ISREG(meta.st_mode) or meta.st_uid != os.getuid()
+                or stat.S_IMODE(meta.st_mode) != 0o600 or meta.st_size > 65536):
+            raise Rejected
+        fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+        try:
+            current = os.fstat(fd)
+            if ((current.st_dev, current.st_ino) != (meta.st_dev, meta.st_ino)
+                    or current.st_uid != os.getuid()
+                    or stat.S_IMODE(current.st_mode) != 0o600
+                    or not stat.S_ISREG(current.st_mode)):
+                raise Rejected
+            with os.fdopen(fd, "rb", closefd=False) as handle:
+                body = handle.read(65537)
+        finally:
+            os.close(fd)
+        if len(body) > 65536:
+            raise Rejected
+        if name == "web-console-v0/index.html":
+            if body != session_cli.SOURCE_INDEX.read_bytes():
+                raise Rejected
+        elif name == "integrated-cli-v0/evidence-results.json":
+            if body != session_cli.SOURCE_MOCK.read_bytes():
+                raise Rejected
+        elif name == "web-console-v0/authentic-evidence.json":
+            if not session_cli._prior_replay_safe(body):
+                raise Rejected
+        else:
+            raise Rejected
+        result[name] = (body, content_type)
+    return {uri: result[name] for uri, (name, _) in ROUTES.items()}
+
+
 class Preview(http.server.BaseHTTPRequestHandler):
-    # Set from factory, never accept arbitrary URL paths as file names.
-    session: Path
+    # Materialized immutable allowlisted response bytes, never source file paths.
+    assets: dict[str, tuple[bytes, str]]
 
     def log_message(self, *args: object) -> None:
         pass
@@ -66,31 +112,11 @@ class Preview(http.server.BaseHTTPRequestHandler):
             self.send_error(404, "Not found")
             return
         route = self.path.split("?", 1)[0]
-        if route not in ROUTES:
+        asset = self.assets.get(route)
+        if asset is None:
             self.send_error(404, "Not found")
             return
-        name, content_type = ROUTES[route]
-        try:
-            target = self.session / name
-            meta = target.lstat()
-            if (not stat.S_ISREG(meta.st_mode) or meta.st_uid != os.getuid()
-                    or stat.S_IMODE(meta.st_mode) != 0o600 or meta.st_size > 65536):
-                raise Rejected
-            fd = os.open(target, os.O_RDONLY | os.O_NOFOLLOW)
-            try:
-                actual = os.fstat(fd)
-                if ((actual.st_dev, actual.st_ino) != (meta.st_dev, meta.st_ino)
-                        or not stat.S_ISREG(actual.st_mode)):
-                    raise Rejected
-                with os.fdopen(fd, "rb", closefd=False) as handle:
-                    body = handle.read(65537)
-                if len(body) > 65536:
-                    raise Rejected
-            finally:
-                os.close(fd)
-        except (OSError, Rejected):
-            self.send_error(404, "Not found")
-            return
+        body, content_type = asset
         self.send_response(200)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(body)))
@@ -103,14 +129,27 @@ class Preview(http.server.BaseHTTPRequestHandler):
         self.wfile.write(body)
 
 
+def trusted_bwrap() -> Path:
+    # Explicit system path, never a potentially PATH-shadowed executable.
+    bwrap = Path("/usr/bin/bwrap")
+    try:
+        info = bwrap.lstat()
+        if (not stat.S_ISREG(info.st_mode) or info.st_uid != 0
+                or stat.S_IMODE(info.st_mode) & 0o022):
+            raise Rejected
+    except OSError:
+        raise Rejected from None
+    return bwrap
+
+
 def offline_refresh(package: Path, session: Path, temporary_root: Path) -> None:
     # The existing exporter/CLI performs independent genuine cryptographic
     # verification and strict allowlisting; never reimplement it here.
-    bwrap = shutil.which("bwrap")
-    if not bwrap:
-        raise Rejected
+    # Qube-specific trust boundary: PATH may include untrusted executable names.
+    # Do not silently accept a substituted bwrap that skips network isolation.
+    bwrap = trusted_bwrap()
     isolated = [
-        bwrap, "--unshare-net", "--ro-bind", "/", "/",
+        str(bwrap), "--unshare-net", "--ro-bind", "/", "/",
         "--bind", str(temporary_root), str(temporary_root),
         "--dev-bind", "/dev", "/dev", "--proc", "/proc",
         "--setenv", "HOME", str(temporary_root),
@@ -129,6 +168,12 @@ def offline_refresh(package: Path, session: Path, temporary_root: Path) -> None:
         raise Rejected from None
     if completed.returncode:
         raise Rejected
+    # Success is not the subprocess exit code alone: verify the complete
+    # minimized/allowlisted session exists even when --no-serve is selected.
+    try:
+        approved_assets(session)
+    except session_cli.SessionRejected:
+        raise Rejected from None
 
 
 def preview(package: Path, parent: Path, seconds: int, serve: bool = True,
@@ -142,7 +187,8 @@ def preview(package: Path, parent: Path, seconds: int, serve: bool = True,
         offline_refresh(package, session, root)
         if not serve:
             return
-        handler = type("AllowlistedSessionPreview", (Preview,), {"session": session})
+        assets = approved_assets(session)
+        handler = type("AllowlistedSessionPreview", (Preview,), {"assets": assets})
         # This port is allocated by the OS, never selected from user input.
         with http.server.ThreadingHTTPServer(("127.0.0.1", 0), handler) as server:
             server.daemon_threads = True
@@ -176,7 +222,7 @@ def main() -> int:
     try:
         preview(args.package_dir, args.private_parent, args.seconds,
                 serve=not args.no_serve)
-    except (Rejected, OSError, ValueError):
+    except (Rejected, session_cli.SessionRejected, OSError, ValueError):
         print(f"{LABEL}: preview not started; no persistent session", file=sys.stderr)
         return 2
     print(f"{LABEL}: local preview closed; temporary session disposed")
