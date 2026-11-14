@@ -150,8 +150,28 @@ def refresh(package: Path, session: Path) -> None:
             finally:
                 os.close(directory_fd)
         else:
-            # Create the complete viewer at once, without touching the Git tree.
-            os.rename(stage, session)
+            # mkdir is exclusive: never replace a concurrently created session
+            # (plain rename silently overwrites an existing empty directory).
+            # The directory descriptor prevents redirects after this point.
+            try:
+                session.mkdir(mode=0o700)
+            except FileExistsError as exc:
+                raise SessionRejected from exc
+            directory_fd = os.open(
+                session, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+            )
+            try:
+                current = os.fstat(directory_fd)
+                if (current.st_uid != os.getuid()
+                        or stat.S_IMODE(current.st_mode) != 0o700
+                        or not stat.S_ISDIR(current.st_mode)):
+                    raise SessionRejected
+                os.rename(view, "web-console-v0", dst_dir_fd=directory_fd)
+                os.rename(mock, "integrated-cli-v0", dst_dir_fd=directory_fd)
+            finally:
+                os.close(directory_fd)
+            # Interrupted creation leaves a private, incomplete session that
+            # fails strict validation on retry; no arbitrary directory is removed.
 
 
 def main() -> int:
