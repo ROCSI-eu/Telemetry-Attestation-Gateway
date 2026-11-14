@@ -201,6 +201,8 @@ def execute(scenario: str) -> dict:
     experiments = HERE.parent
     cmd = [trusted_bwrap(), "--unshare-net", "--die-with-parent",
            "--ro-bind", "/usr", "/usr",
+           "--symlink", "usr/lib", "/lib",
+           "--symlink", "usr/lib64", "/lib64",
            "--ro-bind", str(experiments), str(experiments),
            "--tmpfs", "/tmp", "--dev", "/dev", "--proc", "/proc",
            "--setenv", "HOME", "/tmp", "--setenv", "TMPDIR", "/tmp",
