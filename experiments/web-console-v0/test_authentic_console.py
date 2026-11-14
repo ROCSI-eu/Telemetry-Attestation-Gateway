@@ -111,6 +111,29 @@ class GenuineReplayTests(unittest.TestCase):
                 self.assertEqual(verifier.call_count, 2)
             self.assertEqual(dest.stat().st_mode & 0o777, 0o600)
 
+    def test_export_failure_cleans_private_staging_and_never_exposes_partial_file(self) -> None:
+        # Reproduces a failed stream opening after temporary file allocation.
+        with tempfile.TemporaryDirectory() as root:
+            folder = Path(root)
+            dest = folder / "replay.json"
+            with patch.object(exporter.authentic, "check_package", return_value=checked()):
+                with patch.object(exporter.os, "fdopen", side_effect=OSError("simulated failure")):
+                    with self.assertRaises(exporter.ExportRejected):
+                        exporter.export(folder / "test-only", dest)
+            self.assertFalse(dest.exists())
+            self.assertEqual(list(folder.iterdir()), [], "no failed staging file remains")
+
+    def test_export_link_failure_does_not_overwrite_or_leak_staging(self) -> None:
+        with tempfile.TemporaryDirectory() as root:
+            folder = Path(root)
+            dest = folder / "replay.json"
+            with patch.object(exporter.authentic, "check_package", return_value=checked()):
+                with patch.object(exporter.os, "link", side_effect=OSError("simulated commit failure")):
+                    with self.assertRaises(exporter.ExportRejected):
+                        exporter.export(folder / "test-only", dest)
+            self.assertFalse(dest.exists())
+            self.assertEqual(list(folder.iterdir()), [], "no failed staging file remains")
+
     def test_browser_is_static_separate_strict_and_fails_closed(self) -> None:
         html = HTML.read_text()
         self.assertIn('fetch("../integrated-cli-v0/evidence-results.json"', html)
