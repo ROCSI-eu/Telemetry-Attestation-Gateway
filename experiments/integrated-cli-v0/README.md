@@ -42,6 +42,8 @@ python3 experiments/integrated-cli-v0/cli.py --maximum-speed-cm-s 600
 
 The default synthetic capture is `unsigned-consistent`. Its private normalized speed is used by the prover but is deliberately absent from human-visible and machine-readable output.
 
+The CLI deliberately accepts only the checked-in, reviewed synthetic fixture at `experiments/mavlink-normalization-v0/fixtures.json`; there is no `--capture-file` override. This is a local experimental input boundary, **not** proof of data provenance or authenticity. Any future external input adapter requires separate scope and provenance controls.
+
 For the experimental machine-readable transport:
 
 ```text
