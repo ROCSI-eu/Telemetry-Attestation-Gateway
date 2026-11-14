@@ -107,6 +107,21 @@ class LocalSessionTests(unittest.TestCase):
         )
         self.assertEqual(list(self.parent.iterdir()), [])
 
+    def test_fd_limit_stays_bounded_even_with_infinite_hard_limit(self) -> None:
+        with patch.object(pkg.resource, "getrlimit",
+                          return_value=(1024, pkg.resource.RLIM_INFINITY)), \
+             patch.object(pkg.resource, "setrlimit") as set_limit:
+            pkg.limits()
+        self.assertEqual(
+            set_limit.call_args_list[0],
+            unittest.mock.call(pkg.resource.RLIMIT_NOFILE,
+                               (64, pkg.resource.RLIM_INFINITY)),
+        )
+        self.assertEqual(
+            set_limit.call_args_list[1],
+            unittest.mock.call(pkg.resource.RLIMIT_CORE, (0, 0)),
+        )
+
     def test_invalid_lifetime_fails_before_any_session(self) -> None:
         for seconds in (0, 301):
             with self.subTest(seconds=seconds), contextlib.redirect_stderr(io.StringIO()):

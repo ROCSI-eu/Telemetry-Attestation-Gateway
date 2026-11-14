@@ -68,7 +68,8 @@ def isolated_env(runtime: Path) -> dict[str, str]:
 def limits() -> None:
     """A small inherited FD/core envelope; CLI imposes its own CPU/RAM caps."""
     hard = resource.getrlimit(resource.RLIMIT_NOFILE)[1]
-    resource.setrlimit(resource.RLIMIT_NOFILE, (min(64, hard), hard))
+    soft = 64 if hard == resource.RLIM_INFINITY else min(64, hard)
+    resource.setrlimit(resource.RLIMIT_NOFILE, (soft, hard))
     resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
 
 
