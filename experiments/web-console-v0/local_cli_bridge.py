@@ -174,7 +174,20 @@ def minimize(document: dict, scenario: str, status: int) -> dict:
             or document["proof"]["cryptographic"]["status"] != (
                 "VALID" if scenario == "verified_synthetic" else "NOT_CHECKED")
             or document["publication"]["mode"] != "disabled"
-            or document["publication"]["state"] != "NOT_PERFORMED"
+            or (document["publication"]["state"] != "NOT_PERFORMED"
+                if scenario != "verified_synthetic"
+                else (
+                    document["publication"]["state"] != "failed"
+                    or document["publication"]["status"] != "FAILED"
+                    or document["publication"]["attempts"] != 1
+                    or document["publication"]["reconciled"] is not True
+                    or document["publication"]["receipt_state"] != "NOT_ISSUED"
+                    or document["publication"]["error"] != {
+                        "code": "PUBLICATION_DISABLED",
+                        "classification": "definitive",
+                        "retryable": False,
+                    }
+                ))
             or set(document["disclosure"]) != {"raw_telemetry", "exact_normalized_speed", "private_witness", "proof_secrets", "stable_identity"}
             or document["claim"]["status"] != expected_claim
             or any(document["disclosure"].values())):
