@@ -120,15 +120,15 @@ async function initialize() {
   try {
     const response = await fetch("../integrated-cli-v0/evidence-results.json",{cache:"no-store"});
     if (!response.ok) throw new Error("Evidence file unavailable");
-    const document = await response.json();
+    const evidence = await response.json();
     const required = ["EXPERIMENTAL","SYNTHETIC_ONLY","A0_SYNTHETIC","NOT VALIDATION OR PRODUCTION AUTHORIZATION"];
-    if (!required.every(s => document.labels?.includes(s)) || document.evidence_kind !== "deterministic orchestration/control-flow evidence" || !document.cases) throw new Error("Unsupported or unlabeled evidence");
-    const cases = Object.entries(document.cases);
+    if (!required.every(s => evidence.labels?.includes(s)) || evidence.evidence_kind !== "deterministic orchestration/control-flow evidence" || !evidence.cases) throw new Error("Unsupported or unlabeled evidence");
+    const cases = Object.entries(evidence.cases);
     if (!cases.length) throw new Error("No test cases available");
     const select = $("scenario");
     select.replaceChildren();
     for (const [id] of cases) {const opt = document.createElement("option");opt.value=id;opt.textContent=label(id);select.append(opt);}
-    const replay = () => {const scenario=document.cases[select.value];if(scenario)render(scenario);};
+    const replay = () => {const scenario=evidence.cases[select.value];if(scenario)render(scenario);};
     select.disabled=false;$("replay").disabled=false;
     $("replay").addEventListener("click",replay);select.addEventListener("change",replay);
     replay();
