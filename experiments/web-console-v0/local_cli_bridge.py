@@ -219,7 +219,7 @@ def minimize(document: dict, scenario: str, status: int) -> dict:
     }
 
 
-def _bounded_run(cmd: list[str], *, timeout: int = RUN_SECONDS,
+def _bounded_run(cmd: list[str], *, timeout: float | None = None,
                  extra_path: str = "/usr/bin:/bin") -> tuple[bytes, int]:
     """Read only MAX_OUTPUT bytes while running; kill the child process group on failure."""
     try:
@@ -233,7 +233,7 @@ def _bounded_run(cmd: list[str], *, timeout: int = RUN_SECONDS,
     except OSError as exc:
         raise Rejected from exc
     try:
-        deadline = time.monotonic() + timeout
+        deadline = time.monotonic() + (RUN_SECONDS if timeout is None else timeout)
         output = bytearray()
         with selectors.DefaultSelector() as selector:
             selector.register(proc.stdout, selectors.EVENT_READ)
