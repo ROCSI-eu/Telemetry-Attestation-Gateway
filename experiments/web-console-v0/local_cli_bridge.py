@@ -120,7 +120,7 @@ def minimize(document: dict, scenario: str, status: int) -> dict:
             or document["proof_validity_is_telemetry_truth"] is not False
             or document["claim"]["maximum_speed_cm_s"] != int(bound)
             or document["claim"]["private_observation_disclosed"] is not False
-            or document["proof"]["generation"] != "NOT_GENERATED"
+            or document["proof"]["generation"] != "NOT_ATTEMPTED"
             or document["proof"]["cryptographic"]["status"] != "NOT_CHECKED"
             or document["claim"]["status"] != expected_claim
             or any(document["disclosure"].values())):
@@ -134,7 +134,7 @@ def minimize(document: dict, scenario: str, status: int) -> dict:
     return {
         "schema_version": SCHEMA, "labels": LABELS, "state": "COMPLETED",
         "scenario": scenario, "source": source,
-        "claim": expected_claim, "proof_generation": "NOT_GENERATED",
+        "claim": expected_claim, "proof_generation": "NOT_ATTEMPTED",
         "cryptographic": "NOT_CHECKED", "assurance": "A0_SYNTHETIC",
         "publication": "NOT_PERFORMED", "relying_party_decision": "NOT_MADE",
         "command_path": "NONE", "restricted_fields_disclosed": False,
