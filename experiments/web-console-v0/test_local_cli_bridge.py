@@ -31,7 +31,7 @@ def cli_result(scenario="over_limit"):
         "proof_validity_is_telemetry_truth": False,
         "claim": {"maximum_speed_cm_s": int(bound), "status": claim,
                   "private_observation_disclosed": False},
-        "source": {"normalization": "NORMALIZED" if scenario == "over_limit" else "REJECTED"},
+        "source": {"normalization": "REJECTED" if scenario == "malformed_source" else "NORMALIZED"},
         "proof": {"generation": "NOT_ATTEMPTED",
                   "cryptographic": {"status": "NOT_CHECKED"}},
         "publication": {"mode": "disabled", "state": "NOT_PERFORMED"},
