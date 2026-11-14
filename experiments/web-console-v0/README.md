@@ -161,3 +161,26 @@ For an invalid-but-well-formed **synthetic** proof, the reused independent verif
 This wrapper makes **no claim to generate a new proof, observe telemetry, verify in the browser, prove source truth, provide a continuous interval, offer production-ready assurance, or validate a customer workflow**. Real witness generation stays within the existing separately documented private, offline proof workflow. `A0_SYNTHETIC` is the only demonstrator tier.
 
 Run the offline-default checks through `python3 scripts/check_experiments.py`, plus `python3 scripts/check_docs.py`.
+
+## Bounded local test package (#88, Proposed)
+
+> **EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION**
+
+**Question:** can the already integrated local CLI + web console be started, checked and stopped reproducibly as one disposable Linux test session without any shared-VM deployment, cryptographic reprovisioning, persistent operator state or public exposure?
+
+**Current scope:** a standard-library, foreground-only wrapper \`run_isolated_local.py\` around the unchanged, previously tested \`local_cli_bridge.py\`. This is a **local/Qube research package only**, not an installable service or a readiness decision for a shared production VM. Startup is opt-in. The existing bridge still serves the allowlisted page and synthetic fixtures only on an OS-assigned \`127.0.0.1\` port; exactly one bearer-token-authenticated, pinned scenario can run. Both default short-circuit presets require no Noir/Barretenberg/CRS. A \`verified_synthetic\` selection fails closed because this minimal wrapper never forwards a toolchain root. The prior genuinely verified synthetic replay remains **precomputed evidence**, not a fresh proof.
+
+From a **clean, SHA-pinned checkout on the same non-production machine as the browser**, after confirming no conflicting browser/QA ownership and a non-root Linux account:
+
+\`\`\`sh
+python3 experiments/web-console-v0/run_isolated_local.py --check-only
+python3 experiments/web-console-v0/run_isolated_local.py --seconds 90
+\`\`\`
+
+Use the printed local loopback URL and token only within that machine and short session. Do **not** copy the token to Git, screenshots, logs, chat or a public site. Do not use a tunnel, reverse proxy, shared VM or DNS. A Ctrl-C or TERM/HUP ends the owned bridge process group; a hard deadline also bounds a stuck session. The bridge itself enforces its 1–300 second listener lifetime, its no-retry token, \`bwrap --unshare-net\`, bounded CLI execution and output minimization. The wrapper does not execute a shell, download material, install software, launch browsers, start background services or log request content.
+
+**Isolation and cleanup:** refuses root, symlinked/non-owner/group-or-world-writable runtime parent, runtime inside repository, or missing/untrusted root-owned \`/usr/bin/bwrap\` **before any listener exists**. Creates one owner-private \`0700\` temporary session directory under the invoking account's home (or an explicitly provided eligible \`--runtime-parent\`), supplies a minimal child environment without inherited credentials, uses private HOME/TMPDIR/cache, limits child open file descriptors and disables core dumps. The parent owns and waits for the foreground bridge process; exit, interrupt, or timeout removes this directory and sends TERM, then bounded KILL only to its own process group if necessary. Child proof workers, when used through the separately authorized bridge path, retain \`bwrap --die-with-parent\` and their own CPU/memory/time bounds. Abnormal power loss/SIGKILL cannot guarantee cleanup; check for stale owner-private directories and processes before any restart, **never remove another session without ownership evidence**.
+
+**Stop conditions / evidence boundary:** unexpected listening interface, failed guard, disk/memory pressure, interference with other processes, residual proof material, or any non-synthetic input ⇒ STOP, inspect read-only and clean only owned test resources. No background journal or persistence is configured. The wrapper does not enforce cgroups, dedicated service UID, global host disk thresholds, public binary/CRS provenance or hardware sizing. Those remain **Open** for issue #88 before any separate environment/deployment decision. Existing Qube proof/resource observations are not production capacity evidence, and the wrapper does not need or repeat proof provision. \`python3 experiments/web-console-v0/test_run_isolated_local.py\`, \`python3 scripts/check_experiments.py\` and \`python3 scripts/check_docs.py\` run offline without fetching proof tools.
+
+**Status:** Proposed portable packaging increment; no shared-VM GO. MIT remains the Current project license; no license model change. No production configuration, systemd service, Docker, port routing, remote operator connection, customer data, external independent validation, safety/compliance claim or publication authority.

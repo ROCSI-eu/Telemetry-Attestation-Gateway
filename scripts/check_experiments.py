@@ -30,6 +30,7 @@ APPROVED_TESTS = (
     "experiments/web-console-v0/test_refresh_local_console.py",
     "experiments/web-console-v0/test_run_private_preview.py",
     "experiments/web-console-v0/test_local_cli_bridge.py",
+    "experiments/web-console-v0/test_run_isolated_local.py",
 )
 
 DETERMINISTIC_EVIDENCE = (
