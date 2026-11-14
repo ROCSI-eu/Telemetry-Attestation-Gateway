@@ -17,6 +17,11 @@
     .sub{color:#b4c6d6;max-width:64ch;margin:0}
     .pill{border:1px solid #53758d;border-radius:99px;padding:6px 12px;color:#bde4f1;font-size:.75rem;white-space:nowrap}
     .notice{margin:25px 0;padding:13px 16px;background:#193045;border-left:3px solid #81d9e7;color:#e8f8ff;font-size:.79rem;border-radius:5px}
+    .scope{margin:0 0 18px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .scope article{min-width:0;border:1px solid #38556a;border-radius:12px;background:#102538;padding:16px}
+    .scope h2{margin:0 0 8px;color:#d5f5fa}
+    .scope p{margin:0;color:#c4d7e6;font-size:.86rem}
+    @media(max-width:620px){.scope{grid-template-columns:1fr}}
     .layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(270px,1fr);gap:18px}
     .layout[hidden]{display:none}
     /* Prevent long test-only evidence labels from widening narrow mobile viewports. */
@@ -56,6 +61,16 @@
     <div class="pill">LOCAL PREVIEW · PRECOMPUTED ONLY</div>
   </header>
   <div class="notice" role="note">EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION</div>
+  <section class="scope" aria-label="Scope and limitations of synthetic evidence">
+    <article aria-labelledby="scope-proves">
+      <h2 id="scope-proves">What the recorded result can show</h2>
+      <p>A separately executed offline verifier recorded a cryptographic VALID or INVALID outcome for one synthetic proof. The browser only displays a minimized, unauthenticated JSON replay; it does not verify or authenticate the proof. The orchestration scenarios below are mocks, not proof checks.</p>
+    </article>
+    <article aria-labelledby="scope-limits">
+      <h2 id="scope-limits">What it does not establish</h2>
+      <p>Telemetry truth, source integrity, trustworthy time, interval or flight coverage, safety, compliance, policy/freshness/revocation/replay acceptance, publication, customer demand or a relying-party decision. Assurance remains A0_SYNTHETIC.</p>
+    </article>
+  </section>
   <div class="layout">
     <section class="card" aria-labelledby="scenario-title">
       <h2 id="scenario-title">Scenario replay <span class="small">/ orchestration mock</span></h2>
