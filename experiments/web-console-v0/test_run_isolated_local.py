@@ -7,6 +7,7 @@ NOT VALIDATION OR PRODUCTION AUTHORIZATION
 from __future__ import annotations
 
 import contextlib
+import fcntl
 import io
 import os
 from pathlib import Path
@@ -121,6 +122,47 @@ class LocalSessionTests(unittest.TestCase):
             set_limit.call_args_list[1],
             unittest.mock.call(pkg.resource.RLIMIT_CORE, (0, 0)),
         )
+
+    def test_stale_owned_directory_blocks_preflight_and_launch(self) -> None:
+        stale = self.parent / "tag-synthetic-interrupted"
+        stale.mkdir(mode=0o700)
+        with patch.object(pkg.bridge, "trusted_bwrap", return_value="/usr/bin/bwrap"), \
+             patch.object(pkg.subprocess, "Popen") as spawn:
+            for check_only in (True, False):
+                with self.subTest(check_only=check_only):
+                    with self.assertRaises(pkg.Unavailable):
+                        pkg.run(20, self.parent, check_only)
+            spawn.assert_not_called()
+        self.assertEqual(list(self.parent.iterdir()), [stale])
+        self.assertTrue(stale.is_dir())  # no automatic deletion
+
+    def test_stale_symlink_blocks_without_following_or_deleting(self) -> None:
+        target = self.parent / "owner-data"
+        target.mkdir(mode=0o700)
+        marker = self.parent / "tag-synthetic-ambiguous"
+        marker.symlink_to(target, target_is_directory=True)
+        with patch.object(pkg.bridge, "trusted_bwrap", return_value="/usr/bin/bwrap"), \
+             patch.object(pkg.subprocess, "Popen") as spawn:
+            with self.assertRaises(pkg.Unavailable):
+                pkg.run(20, self.parent, False)
+            spawn.assert_not_called()
+        self.assertTrue(marker.is_symlink())
+        self.assertTrue(target.is_dir())
+
+    def test_parent_lease_rejects_second_session_then_releases(self) -> None:
+        fd = os.open(self.parent, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            with patch.object(pkg.bridge, "trusted_bwrap", return_value="/usr/bin/bwrap"), \
+                 patch.object(pkg.subprocess, "Popen") as spawn:
+                with self.assertRaises(pkg.Unavailable):
+                    pkg.run(20, self.parent, False)
+                spawn.assert_not_called()
+        finally:
+            os.close(fd)
+        with patch.object(pkg.bridge, "trusted_bwrap", return_value="/usr/bin/bwrap"):
+            self.assertEqual(pkg.run(20, self.parent, True), 0)
+        self.assertEqual(list(self.parent.iterdir()), [])
 
     def test_invalid_lifetime_fails_before_any_session(self) -> None:
         for seconds in (0, 301):
