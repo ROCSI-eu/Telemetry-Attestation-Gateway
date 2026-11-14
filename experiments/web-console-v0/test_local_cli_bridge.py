@@ -18,6 +18,7 @@ import unittest
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "integrated-cli-v0"))
 import local_cli_bridge as bridge  # noqa: E402
 
 
@@ -31,7 +32,7 @@ def cli_result(scenario="over_limit"):
         "proof_validity_is_telemetry_truth": False,
         "claim": {"maximum_speed_cm_s": int(bound), "status": claim,
                   "private_observation_disclosed": False},
-        "source": {"normalization": "NORMALIZED" if scenario == "over_limit" else "REJECTED"},
+        "source": {"normalization": "REJECTED" if scenario == "malformed_source" else "NORMALIZED"},
         "proof": {"generation": "NOT_ATTEMPTED",
                   "cryptographic": {"status": "NOT_CHECKED"}},
         "publication": {"mode": "disabled", "state": "NOT_PERFORMED"},
@@ -47,7 +48,7 @@ def cli_result(scenario="over_limit"):
 
 class BridgeUnitTests(unittest.TestCase):
     def test_only_pre_proof_short_circuit_cases_are_pinned(self):
-        self.assertEqual(set(bridge.PRESETS), {"over_limit", "malformed_source"})
+        self.assertEqual(set(bridge.PRESETS), {"over_limit", "malformed_source", "verified_synthetic"})
         self.assertIn("--unshare-net", bridge.execute.__code__.co_consts)
         self.assertIn("127.0.0.1", bridge.Server.__init__.__code__.co_consts)
         self.assertNotIn("WebSocket", bridge.PAGE)
@@ -57,7 +58,7 @@ class BridgeUnitTests(unittest.TestCase):
         self.assertIn("NOT VALIDATION OR PRODUCTION AUTHORIZATION", bridge.PAGE)
 
     def test_minimization_never_relays_raw_cli_fields(self):
-        for scenario in bridge.PRESETS:
+        for scenario in ("over_limit", "malformed_source"):
             _, _, exit_code, claim = bridge.PRESETS[scenario]
             minimized = bridge.minimize(cli_result(scenario), scenario, exit_code)
             serialized = json.dumps(minimized)
@@ -89,6 +90,165 @@ class BridgeUnitTests(unittest.TestCase):
                 elif mutation == "extra_disclosure": item["disclosure"]["identity"] = False
                 with self.assertRaises(bridge.Rejected):
                     bridge.minimize(item, "over_limit", exit_code)
+
+    def test_genuine_synthetic_result_is_allowlisted_and_distinct(self):
+        doc = cli_result("verified_synthetic")
+        doc["proof"]["generation"] = "GENERATED"
+        doc["proof"]["cryptographic"] = {"status": "VALID", "reason": None}
+        doc["proof"]["verification_input"] = {"status": "ACCEPTED", "reason": None}
+        doc["source"]["assurance_id"] = "A0_SYNTHETIC"
+        doc["source"]["source_trust"] = "UNSIGNED"
+        doc["publication"] = {
+            "mode": "disabled", "state": "failed", "status": "FAILED",
+            "attempts": 1, "reconciled": True, "receipt_state": "NOT_ISSUED",
+            "record_id": "rec_internal_synthetic_only",
+            "error": {"code": "PUBLICATION_DISABLED",
+                      "classification": "definitive", "retryable": False},
+        }
+        doc["verification_dimensions"] = {
+            "policy": "NOT_EVALUATED", "freshness": "NOT_EVALUATED",
+            "revocation": "NOT_EVALUATED", "replay": "NOT_EVALUATED",
+            "assurance": {
+                "declared": "A0_SYNTHETIC", "effective": "A0_SYNTHETIC",
+                "required": "NOT_EVALUATED", "demonstrator": "A0_SYNTHETIC",
+            },
+        }
+        output = bridge.minimize(doc, "verified_synthetic", 0)
+        self.assertEqual(output["proof_generation"], "GENERATED")
+        self.assertEqual(output["cryptographic"], "VALID")
+        self.assertEqual(output["verification_input"], "ACCEPTED")
+        self.assertFalse(output["browser_verified"])
+        self.assertFalse(output["proof_validity_is_telemetry_truth"])
+        self.assertEqual(output["publication"], "NOT_PERFORMED")
+        self.assertNotIn("rec_internal_synthetic_only", json.dumps(output))
+        for name in ("witness", "proof_bytes", "private_speed", "capture_case"):
+            self.assertNotIn(name, output)
+        for mutation in ("wrong_exit", "missing_verification", "fake_crypto",
+                         "bad_trust", "bad_assurance", "bad_policy",
+                         "publication_mode", "publication_state", "publication_code",
+                         "publication_class", "publication_retry", "publication_attempts",
+                         "publication_receipt", "publication_reconciliation"):
+            candidate = json.loads(json.dumps(doc))
+            code = 0
+            if mutation == "wrong_exit": code = 5
+            elif mutation == "missing_verification":
+                candidate["proof"]["verification_input"]["status"] = "NOT_CHECKED"
+            elif mutation == "fake_crypto":
+                candidate["proof"]["cryptographic"]["status"] = "NOT_CHECKED"
+            elif mutation == "bad_trust":
+                candidate["source"]["source_trust"] = "SIGNED"
+            elif mutation == "bad_assurance":
+                candidate["verification_dimensions"]["assurance"]["effective"] = "A1"
+            elif mutation == "bad_policy":
+                candidate["verification_dimensions"]["policy"] = "ACCEPTED"
+            elif mutation == "publication_mode":
+                candidate["publication"]["mode"] = "local"
+            elif mutation == "publication_state":
+                candidate["publication"]["state"] = "final"
+            elif mutation == "publication_code":
+                candidate["publication"]["error"]["code"] = "SUBSTRATE_REJECTED"
+            elif mutation == "publication_class":
+                candidate["publication"]["error"]["classification"] = "retryable"
+            elif mutation == "publication_retry":
+                candidate["publication"]["error"]["retryable"] = True
+            elif mutation == "publication_attempts":
+                candidate["publication"]["attempts"] = 2
+            elif mutation == "publication_receipt":
+                candidate["publication"]["receipt_state"] = "MOCK_FINAL"
+            elif mutation == "publication_reconciliation":
+                candidate["publication"]["reconciled"] = False
+            with self.subTest(mutation=mutation):
+                with self.assertRaises(bridge.Rejected):
+                    bridge.minimize(candidate, "verified_synthetic", code)
+
+    def test_disabled_adapter_real_contract_is_accepted_without_exposing_record_id(self):
+        """Use the actual repository DisabledAdapter, not an invented publication status."""
+        import cli as integrated
+        pub = integrated.publication
+        request = pub.PublicationRequest(
+            idempotency_key="idk_" + "a" * 32,
+            payload_digest=pub.synthetic_payload_digest("proof-contract-regression"),
+            metadata={"scenario": "synthetic-proof-contract"},
+        )
+        adapter = pub.DisabledAdapter()
+        submitted = adapter.submit(request)
+        checked = adapter.status(submitted["record_id"])
+        actual = integrated._summarize_publication(
+            "disabled", checked, attempts=1, reconciled=True)
+        self.assertEqual(actual["state"], "failed")
+        self.assertEqual(actual["error"]["code"], "PUBLICATION_DISABLED")
+        doc = cli_result("verified_synthetic")
+        doc["proof"]["generation"] = "GENERATED"
+        doc["proof"]["cryptographic"] = {"status": "VALID", "reason": None}
+        doc["proof"]["verification_input"] = {"status": "ACCEPTED", "reason": None}
+        doc["source"].update({"assurance_id": "A0_SYNTHETIC", "source_trust": "UNSIGNED"})
+        doc["verification_dimensions"] = {
+            "policy": "NOT_EVALUATED", "freshness": "NOT_EVALUATED",
+            "revocation": "NOT_EVALUATED", "replay": "NOT_EVALUATED",
+            "assurance": {
+                "declared": "A0_SYNTHETIC", "effective": "A0_SYNTHETIC",
+                "required": "NOT_EVALUATED", "demonstrator": "A0_SYNTHETIC",
+            },
+        }
+        doc["publication"] = actual
+        minimized = bridge.minimize(doc, "verified_synthetic", 0)
+        self.assertEqual(minimized["cryptographic"], "VALID")
+        self.assertEqual(minimized["publication"], "NOT_PERFORMED")
+        self.assertNotIn(checked["record_id"], json.dumps(minimized))
+        self.assertNotIn("record_id", minimized)
+
+    def test_proof_cannot_start_without_explicit_private_toolchain(self):
+        with patch.object(bridge, "_bounded_run") as worker:
+            with self.assertRaises(bridge.Rejected):
+                bridge.execute("verified_synthetic")
+            worker.assert_not_called()
+
+    def test_preprovisioned_toolchain_is_only_used_by_real_proof_case(self):
+        with patch.object(bridge, "trusted_bwrap", return_value="/usr/bin/bwrap"):
+            with patch.object(bridge, "offline_toolchain", return_value=Path("/private/offline")):
+                with patch.object(bridge, "_bounded_run",
+                                  return_value=(b"{}", 5)) as worker:
+                    with self.assertRaises(bridge.Rejected):
+                        bridge.execute("verified_synthetic", Path("/private/offline"))
+        args = worker.call_args.args[0]
+        self.assertEqual(args[0], "/usr/bin/bwrap")
+        self.assertIn("--unshare-net", args)
+        self.assertIn("--die-with-parent", args)
+        self.assertEqual(args[args.index("--ro-bind", args.index("--die-with-parent"))+1], "/usr")
+        self.assertIn("/private/offline/bin:/usr/bin:/bin", args)
+        self.assertEqual(worker.call_args.kwargs["timeout"], bridge.PROOF_RUN_SECONDS)
+        self.assertEqual(worker.call_args.kwargs["extra_path"],
+                         "/private/offline/bin:/usr/bin:/bin")
+        self.assertIs(worker.call_args.kwargs["proof_profile"], True)
+
+    def test_proof_address_space_is_finite_and_short_circuit_unchanged(self):
+        with patch.object(bridge.resource, "setrlimit") as limits:
+            bridge._resource_limits()
+            short_calls = list(limits.call_args_list)
+            limits.reset_mock()
+            bridge._proof_resource_limits()
+            proof_calls = list(limits.call_args_list)
+        self.assertEqual(bridge.PROOF_AS_MIB, 2560)
+        self.assertEqual(
+            short_calls,
+            [
+                unittest.mock.call(bridge.resource.RLIMIT_CPU, (12, 12)),
+                unittest.mock.call(bridge.resource.RLIMIT_AS, (1024**3,)*2),
+                unittest.mock.call(bridge.resource.RLIMIT_FSIZE, (1024**2,)*2),
+            ],
+        )
+        self.assertEqual(
+            proof_calls,
+            [
+                unittest.mock.call(bridge.resource.RLIMIT_CPU, (12, 12)),
+                unittest.mock.call(
+                    bridge.resource.RLIMIT_AS, (2560 * 1024**2,)*2),
+                unittest.mock.call(bridge.resource.RLIMIT_FSIZE, (1024**2,)*2),
+            ],
+        )
+        self.assertEqual(bridge.RUN_SECONDS, 20)
+        self.assertEqual(bridge.PROOF_RUN_SECONDS, 90)
+        self.assertEqual(bridge.MAX_OUTPUT, 16384)
 
     def test_bounded_stdout_rejects_oversize_and_kills_process_group(self):
         oversized = ("import sys; sys.stdout.write('X'*"
@@ -249,6 +409,15 @@ class BridgeHttpTests(unittest.TestCase):
         ).encode()
         self._assert_drip_does_not_hold_server(prefix)
 
+    def test_genuine_proof_http_fails_closed_without_offline_toolchain(self):
+        with patch.object(bridge, "_bounded_run") as worker:
+            code, response = self.request(scenario="verified_synthetic")
+        self.assertEqual(code, 503)
+        self.assertEqual(json.loads(response), {"error": "UNAVAILABLE"})
+        self.assertTrue(self.server.used)
+        worker.assert_not_called()
+        self.assertEqual(self.request(scenario="over_limit")[0], 503)
+
     def test_single_operator_run_and_no_raw_fields(self):
         with patch.object(bridge, "execute", return_value=bridge.minimize(
                 cli_result(), "over_limit", 3)) as execute:
@@ -258,7 +427,7 @@ class BridgeHttpTests(unittest.TestCase):
             self.assertEqual(obj["state"], "COMPLETED")
             self.assertNotIn("DO_NOT_EXPORT", raw)
             self.assertEqual(self.request()[0], 503)
-            execute.assert_called_once_with("over_limit")
+            execute.assert_called_once_with("over_limit", None)
 
     def test_invalid_payload_does_not_consume_run_and_failure_cannot_retry(self):
         with patch.object(bridge, "execute", side_effect=bridge.Rejected):
