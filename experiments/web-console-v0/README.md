@@ -6,6 +6,26 @@
 
 This is a static, dependency-free, responsive **local** browser presentation of two separately labeled sources: (1) deterministic orchestration **mock** evidence from `../integrated-cli-v0/evidence-results.json` and (2) a precomputed genuine synthetic verifier replay in `authentic-evidence.json`, exported after an isolated, pinned Noir/Barretenberg verifier run. **The browser does not verify cryptographic proofs and cannot independently authenticate a JSON replay.** The mock source is never promoted into the authentic source. No background jobs, live MAVLink, browser-to-Qube/MCP connection, raw telemetry, witness material, keys, private speed or persistent browser storage.
 
+## Operator-triggered synthetic CLI short-circuit (Proposed experiment, local-only)
+
+> **EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION**
+
+`local_cli_bridge.py` is a **separate, one-shot loopback experiment** for #87. It does not change the default static console, the precomputed genuine verifier replay, or `run_private_preview.py`. It serves a small local browser control at an OS-allocated `127.0.0.1` port and accepts **one** operator-approved invocation of the existing integrated CLI per preview session. The only scenarios are `over_limit` and `malformed_source`, pinned to reviewed, checked-in synthetic fixtures and public limit parameters. **Both short-circuit before proof generation**; no genuine proof, verification or publication occurs in this increment. The result is visibly `NOT_ATTEMPTED / NOT_CHECKED`, never `VALID`.
+
+Run on the **same isolated local machine** that hosts the browser, after confirming the root-owned `/usr/bin/bwrap` is available. From the repository root:
+
+```text
+python3 experiments/web-console-v0/local_cli_bridge.py --seconds 120
+```
+
+Open the loopback URL printed in the local terminal and paste the one-session operator token from that same terminal into the password input. Select one of the two synthetic short-circuit scenarios and click the execution button. The token is never placed in the URL or persistent browser storage. The UI sends it only as a same-origin request header. **Do not copy this token into Git, screenshots, logs, chat transcripts or other shared material.** There is no background service, remote tunnel, VM proxy, scheduled task or browser command-line argument. The preview ends within 1–300 seconds; restart it for another demonstration.
+
+The server rejects non-loopback binding (it always binds `127.0.0.1` on an ephemeral port), unexpected routes, foreign/missing Origin, unexpected Host, missing/wrong token, malformed input, arbitrary scenario names, oversized JSON and retries. Only one syntactically valid request is consumed; there is no queue or replay history. The server keeps no CLI stdout/stderr or proof material and suppresses access logs. It launches only the hardcoded `cli.py` command inside trusted `bwrap --unshare-net`, with a minimal sandbox root: read-only `/usr`, the experimental source tree, the two required system loader symlinks, isolated `/tmp`, minimal `/dev` and `/proc`. Host `/`, `/home`, `/etc`, the complete `/dev` tree, and unrelated private data directories are not mounted. The CLI subprocess has a 20-second wall timeout, CPU/memory/file-size limits, a bounded 16 KiB stdout pipe reader that kills the process group on overflow or timeout, and no forwarded stderr. HTTP input has a 3-second **absolute wall-clock deadline covering both request headers and body**, in addition to per-socket read timeouts; a watchdog interrupts reading even if a peer continues to drip bytes. Incomplete or late input is rejected without consuming the one-shot allowance. Tests verify that continuous slow-drip headers or body cannot hold the single-threaded server or prevent subsequent requests. An unavailable sandbox or unexpected CLI result fails closed. The response is **reconstructed** from a fixed set of typed, minimized fields, never copied wholesale from the CLI. Restricted telemetry, normalized speed, witnesses, proof bytes, verification keys, identities, command paths and correlation identifiers are never returned.
+
+This is a **local operator short-circuit demonstration**, **not** the requested full interactive proof-run monitor: it does not trigger the genuine prover, stream intermediate progress, persist runs, authenticate a remote user, or attach to Qube/MCP from another machine. It does not validate telemetry truth, source assurance, time, interval coverage, compliance, publication or relying-party decisions. The existing precomputed genuine verification panel is distinct and unchanged. Any later expansion to prover-triggering, longer-lived status tracking, cross-machine access or public `tag.rocsi.eu` requires a separate reviewed gate and threat analysis.
+
+Run regression checks with `python3 experiments/web-console-v0/test_local_cli_bridge.py` and the standard offline `python3 scripts/check_experiments.py`, `python3 scripts/check_docs.py`.
+
 ## Run locally
 
 From the repository root:
