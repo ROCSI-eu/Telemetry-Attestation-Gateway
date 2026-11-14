@@ -57,6 +57,26 @@ class ConsoleFixtureTests(unittest.TestCase):
         self.assertIn('@media(max-width:750px)', html)
         self.assertIn('id="authentic-data" hidden', html)
 
+    def test_proof_scope_and_non_claims_are_visible_without_interaction(self) -> None:
+        html = PAGE.read_text(encoding="utf-8")
+        # The explanation precedes both result panels and is not behind details/JS.
+        scope = html.index('<section class="scope"')
+        mock = html.index('id="scenario-title"')
+        authentic = html.index('id="authentic-panel"')
+        self.assertLess(scope, mock)
+        self.assertLess(scope, authentic)
+        self.assertIn('aria-label="Scope and limitations of synthetic evidence"', html)
+        self.assertIn("What the recorded result can show", html)
+        self.assertIn("What it does not establish", html)
+        for boundary in (
+            "unauthenticated JSON replay", "does not verify or authenticate",
+            "orchestration scenarios below are mocks", "Telemetry truth",
+            "interval or flight coverage", "a relying-party decision",
+            "A0_SYNTHETIC",
+        ):
+            self.assertIn(boundary, html)
+        self.assertIn("@media(max-width:620px){.scope{grid-template-columns:1fr}}", html)
+
     def test_browser_facing_fixture_has_exact_allowlisted_shape(self) -> None:
         """Reject new fields before they can reach the browser over local HTTP."""
         evidence = json.loads(EVIDENCE.read_text(encoding="utf-8"))
