@@ -96,6 +96,58 @@ class PrivateConsoleSessionTests(unittest.TestCase):
         self.assertEqual({p.name for p in self.root.iterdir()},
                          {"synthetic-package", "console-session"})
 
+    def test_swapped_directory_symlink_cannot_redirect_atomic_replacement(self) -> None:
+        """Regression: old path-based replace overwrote external output after parent swap."""
+        self._refresh()
+        external = self.root / "external"
+        external.mkdir(mode=0o700)
+        sentinel = external / session.REPLAY
+        sentinel.write_text("DO_NOT_OVERWRITE_EXTERNAL_FILE")
+        previous_dir = self.destination / "web-console-v0"
+        original_replace = os.replace
+
+        def swap_then_replace(src, dst, *args, **kwargs):
+            previous_dir.rename(self.destination / "detached-previous-view")
+            previous_dir.symlink_to(external, target_is_directory=True)
+            return original_replace(src, dst, *args, **kwargs)
+
+        with patch.object(session.exporter.authentic, "check_package",
+                          return_value=checked("INVALID")):
+            with patch.object(session.os, "replace", side_effect=swap_then_replace):
+                session.refresh(self.package, self.destination)
+
+        self.assertEqual(sentinel.read_text(), "DO_NOT_OVERWRITE_EXTERNAL_FILE")
+        self.assertEqual(
+            json.loads((self.destination / "detached-previous-view" / session.REPLAY).read_text())["cryptographic"],
+            "INVALID",
+        )
+        self.assertTrue(previous_dir.is_symlink())
+
+    def test_swap_before_open_is_rejected_without_external_write(self) -> None:
+        self._refresh()
+        external = self.root / "external"
+        external.mkdir(mode=0o700)
+        sentinel = external / session.REPLAY
+        sentinel.write_text("UNCHANGED")
+        original_check = session._existing_session_safe
+        calls = 0
+
+        def check_then_swap(path):
+            nonlocal calls
+            original_check(path)
+            calls += 1
+            if calls == 2:
+                view = self.destination / "web-console-v0"
+                view.rename(self.destination / "detached-previous-view")
+                view.symlink_to(external, target_is_directory=True)
+
+        with patch.object(session.exporter.authentic, "check_package",
+                          return_value=checked("INVALID")):
+            with patch.object(session, "_existing_session_safe", side_effect=check_then_swap):
+                with self.assertRaises(OSError):
+                    session.refresh(self.package, self.destination)
+        self.assertEqual(sentinel.read_text(), "UNCHANGED")
+
     def test_reject_tampered_existing_replay_and_mock_without_overwriting(self) -> None:
         self._refresh()
         replay = self.destination / "web-console-v0" / session.REPLAY
