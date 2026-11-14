@@ -96,6 +96,45 @@ class PrivateConsoleSessionTests(unittest.TestCase):
         self.assertEqual({p.name for p in self.root.iterdir()},
                          {"synthetic-package", "console-session"})
 
+    def test_concurrent_creation_cannot_replace_even_empty_existing_directory(self) -> None:
+        """Regression: bare rename previously overwrote an empty destination."""
+        original_mkdir = Path.mkdir
+
+        def concurrent_mkdir(path, *args, **kwargs):
+            if path == self.destination:
+                original_mkdir(path, mode=0o700)
+                # Existing directory must survive; the CLI must not replace it.
+                return original_mkdir(path, *args, **kwargs)
+            return original_mkdir(path, *args, **kwargs)
+
+        with patch.object(session.exporter.authentic, "check_package", return_value=checked()):
+            with patch.object(Path, "mkdir", autospec=True, side_effect=concurrent_mkdir):
+                with self.assertRaises(session.SessionRejected):
+                    session.refresh(self.package, self.destination)
+        self.assertTrue(self.destination.is_dir())
+        self.assertEqual(list(self.destination.iterdir()), [])
+        self.assertEqual({p.name for p in self.root.iterdir()},
+                         {"synthetic-package", "console-session"})
+
+    def test_interrupted_first_creation_fails_closed_on_retry(self) -> None:
+        """Failure may leave a private partial directory, never overwrite it."""
+        original_rename = os.rename
+
+        def interrupted_rename(*args, **kwargs):
+            if kwargs.get("dst_dir_fd") is not None:
+                raise OSError("simulated move failure")
+            return original_rename(*args, **kwargs)
+
+        with patch.object(session.exporter.authentic, "check_package", return_value=checked()):
+            with patch.object(session.os, "rename", side_effect=interrupted_rename):
+                with self.assertRaises(OSError):
+                    session.refresh(self.package, self.destination)
+        self.assertEqual(self.destination.stat().st_mode & 0o777, 0o700)
+        with patch.object(session.exporter.authentic, "check_package") as verify:
+            with self.assertRaises(session.SessionRejected):
+                session.refresh(self.package, self.destination)
+            verify.assert_not_called()
+
     def test_swapped_directory_symlink_cannot_redirect_atomic_replacement(self) -> None:
         """Regression: old path-based replace overwrote external output after parent swap."""
         self._refresh()
