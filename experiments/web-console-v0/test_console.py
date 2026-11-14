@@ -46,6 +46,28 @@ class ConsoleFixtureTests(unittest.TestCase):
         self.assertNotIn("https://", html)
         self.assertNotIn("WebSocket(", html)
 
+    def test_mode_copy_changes_only_after_validated_local_capability(self) -> None:
+        html = PAGE.read_text(encoding="utf-8")
+        self.assertIn('id="console-mode">LOCAL PREVIEW · PRECOMPUTED ONLY</div>', html)
+        self.assertIn('<footer id="console-footer">Local/offline demonstration preview only.', html)
+        self.assertIn("or proof jobs. Sources are separately labeled", html)
+        operator = html.split("async function initializeOperator() {", 1)[1].split(
+            '$("operator-run").addEventListener', 1)[0]
+        gate = operator.index('e.mode!=="ONE_SHOT_LOCAL_CLI"')
+        active_label = operator.index(
+            'setText("console-mode","LOCAL PREVIEW · ACTIVE ONE-SHOT CLI")')
+        active_footer = operator.index('setText("console-footer","Local/offline experimental operator mode:')
+        visible = operator.index('$("operator-panel").hidden=false')
+        self.assertLess(gate, active_label)
+        self.assertLess(active_label, active_footer)
+        self.assertLess(active_footer, visible)
+        self.assertIn('requires the explicitly provisioned private toolchain', operator)
+        self.assertIn('only the final minimized CLI result', operator)
+        self.assertIn('does not prove or verify', operator)
+        self.assertIn('Recorded mock orchestration and precomputed offline-verifier replay remain separate', operator)
+        self.assertIn('if(!response.ok) return;', operator)
+        self.assertIn('}catch(_) { /* Static replay remains usable with no operator bridge. */ }', operator)
+
     def test_narrow_viewport_evidence_labels_wrap_without_hiding_outcomes(self) -> None:
         html = PAGE.read_text(encoding="utf-8")
         # The very long synthetic evidence-kind token has no natural spaces.
@@ -76,6 +98,21 @@ class ConsoleFixtureTests(unittest.TestCase):
         ):
             self.assertIn(boundary, html)
         self.assertIn("@media(max-width:620px){.scope{grid-template-columns:1fr}}", html)
+
+    def test_shared_operator_panel_is_one_shot_progressive_enhancement(self) -> None:
+        html = PAGE.read_text(encoding="utf-8")
+        self.assertIn('id="operator-panel" aria-labelledby="operator-title" hidden', html)
+        self.assertIn('fetch("operator-capabilities",{cache:"no-store"})', html)
+        self.assertIn('fetch("execute",{method:"POST",cache:"no-store"', html)
+        self.assertIn("OPERATOR_KEYS.every(k=>Object.hasOwn(e,k))", html)
+        self.assertIn("operatorResultAllowed(outcome,selected)", html)
+        self.assertIn("waiting for complete isolated CLI result", html)
+        self.assertIn("no stage progress reported", html)
+        self.assertIn("one-shot may have been consumed", html)
+        self.assertIn('"NOT_ATTEMPTED","NOT_CHECKED","NOT_PERFORMED"', html)
+        for forbidden in ("localStorage", "sessionStorage", "WebSocket(", "EventSource(",
+                          "setInterval(", "navigator.sendBeacon"):
+            self.assertNotIn(forbidden, html)
 
     def test_browser_facing_fixture_has_exact_allowlisted_shape(self) -> None:
         """Reject new fields before they can reach the browser over local HTTP."""

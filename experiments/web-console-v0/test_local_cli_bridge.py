@@ -437,6 +437,35 @@ class BridgeHttpTests(unittest.TestCase):
             self.assertTrue(self.server.used)
             self.assertEqual(self.request()[0], 503)
 
+    def test_shared_console_and_only_allowlisted_recorded_assets(self):
+        expected = {
+            "/": (b' id="operator-panel"', "text/html"),
+            "/authentic-evidence.json": (b'"browser_verified": false', "application/json"),
+            "/integrated-cli-v0/evidence-results.json": (b'"cases"', "application/json"),
+            "/operator-capabilities": (b'"ONE_SHOT_LOCAL_CLI"', "application/json"),
+        }
+        for route, (expected_bytes, mime) in expected.items():
+            with self.subTest(route=route):
+                conn = http.client.HTTPConnection("127.0.0.1", self.server.server_port)
+                conn.request("GET", route, headers={"Host": f"127.0.0.1:{self.server.server_port}"})
+                res = conn.getresponse()
+                content = res.read()
+                self.assertEqual(res.status, 200)
+                self.assertIn(expected_bytes, content)
+                self.assertIn(mime, res.getheader("Content-Type"))
+                self.assertEqual(res.getheader("Cache-Control"), "no-store")
+                self.assertNotIn(b"synthetic-test-only-token", content)
+                conn.close()
+        for route in ("/../integrated-cli-v0/cli.py", "/local_cli_bridge.py",
+                      "/execute", "/operator-capabilities?x=1", "/private"):
+            conn = http.client.HTTPConnection("127.0.0.1", self.server.server_port)
+            conn.request("GET", route, headers={"Host": f"127.0.0.1:{self.server.server_port}"})
+            res = conn.getresponse()
+            self.assertEqual(res.status, 404)
+            res.read()
+            conn.close()
+        self.assertFalse(self.server.used)
+
     def test_get_is_only_static_html_and_no_store(self):
         conn = http.client.HTTPConnection("127.0.0.1", self.server.server_port)
         conn.request("GET", "/", headers={"Host": f"127.0.0.1:{self.server.server_port}"})

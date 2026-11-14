@@ -44,6 +44,19 @@
     .metric b{display:block;font-size:1.08rem;margin-top:3px;overflow-wrap:anywhere}
     .kicker{font-size:.7rem;color:#abc1d2;letter-spacing:.05em;text-transform:uppercase}
     .status{display:inline-block;border-radius:6px;padding:3px 9px;background:#2d4652;color:#effbff;font-size:.75rem;font-weight:700}
+    .operator[hidden],.operator-result[hidden]{display:none}
+    .operator-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .operator-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    .operator-grid label{display:block;min-width:0;font-size:.8rem;color:#c4d9e8;font-weight:650}
+    .operator-grid input,.operator-grid select{display:block;width:100%;margin-top:7px;padding:11px;border:1px solid #678498;border-radius:9px;background:#081725;color:#edf4ff;font:inherit}
+    .operator-flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:14px 0}
+    .operator-step{padding:12px 7px;background:#0b192a;border:1px solid #355069;border-radius:9px;text-align:center;font-size:.78rem;overflow-wrap:anywhere}
+    .operator-step[data-state="complete"]{border-color:#4d9f98;background:#153634}
+    .operator-step[data-state="stopped"]{border-color:#a47c59;background:#382a20}
+    .operator-step[data-state="skipped"]{border-color:#53667b;color:#a5b7c7}
+    .operator-step span{display:block;color:#a8bed0;font-size:.69rem}
+    .operator-meta{color:#aad5e4;font-size:.78rem;margin:8px 0}
+    @media(max-width:620px){.operator-grid{grid-template-columns:1fr}.operator-flow{grid-template-columns:repeat(2,minmax(0,1fr))}}
     .status[data-tone="good"]{background:#194c43;color:#abffdb}.status[data-tone="warn"]{background:#654527;color:#ffdb9f}
     dl{display:grid;grid-template-columns:1fr auto;gap:9px;margin:0;font-size:.85rem}dt{color:#b2c7d6}dd{margin:0;font-weight:700;text-align:right;overflow-wrap:anywhere;max-width:170px}
     hr{border:0;border-top:1px solid #2d445c;margin:20px 0}
@@ -57,8 +70,8 @@
 <body>
 <main class="wrap">
   <header>
-    <div><div class="eyebrow">ROCSI / Telemetry Attestation Gateway</div><h1>Synthetic research console</h1><p class="sub">Explore the orchestration states of privacy-preserving bounded-speed attestation. Two strictly separate local views: deterministic mock orchestration and a precomputed genuine synthetic verifier result. Neither executes a prover in the browser.</p></div>
-    <div class="pill">LOCAL PREVIEW · PRECOMPUTED ONLY</div>
+    <div><div class="eyebrow">ROCSI / Telemetry Attestation Gateway</div><h1>Synthetic research console</h1><p class="sub">Explore the orchestration states of privacy-preserving bounded-speed attestation. Recorded mock orchestration and offline verifier evidence remain separate. On the authenticated local CLI preview only, this same console also enables one bounded synthetic execution. No proof or verification runs in the browser.</p></div>
+    <div class="pill" id="console-mode">LOCAL PREVIEW · PRECOMPUTED ONLY</div>
   </header>
   <div class="notice" role="note">EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION</div>
   <section class="scope" aria-label="Scope and limitations of synthetic evidence">
@@ -70,6 +83,52 @@
       <h2 id="scope-limits">What it does not establish</h2>
       <p>Telemetry truth, source integrity, trustworthy time, interval or flight coverage, safety, compliance, policy/freshness/revocation/replay acceptance, publication, customer demand or a relying-party decision. Assurance remains A0_SYNTHETIC.</p>
     </article>
+  </section>
+  <section class="card operator" id="operator-panel" aria-labelledby="operator-title" hidden>
+    <div class="operator-head"><div><div class="eyebrow">Local operator · authenticated · one-shot</div><h2 id="operator-title">Execute a synthetic CLI scenario</h2></div><span class="pill">OFFLINE LOCAL CONTROL</span></div>
+    <p class="small">Available only through the loopback CLI bridge, never from the static preview or a public showcase. The selected CLI run executes in a bounded, network-isolated sandbox. No arbitrary inputs or private observations are accepted.</p>
+    <div class="operator-grid">
+      <label for="operator-scenario">Pinned synthetic scenario<select id="operator-scenario">
+        <option value="over_limit">Over-limit · early exit, no proof</option>
+        <option value="malformed_source">Malformed source · early exit, no proof</option>
+        <option value="verified_synthetic">Verified synthetic · real local proof (preprovisioned only)</option>
+      </select></label>
+      <label for="operator-token">One-session operator token (from local terminal)<input id="operator-token" type="password" autocomplete="off" spellcheck="false"></label>
+    </div>
+    <div class="controls" style="margin-top:14px;margin-bottom:8px"><button type="button" id="operator-run">Execute one isolated CLI scenario</button></div>
+    <p id="operator-status" class="operator-meta" role="status" aria-live="polite">IDLE · no CLI invocation</p>
+    <p class="small">While a request is in flight, no intermediate stage progress is known. The stage cells below update only after the complete CLI response; they are not streamed events.</p>
+    <div class="operator-result" id="operator-result" hidden>
+      <div class="operator-flow" aria-label="Final observed CLI outcomes, not live progress">
+        <div class="operator-step" id="operator-stage-source">Normalize<span id="operator-stage-source-text">NOT_LOADED</span></div>
+        <div class="operator-step" id="operator-stage-proof">Prove<span id="operator-stage-proof-text">NOT_LOADED</span></div>
+        <div class="operator-step" id="operator-stage-verify">Verify<span id="operator-stage-verify-text">NOT_LOADED</span></div>
+        <div class="operator-step" id="operator-stage-publish">Publish<span id="operator-stage-publish-text">NOT_LOADED</span></div>
+      </div>
+      <div class="layout">
+        <div><h2>Observed CLI outcome</h2><dl>
+          <dt>Source normalization</dt><dd id="operator-source">—</dd>
+          <dt>Source trust</dt><dd id="operator-trust">—</dd>
+          <dt>Claim eligibility</dt><dd id="operator-claim">—</dd>
+          <dt>Proof generation</dt><dd id="operator-proof">—</dd>
+          <dt>Verification input</dt><dd id="operator-input">—</dd>
+          <dt>Cryptographic</dt><dd id="operator-crypto">—</dd>
+        </dl></div>
+        <div><h2>Separate dimensions</h2><dl>
+          <dt>Policy</dt><dd id="operator-policy">—</dd>
+          <dt>Freshness</dt><dd id="operator-freshness">—</dd>
+          <dt>Revocation</dt><dd id="operator-revocation">—</dd>
+          <dt>Replay</dt><dd id="operator-replay">—</dd>
+          <dt>Assurance</dt><dd id="operator-assurance">—</dd>
+          <dt>Publication</dt><dd id="operator-publication">—</dd>
+          <dt>Relying-party decision</dt><dd id="operator-decision">—</dd>
+          <dt>Browser verification</dt><dd>NOT_PERFORMED</dd>
+          <dt>Restricted disclosure</dt><dd>NONE</dd>
+        </dl></div>
+      </div>
+      <p class="small" id="operator-basis">—</p>
+    </div>
+    <p class="small">A CLI-reported synthetic proof VALID does not establish telemetry truth, trustworthy source, continuous coverage, policy acceptance, safety, compliance or a beneficiary decision. The browser cannot independently authenticate the returned JSON. Restart the short-lived local bridge for another run.</p>
   </section>
   <div class="layout">
     <section class="card" aria-labelledby="scenario-title">
@@ -144,7 +203,7 @@
     </div>
     <p class="small">Proof validity is not telemetry truth. One synthetic observation does not establish interval coverage, flight/safety, contractual, payment or regulatory compliance. The source record has no customer or commercial validation.</p>
   </section>
-  <footer>Local/offline demonstration preview only. No analytics, remote APIs, uploads, external fonts, or proof jobs. Sources are separately labeled: deterministic mock orchestration and an offline-verifier-generated, minimized synthetic replay. The browser does not verify proofs.</footer>
+  <footer id="console-footer">Local/offline demonstration preview only. No analytics, remote APIs, uploads, external fonts, or proof jobs. Sources are separately labeled: deterministic mock orchestration and an offline-verifier-generated, minimized synthetic replay. The browser does not verify proofs.</footer>
 </main>
 <script>
 "use strict";
@@ -229,9 +288,88 @@ async function initializeAuthentic() {
   } catch (error) { unavailable(); }
   finally { $("authentic-reload").disabled=false; }
 }
+// Progressive enhancement: the shared page remains a recorded-only console
+// unless the separate authenticated, local one-shot CLI bridge is present.
+const OPERATOR_LABELS=["EXPERIMENTAL","SYNTHETIC_ONLY","A0_SYNTHETIC","NOT VALIDATION OR PRODUCTION AUTHORIZATION"];
+const OPERATOR_KEYS=["schema_version","labels","state","scenario","source","source_trust","claim","proof_generation","verification_input","cryptographic","assurance","policy","freshness","revocation","replay","publication","relying_party_decision","command_path","restricted_fields_disclosed","browser_verified","proof_validity_is_telemetry_truth"];
+const OPERATOR_CASES={
+  over_limit:["NORMALIZED","NOT_EVALUATED","NOT_SATISFIED","NOT_ATTEMPTED","NOT_CHECKED","NOT_CHECKED"],
+  malformed_source:["REJECTED","NOT_EVALUATED","NOT_EVALUATED","NOT_ATTEMPTED","NOT_CHECKED","NOT_CHECKED"],
+  verified_synthetic:["NORMALIZED","UNSIGNED","SATISFIED","GENERATED","ACCEPTED","VALID"]
+};
+function operatorResultAllowed(e,selected) {
+  if(!e||typeof e!=="object"||Array.isArray(e)||Object.keys(e).length!==OPERATOR_KEYS.length
+    ||!OPERATOR_KEYS.every(k=>Object.hasOwn(e,k))||e.schema_version!=="TAG_LOCAL_CLI_SHORT_CIRCUIT_V0_EXPERIMENTAL"
+    ||JSON.stringify(e.labels)!==JSON.stringify(OPERATOR_LABELS)||e.state!=="COMPLETED"
+    ||e.scenario!==selected||!Object.hasOwn(OPERATOR_CASES,selected))return false;
+  const expected=OPERATOR_CASES[selected];
+  return [e.source,e.source_trust,e.claim,e.proof_generation,e.verification_input,e.cryptographic].every((v,i)=>v===expected[i])
+    &&["policy","freshness","revocation","replay"].every(k=>e[k]==="NOT_EVALUATED")
+    &&e.assurance==="A0_SYNTHETIC"&&e.publication==="NOT_PERFORMED"
+    &&e.relying_party_decision==="NOT_MADE"&&e.command_path==="NONE"
+    &&e.restricted_fields_disclosed===false&&e.browser_verified===false
+    &&e.proof_validity_is_telemetry_truth===false;
+}
+function renderOperator(e) {
+  for(const [id,key] of [["operator-source","source"],["operator-trust","source_trust"],
+    ["operator-claim","claim"],["operator-proof","proof_generation"],
+    ["operator-input","verification_input"],["operator-crypto","cryptographic"],
+    ["operator-policy","policy"],["operator-freshness","freshness"],
+    ["operator-revocation","revocation"],["operator-replay","replay"],
+    ["operator-assurance","assurance"],["operator-publication","publication"],
+    ["operator-decision","relying_party_decision"]])setText(id,e[key]);
+  for(const [id,value,success] of [["source",e.source,"NORMALIZED"],
+    ["proof",e.proof_generation,"GENERATED"],["verify",e.cryptographic,"VALID"],
+    ["publish",e.publication,"PUBLISHED"]]) {
+    setText("operator-stage-"+id+"-text",value);
+    $("operator-stage-"+id).dataset.state=value===success?"complete":
+      ["NOT_ATTEMPTED","NOT_CHECKED","NOT_PERFORMED"].includes(value)?"skipped":"stopped";
+  }
+  $("operator-basis").textContent=e.scenario==="verified_synthetic"
+    ?"Observed after the complete CLI response: generated synthetic proof and independent offline verification; no publication."
+    :"Observed CLI early exit: no proof generation and no cryptographic verification. NOT_CHECKED is not INVALID.";
+  $("operator-result").hidden=false;
+}
+async function initializeOperator() {
+  try {
+    const response=await fetch("operator-capabilities",{cache:"no-store"});
+    if(!response.ok) return;
+    const e=await response.json();
+    if(!e||typeof e!=="object"||Array.isArray(e)||Object.keys(e).length!==4
+      ||e.schema_version!=="TAG_LOCAL_CLI_SHORT_CIRCUIT_V0_EXPERIMENTAL"
+      ||JSON.stringify(e.labels)!==JSON.stringify(OPERATOR_LABELS)
+      ||e.mode!=="ONE_SHOT_LOCAL_CLI"
+      ||JSON.stringify(e.scenarios)!==JSON.stringify(Object.keys(OPERATOR_CASES)))return;
+    setText("console-mode","LOCAL PREVIEW · ACTIVE ONE-SHOT CLI");
+    setText("console-footer","Local/offline experimental operator mode: one authenticated synthetic CLI invocation can run inside the isolated sandbox. The genuine synthetic proof scenario requires the explicitly provisioned private toolchain. The browser displays only the final minimized CLI result and does not prove or verify. No live progress stream, analytics, external APIs, uploads, external fonts or public proof endpoint. Recorded mock orchestration and precomputed offline-verifier replay remain separate.");
+    $("operator-panel").hidden=false;
+  }catch(_) { /* Static replay remains usable with no operator bridge. */ }
+}
+$("operator-run").addEventListener("click",async()=>{
+  const selected=$("operator-scenario").value;
+  $("operator-run").disabled=true;
+  $("operator-result").hidden=true;
+  $("operator-status").textContent="REQUEST IN FLIGHT · waiting for complete isolated CLI result; no stage progress reported";
+  try {
+    const response=await fetch("execute",{method:"POST",cache:"no-store",
+      headers:{"Content-Type":"application/json","X-TAG-Local-Token":$("operator-token").value},
+      body:JSON.stringify({scenario:selected})});
+    if(!response.ok)throw Error("Unavailable");
+    const outcome=await response.json();
+    if(!operatorResultAllowed(outcome,selected))throw Error("Incompatible response");
+    renderOperator(outcome);
+    $("operator-status").textContent="COMPLETED · final observed CLI result (one-shot consumed)";
+  }catch(_) {
+    $("operator-result").hidden=true;
+    $("operator-status").textContent="UNAVAILABLE · no accepted CLI result; one-shot may have been consumed";
+  }finally{
+    $("operator-token").value="";
+  }
+});
 $("authentic-reload").addEventListener("click",initializeAuthentic);
 initialize();
 initializeAuthentic();
+initializeOperator();
 </script>
 </body>
 </html>

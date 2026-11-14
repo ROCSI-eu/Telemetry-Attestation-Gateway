@@ -43,61 +43,19 @@ RUN_SECONDS = 20
 HTTP_READ_SECONDS = 3
 PROOF_RUN_SECONDS = 90
 PROOF_AS_MIB = 2560  # Lowest tested passing finite cap on Qube; research-only.
-PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>TAG — local synthetic CLI control</title>
-<style>body{font:16px/1.5 system-ui;background:#091524;color:#e9f4ff;
-max-width:730px;margin:5vh auto;padding:20px}main{background:#14273b;
-border:1px solid #486479;border-radius:18px;padding:24px}h1{font-size:1.55rem}
-.notice{color:#b9f1e5;font-weight:700}button,input,select{font:inherit;
-padding:10px;border-radius:8px}input,select{background:#071725;color:#fff;
-border:1px solid #7a9bb1}button{background:#9ce5df;border:0;cursor:pointer}
-button:disabled{opacity:.45}label{display:block;margin:14px 0}
-pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#081623;padding:16px}
-</style></head><body><main><p class="notice">EXPERIMENTAL · SYNTHETIC_ONLY ·
-A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION</p>
-<h1>Local CLI → browser experiment</h1>
-<p>One allowlisted synthetic CLI invocation per preview. Short-circuit scenarios
-never prove. The optional genuine synthetic case invokes the pinned Noir prover
-and independent offline verifier module only when the operator has explicitly
-provisioned an isolated local toolchain. Missing tools fail closed.</p>
-<p>Proof validity is <strong>not</strong> telemetry truth, interval coverage, safety,
-compliance, policy/freshness/revocation/replay acceptance or a business decision.
-No source identity, private witness or observed speed is sent to the browser.</p>
-<label>One-session operator token (from local terminal)
-<input id="token" type="password" autocomplete="off" spellcheck="false"></label>
-<label>Predefined synthetic scenario
-<select id="scenario"><option value="over_limit">Over-limit observation</option>
-<option value="malformed_source">Malformed synthetic source</option>
-<option value="verified_synthetic">Genuine synthetic proof + offline verification (preprovisioned only)</option></select></label>
-<button id="run" type="button">Execute one isolated synthetic CLI scenario</button>
-<p id="status" role="status" aria-live="polite">IDLE · no CLI execution</p>
-<pre id="result">No result yet.</pre>
-<p>Only typed, allowlisted result fields can enter this page. The server
-accepts no arbitrary commands, inputs, proof packages or uploads.
-A failed isolated invocation is UNAVAILABLE, never VALID.</p></main>
-<script>"use strict";
-const run=document.getElementById("run"),status=document.getElementById("status");
-run.addEventListener("click",async()=>{
- run.disabled=true;status.textContent="RUNNING · bounded isolated CLI invocation";
- document.getElementById("result").textContent="No accepted result yet.";
- try {
-  const response=await fetch("execute",{method:"POST",cache:"no-store",
-   headers:{"Content-Type":"application/json","X-TAG-Local-Token":
-    document.getElementById("token").value},
-   body:JSON.stringify({scenario:document.getElementById("scenario").value})});
-  const data=await response.json();
-  if(!response.ok)throw Error("Local invocation rejected or unavailable");
-  if(data.schema_version!=="TAG_LOCAL_CLI_SHORT_CIRCUIT_V0_EXPERIMENTAL"
-    ||data.state!=="COMPLETED")throw Error("Incompatible local result");
-  status.textContent=data.scenario==="verified_synthetic"
-   ?"COMPLETED · recorded synthetic proof verification (not browser verification)"
-   :"COMPLETED · synthetic CLI short-circuit (no proof)";
-  document.getElementById("result").textContent=JSON.stringify(data,null,2);
- }catch(_){status.textContent="UNAVAILABLE · no verified result";
-  document.getElementById("result").textContent="Run failed closed.";}
- finally {document.getElementById("token").value="";}
-});</script></body></html>"""
+# Exactly the same presentation as the static console; no competing web app.
+PAGE = (HERE / "index.html").read_text(encoding="utf-8")
+PUBLIC_ASSETS = {
+    "/": (PAGE.encode("utf-8"), "text/html; charset=utf-8"),
+    "/authentic-evidence.json": (
+        (HERE / "authentic-evidence.json").read_bytes(), "application/json"),
+    "/integrated-cli-v0/evidence-results.json": (
+        (HERE.parent / "integrated-cli-v0" / "evidence-results.json").read_bytes(),
+        "application/json"),
+}
+if any(len(body) > 65536 for body, _ in PUBLIC_ASSETS.values()):
+    raise RuntimeError("Unexpected public console asset size")
+
 
 
 class Rejected(Exception):
@@ -379,11 +337,22 @@ class Handler(http.server.BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         if not self._finish_input():
             return
-        if (self.path != "/" or
-                self.headers.get("Host") != f"127.0.0.1:{self.server.server_port}"):
+        if self.headers.get("Host") != f"127.0.0.1:{self.server.server_port}":
             self._send(404, b"Not found", "text/plain")
             return
-        self._send(200, PAGE.encode(), "text/html; charset=utf-8")
+        if self.path == "/operator-capabilities":
+            capability = {
+                "schema_version": SCHEMA, "labels": LABELS,
+                "mode": "ONE_SHOT_LOCAL_CLI", "scenarios": list(PRESETS),
+            }
+            self._send(200, json.dumps(capability, separators=(",", ":")).encode(),
+                       "application/json")
+            return
+        asset = PUBLIC_ASSETS.get(self.path)
+        if asset is None:
+            self._send(404, b"Not found", "text/plain")
+            return
+        self._send(200, *asset)
 
     def do_POST(self) -> None:
         if (self._input_expired.is_set() or time.monotonic() >= self._input_deadline
