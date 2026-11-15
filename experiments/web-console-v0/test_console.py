@@ -114,6 +114,60 @@ class ConsoleFixtureTests(unittest.TestCase):
                           "setInterval(", "navigator.sendBeacon"):
             self.assertNotIn(forbidden, html)
 
+    def test_mission_control_is_synthetic_and_separate_from_backend(self) -> None:
+        html = PAGE.read_text(encoding="utf-8")
+        start = html.index('<section class="mission-control"')
+        end = html.index('<section class="card operator"', start)
+        scene = html[start:end]
+        self.assertIn('id="mission-control" data-motion="playing"', scene)
+        self.assertIn('aria-labelledby="mission-scene-title mission-scene-description"', scene)
+        self.assertIn('SYNTHETIC ROUTE · NOT GEOGRAPHIC', scene)
+        self.assertIn('ILLUSTRATION ONLY · NO LIVE STREAM', scene)
+        self.assertIn('id="mission-backend-state" role="status" aria-live="polite">NOT_OBSERVED', scene)
+        self.assertIn('id="mission-backend-proof">NOT_OBSERVED', scene)
+        self.assertIn('id="mission-backend-crypto">NOT_OBSERVED', scene)
+        self.assertIn('No MAVLink commands, navigation control, mission edits', scene)
+        self.assertIn('NOT VALIDATION OR PRODUCTION AUTHORIZATION', scene)
+        for forbidden in ('fetch(', '<form', 'type="password"', 'http://', 'https://'):
+            self.assertNotIn(forbidden, scene)
+        self.assertEqual(scene.count('class="mission-craft"'), 1)
+        route = 'M120 290 L275 249 L430 194 L585 142 L714 87'
+        self.assertEqual(scene.count(route), 2)
+
+    def test_mission_motion_pauses_and_respects_reduced_motion(self) -> None:
+        html = PAGE.read_text(encoding="utf-8")
+        self.assertIn('id="mission-motion-toggle" type="button" aria-pressed="false"', html)
+        self.assertIn('document.addEventListener("visibilitychange",syncMissionMotion)', html)
+        self.assertIn('motionPreference.addEventListener("change",syncMissionMotion)', html)
+        self.assertIn('window.matchMedia("(prefers-reduced-motion: reduce)")', html)
+        self.assertIn('.mission-control[data-motion="paused"] .mission-craft', html)
+        self.assertIn('.mission-control[data-visibility="hidden"] .mission-craft{animation-play-state:paused}', html)
+        self.assertIn('@media(prefers-reduced-motion:reduce){.mission-craft{animation:none', html)
+        self.assertIn('toggle.disabled=reduce;', html)
+        self.assertIn('toggle.setAttribute("aria-pressed",String(paused))', html)
+        self.assertIn('mission.dataset.visibility=document.hidden?"hidden":"visible"', html)
+        motion = html.split('// Purely illustrative, fixed SVG geometry.', 1)[1].split('function render(e)', 1)[0]
+        for forbidden in ('fetch(', 'renderOperator(', 'execute(', 'setInterval(', 'WebSocket('):
+            self.assertNotIn(forbidden, motion)
+
+    def test_mission_backend_status_only_uses_validated_final_cli_outcome(self) -> None:
+        html = PAGE.read_text(encoding="utf-8")
+        recorded = html.split('function render(e)', 1)[1].split('async function initialize()', 1)[0]
+        self.assertNotIn('setText("mission-backend-', recorded)
+        operator = html.split('function renderOperator(e)', 1)[1].split('async function initializeOperator()', 1)[0]
+        self.assertIn('setText("mission-backend-state","FINAL TYPED CLI RESULT · not live progress")', operator)
+        self.assertIn('setText("mission-backend-proof",e.proof_generation)', operator)
+        self.assertIn('setText("mission-backend-crypto",e.cryptographic)', operator)
+        request = html.split('$("operator-run").addEventListener("click",async()=>{', 1)[1]
+        self.assertLess(request.index('operatorResultAllowed(outcome,selected)'),
+                        request.index('renderOperator(outcome)'))
+        self.assertIn('setText("mission-backend-state","REQUEST IN FLIGHT · no confirmed stage progress")', request)
+        self.assertIn('setText("mission-backend-proof","NOT_OBSERVED")', request)
+        self.assertIn('setText("mission-backend-state","UNAVAILABLE · no accepted final CLI result")', request)
+        self.assertIn('setText("mission-backend-crypto","NOT_OBSERVED")', request)
+        for forbidden in ('localStorage', 'sessionStorage'):
+            self.assertNotIn(forbidden, html)
+
     def test_browser_facing_fixture_has_exact_allowlisted_shape(self) -> None:
         """Reject new fields before they can reach the browser over local HTTP."""
         evidence = json.loads(EVIDENCE.read_text(encoding="utf-8"))
