@@ -6,6 +6,16 @@
 
 This is a dependency-free, responsive **local** browser presentation of two separately labeled recorded sources: (1) deterministic orchestration **mock** evidence from `../integrated-cli-v0/evidence-results.json` and (2) a precomputed genuine synthetic verifier replay in `authentic-evidence.json`, exported after an isolated, pinned Noir/Barretenberg verifier run. **The browser does not verify cryptographic proofs and cannot independently authenticate a JSON replay.** The mock source is never promoted into the authentic source. No background jobs, live MAVLink, browser-to-Qube/MCP connection, raw telemetry, witness material, keys, private speed or persistent browser storage.
 
+## Mission Control visual scene (#87, Proposed, code-only)
+
+> **EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION**
+
+The existing shared HTML console starts with an observational **Mission Control** scene: a lightweight inline SVG, an abstract predefined route (waypoints A/B/C) and a stylized 2.5D vehicle. **All motion is illustrative**. The route has screen-space geometry only, no location, speed, real-world vehicle identity, live telemetry, flight coverage or validated movement. Animation does not correspond to a backend stage, proof, source truth or mission status. The scene has a manual Pause/Resume illustration control, pauses automatically when its document is hidden and becomes stationary under the reduced-motion browser preference. No WebGL, external library, font, map, network source, client storage, timer, new API or command channel is introduced.
+
+The neighboring **Backend truth** panel begins at NOT_OBSERVED. Static mock case selection and the separate offline-verifier replay **never** update it. While the already-existing authenticated one-shot CLI request is in flight, it explicitly states that no stage progress is confirmed. Only the existing strict operatorResultAllowed check of a **complete, minimized, final typed CLI response** can populate observed proof-generation and cryptographic fields; incompatible/unavailable responses reset them to NOT_OBSERVED. This is **not live streaming** or continuous mission observation. Independent evidence panels remain unchanged; cryptographic validity is not telemetry truth, policy approval, publication, source assurance or a relying-party decision.
+
+This increment is source-only; focused offline structural checks in test_console.py cover the illustration/evidence boundary, reduced motion, visibility pausing, no new command path or storage, and final-result validation ordering. The existing bridge serves the same HTML with no extra allowlisted route. Browser-engine compatibility, runtime frame rate, and cross-device performance are **not yet measured** and must not be claimed. The local/Qube runtime readiness work stays separately Open in issue #88. No Ready, merge, deployment, public host or hardware authorization is implied.
+
 ## Unified active local console (experimental one-shot operator mode)
 
 > **EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION**

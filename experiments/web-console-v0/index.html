@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="dark">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2712%27 fill=%27%230a1220%27/%3E%3Cpath d=%27M14 18h36M32 18v28%27 stroke=%27%2387dcde%27 stroke-width=%278%27 stroke-linecap=%27round%27/%3E%3C/svg%3E">
-  <title>TAG — Synthetic Research Console</title>
+  <title>TAG — Mission Control · Synthetic Research</title>
   <style>
     :root{font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;color:#edf4ff;background:#0a1220}
     *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 60% -20%,#1f4161 0,transparent 52%),#0a1220;min-height:100vh}
@@ -63,6 +63,34 @@
     details{border-top:1px solid #324c63;padding-top:16px;margin-top:18px}summary{cursor:pointer;font-weight:650}
     footer{color:#a7c0d1;font-size:.77rem;margin-top:24px}
     #error{color:#ffd3b5;min-height:1.5em}
+    /* Abstract synthetic Mission Control scene; no telemetry or location. */
+    .mission-control{margin:0 0 18px;padding:22px;border:1px solid #35637d;border-radius:18px;background:linear-gradient(140deg,#112b40,#0c1a2b 70%);box-shadow:0 18px 42px #02070d40;min-width:0}
+    .mission-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:15px}
+    .mission-top h2{font-size:1.36rem;margin:5px 0}.mission-top p{margin:0;max-width:62ch}
+    .mission-label{color:#7de0cf;font-size:.7rem;letter-spacing:.11em;text-transform:uppercase;font-weight:800}
+    .mission-layout{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(245px,.85fr);gap:15px}
+    .mission-viewport{position:relative;border:1px solid #37627d;border-radius:14px;overflow:hidden;min-width:0;background:radial-gradient(ellipse at 63% 40%,#1c4860 0%,#0b1726 72%)}
+    .mission-viewport svg{width:100%;height:auto;display:block}
+    .mission-viewport .mission-grid{stroke:#4b7892;stroke-width:.7;opacity:.2}
+    .mission-path-underlay{fill:none;stroke:#21445e;stroke-width:14;stroke-linejoin:round;stroke-linecap:round}
+    .mission-path{fill:none;stroke:#61cdd4;stroke-width:3;stroke-dasharray:10 9;stroke-linecap:round;opacity:.9}
+    .mission-craft{transform:translate(120px,290px);animation:synthetic-route 18s linear infinite alternate;will-change:transform}
+    .mission-control[data-motion="paused"] .mission-craft,.mission-control[data-visibility="hidden"] .mission-craft{animation-play-state:paused}
+    .mission-legend{position:absolute;bottom:10px;left:12px;right:12px;display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between;font-size:.65rem;font-weight:760;letter-spacing:.05em;color:#c7e9f4;pointer-events:none}
+    .mission-legend span{background:#081a2ae6;padding:4px 8px;border-radius:6px}
+    .mission-side{display:flex;flex-direction:column;gap:12px;min-width:0}
+    .mission-readout{background:#0a1b2b;border:1px solid #31516b;border-radius:12px;padding:15px;min-width:0;flex:1}
+    .mission-readout h3{font-size:.93rem;margin:4px 0 12px}
+    .mission-readout dl{grid-template-columns:minmax(0,1fr);gap:2px}
+    .mission-readout dt{font-size:.72rem;margin-top:7px}
+    .mission-readout dd{text-align:left;max-width:none;font-size:.8rem;color:#c4ebeb;overflow-wrap:anywhere}
+    .mission-readout p{margin:12px 0 0}
+    .mission-control button{padding:9px 14px;font-size:.79rem}
+    .mission-control button:disabled{opacity:.78}
+    .mission-boundary{margin:12px 0 0;font-size:.75rem;color:#c4d9e8}
+    @keyframes synthetic-route{0%{transform:translate(120px,290px)}25%{transform:translate(275px,249px)}50%{transform:translate(430px,194px)}75%{transform:translate(585px,142px)}100%{transform:translate(714px,87px)}}
+    @media(max-width:750px){.mission-control{padding:16px}.mission-layout{grid-template-columns:1fr}}
+    @media(prefers-reduced-motion:reduce){.mission-craft{animation:none;transform:translate(430px,194px);will-change:auto}}
     @media(max-width:750px){.layout{grid-template-columns:1fr}.wrap{padding:20px 12px}.card{padding:17px}.flow{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(prefers-reduced-motion:no-preference){button{transition:background .16s ease}.step{transition:border-color .16s ease,background .16s ease}}
   </style>
@@ -70,7 +98,7 @@
 <body>
 <main class="wrap">
   <header>
-    <div><div class="eyebrow">ROCSI / Telemetry Attestation Gateway</div><h1>Synthetic research console</h1><p class="sub">Explore the orchestration states of privacy-preserving bounded-speed attestation. Recorded mock orchestration and offline verifier evidence remain separate. On the authenticated local CLI preview only, this same console also enables one bounded synthetic execution. No proof or verification runs in the browser.</p></div>
+    <div><div class="eyebrow">ROCSI / Telemetry Attestation Gateway</div><h1>Mission Control</h1><p class="sub">Explore the orchestration states of privacy-preserving bounded-speed attestation. Recorded mock orchestration and offline verifier evidence remain separate. On the authenticated local CLI preview only, this same console also enables one bounded synthetic execution. No proof or verification runs in the browser.</p></div>
     <div class="pill" id="console-mode">LOCAL PREVIEW · PRECOMPUTED ONLY</div>
   </header>
   <div class="notice" role="note">EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION</div>
@@ -83,6 +111,69 @@
       <h2 id="scope-limits">What it does not establish</h2>
       <p>Telemetry truth, source integrity, trustworthy time, interval or flight coverage, safety, compliance, policy/freshness/revocation/replay acceptance, publication, customer demand or a relying-party decision. Assurance remains A0_SYNTHETIC.</p>
     </article>
+  </section>
+  <section class="mission-control" id="mission-control" data-motion="playing" data-visibility="visible" aria-labelledby="mission-title">
+    <div class="mission-top">
+      <div>
+        <div class="mission-label">Mission Control · synthetic visualization</div>
+        <h2 id="mission-title">Observation only, never vehicle control</h2>
+        <p class="small">A predefined 2.5D vehicle and route illustrate the concept. Motion is not telemetry, a measured trajectory, a live mission, proof generation, or verification progress.</p>
+      </div>
+      <button id="mission-motion-toggle" type="button" aria-pressed="false" aria-controls="mission-scene">Pause illustration</button>
+    </div>
+    <div class="mission-layout">
+      <div class="mission-viewport" id="mission-scene">
+        <svg viewBox="0 0 860 370" role="img" aria-labelledby="mission-scene-title mission-scene-description" focusable="false">
+          <title id="mission-scene-title">Illustrative synthetic observation route and 2.5D vehicle</title>
+          <desc id="mission-scene-description">Abstract non-geographic waypoints and an animated synthetic vehicle. No physical coordinates, real telemetry, or verified flight path.</desc>
+          <defs>
+            <linearGradient id="mission-vehicle-body" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#d1f6ff"/><stop offset=".52" stop-color="#67b8d0"/><stop offset="1" stop-color="#245c7c"/>
+            </linearGradient>
+            <radialGradient id="mission-glow"><stop offset="0" stop-color="#41aaba" stop-opacity=".24"/><stop offset="1" stop-color="#41aaba" stop-opacity="0"/></radialGradient>
+          </defs>
+          <rect width="860" height="370" fill="url(#mission-glow)"/>
+          <g class="mission-grid">
+            <path d="M0 74H860 M0 148H860 M0 222H860 M0 296H860 M86 0V370 M172 0V370 M258 0V370 M344 0V370 M430 0V370 M516 0V370 M602 0V370 M688 0V370 M774 0V370"/>
+            <circle cx="430" cy="190" r="155" fill="none"/><circle cx="430" cy="190" r="95" fill="none"/>
+          </g>
+          <path class="mission-path-underlay" d="M120 290 L275 249 L430 194 L585 142 L714 87"/>
+          <path class="mission-path" d="M120 290 L275 249 L430 194 L585 142 L714 87"/>
+          <g fill="#9de7d9" stroke="#0f2b40" stroke-width="4">
+            <circle cx="120" cy="290" r="7"/><circle cx="430" cy="194" r="7"/><circle cx="714" cy="87" r="7"/>
+          </g>
+          <g fill="#c0e2ed" font-size="13" font-weight="700" font-family="system-ui,sans-serif">
+            <text x="108" y="323">A</text><text x="442" y="188">B</text><text x="728" y="80">C</text>
+          </g>
+          <g class="mission-craft" aria-hidden="true">
+            <ellipse cx="0" cy="21" rx="34" ry="9" fill="#020c18" opacity=".55"/>
+            <path d="M-36 -8L-18 -3M18 -3L36 -8M-17 7L-28 17M17 7L28 17" stroke="#80b6cf" stroke-width="6" stroke-linecap="round"/>
+            <ellipse cx="-36" cy="-8" rx="13" ry="5" fill="#5fd6dc" opacity=".6"/>
+            <ellipse cx="36" cy="-8" rx="13" ry="5" fill="#5fd6dc" opacity=".6"/>
+            <ellipse cx="-28" cy="17" rx="11" ry="4" fill="#4cabc3" opacity=".55"/>
+            <ellipse cx="28" cy="17" rx="11" ry="4" fill="#4cabc3" opacity=".55"/>
+            <path d="M-20 -3L0 -15L20 -3L0 10Z" fill="url(#mission-vehicle-body)" stroke="#d6f7ff" stroke-width="1.2"/>
+            <path d="M-20 -3L0 10L0 17L-20 3Z" fill="#286581"/>
+            <path d="M20 -3L0 10L0 17L20 3Z" fill="#17415d"/>
+            <circle cx="0" cy="-5" r="3" fill="#b7ffe9"/>
+          </g>
+        </svg>
+        <div class="mission-legend"><span>SYNTHETIC ROUTE · NOT GEOGRAPHIC</span><span>ILLUSTRATION ONLY · NO LIVE STREAM</span></div>
+      </div>
+      <aside class="mission-side" aria-label="Independent evidence status">
+        <div class="mission-readout">
+          <div class="mission-label">Backend truth · separate from animation</div>
+          <h3>Accepted final CLI result</h3>
+          <dl>
+            <dt>Execution</dt><dd id="mission-backend-state" role="status" aria-live="polite">NOT_OBSERVED · no active CLI result</dd>
+            <dt>Proof generation</dt><dd id="mission-backend-proof">NOT_OBSERVED</dd>
+            <dt>Cryptographic verification</dt><dd id="mission-backend-crypto">NOT_OBSERVED</dd>
+          </dl>
+          <p class="small">Only a validated final response from the existing one-shot CLI bridge updates these fields. Request in flight never means a pipeline stage completed. Recorded mocks and offline replay remain separate below.</p>
+        </div>
+      </aside>
+    </div>
+    <p class="mission-boundary">EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION. No MAVLink commands, navigation control, mission edits, or source assurance. Animation never changes evidence status.</p>
   </section>
   <section class="card operator" id="operator-panel" aria-labelledby="operator-title" hidden>
     <div class="operator-head"><div><div class="eyebrow">Local operator · authenticated · one-shot</div><h2 id="operator-title">Execute a synthetic CLI scenario</h2></div><span class="pill">OFFLINE LOCAL CONTROL</span></div>
@@ -214,6 +305,27 @@ const setText = (id, value) => { $(id).textContent = safe(value); };
 function stage(id, value, success) {
   $(id).dataset.state = value === success ? "complete" : "stopped";
 }
+// Purely illustrative, fixed SVG geometry. Never read telemetry or pipeline state
+// to drive vehicle motion: no network requests, backend polling or timers.
+const mission=$("mission-control");
+const motionPreference=window.matchMedia("(prefers-reduced-motion: reduce)");
+function syncMissionMotion() {
+  const reduce=motionPreference.matches;
+  mission.dataset.visibility=document.hidden?"hidden":"visible";
+  const paused=mission.dataset.motion==="paused";
+  const toggle=$("mission-motion-toggle");
+  toggle.disabled=reduce;
+  toggle.setAttribute("aria-pressed",String(paused));
+  toggle.textContent=reduce?"Illustration stationary · reduced motion":
+    paused?"Resume illustration":"Pause illustration";
+}
+$("mission-motion-toggle").addEventListener("click",()=>{
+  mission.dataset.motion=mission.dataset.motion==="paused"?"playing":"paused";
+  syncMissionMotion();
+});
+document.addEventListener("visibilitychange",syncMissionMotion);
+motionPreference.addEventListener("change",syncMissionMotion);
+syncMissionMotion();
 function render(e) {
   setText("source",e.source); setText("trust",e.source_trust);
   setText("claim",e.claim); setText("proof",e.proof_generation);
@@ -328,6 +440,10 @@ function renderOperator(e) {
   $("operator-basis").textContent=e.scenario==="verified_synthetic"
     ?"Observed after the complete CLI response: generated synthetic proof and independent offline verification; no publication."
     :"Observed CLI early exit: no proof generation and no cryptographic verification. NOT_CHECKED is not INVALID.";
+  // Only called after operatorResultAllowed validates the complete CLI reply.
+  setText("mission-backend-state","FINAL TYPED CLI RESULT · not live progress");
+  setText("mission-backend-proof",e.proof_generation);
+  setText("mission-backend-crypto",e.cryptographic);
   $("operator-result").hidden=false;
 }
 async function initializeOperator() {
@@ -350,6 +466,9 @@ $("operator-run").addEventListener("click",async()=>{
   $("operator-run").disabled=true;
   $("operator-result").hidden=true;
   $("operator-status").textContent="REQUEST IN FLIGHT · waiting for complete isolated CLI result; no stage progress reported";
+  setText("mission-backend-state","REQUEST IN FLIGHT · no confirmed stage progress");
+  setText("mission-backend-proof","NOT_OBSERVED");
+  setText("mission-backend-crypto","NOT_OBSERVED");
   try {
     const response=await fetch("execute",{method:"POST",cache:"no-store",
       headers:{"Content-Type":"application/json","X-TAG-Local-Token":$("operator-token").value},
@@ -362,6 +481,9 @@ $("operator-run").addEventListener("click",async()=>{
   }catch(_) {
     $("operator-result").hidden=true;
     $("operator-status").textContent="UNAVAILABLE · no accepted CLI result; one-shot may have been consumed";
+    setText("mission-backend-state","UNAVAILABLE · no accepted final CLI result");
+    setText("mission-backend-proof","NOT_OBSERVED");
+    setText("mission-backend-crypto","NOT_OBSERVED");
   }finally{
     $("operator-token").value="";
   }
