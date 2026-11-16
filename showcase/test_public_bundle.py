@@ -18,37 +18,43 @@ from build import (
 
 
 class StaticShowcaseTests(unittest.TestCase):
-    def test_frozen_bundle_only_has_six_public_assets(self) -> None:
+    def test_frozen_bundle_has_only_thirteen_allowlisted_assets(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             target = Path(folder)
             self.assertEqual(set(build(target)), {
-                "index.html", "404.html", "evidence-results.json",
-                "authentic-evidence.json", "_headers", "robots.txt",
+                "index.html", "en/index.html", "404.html", "en/404.html",
+                "evidence-results.json", "authentic-evidence.json", "_headers",
+                "robots.txt", "assets/favicon.svg", "assets/favicon.ico", "assets/apple-touch-icon.png",
+                "og/ro.png", "og/en.png",
             })
             html = (target / "index.html").read_text(encoding="utf-8")
-            self.assertIn("Mission Control", html)
-            self.assertIn("PUBLIC SHOWCASE · PRECOMPUTED ONLY", html)
-            self.assertIn("synthetic telemetry → normalization → proof → independent verification → optional publication", html)
-            self.assertIn("SYNTHETIC ROUTE · NOT GEOGRAPHIC", html)
-            self.assertIn("No MAVLink commands, navigation control", html)
+            self.assertIn('lang="ro"', html)
+            self.assertIn("Centru de comandă și control", html)
+            self.assertIn("DEMONSTRAȚIE PUBLICĂ · DOAR REZULTATE PRECALCULATE", html)
+            self.assertIn("telemetrie sintetică → normalizare → dovadă → verificare independentă → publicare opțională", html)
+            self.assertIn("TRASEU SINTETIC · FĂRĂ REFERINȚĂ GEOGRAFICĂ", html)
+            self.assertIn("Fără comenzi MAVLink, controlul navigației", html)
             for label in LABELS:
                 self.assertIn(label, html)
             self.assertNotIn("operator-", html)
             for secret_surface in (
                 '"/execute"', '"/operator-capabilities"', "X-TAG-Local-Token",
                 "type=\"password\"", "operatorResultAllowed", "initializeOperator",
-                "one-shot", "http://", "https://", "WebSocket(", "EventSource(",
+                "one-shot", "http://", "WebSocket(", "EventSource(",
                 "localStorage", "sessionStorage", "navigator.sendBeacon",
             ):
                 self.assertNotIn(secret_surface, html)
             self.assertEqual(
                 set(re.findall(r'fetch\("([^"]+)"', html)),
-                {"evidence-results.json", "authentic-evidence.json"},
+                {"/evidence-results.json", "/authentic-evidence.json"},
             )
             self.assertNotIn("../", html)
             self.assertNotIn('style="', html)
             self.assertIn("noindex", html)
-            self.assertIn("Disallow: /", (target / "robots.txt").read_text())
+            self.assertEqual((target / "robots.txt").read_text(), "User-agent: *\nAllow: /\n")
+            self.assertIn('content="noindex,nofollow"', html)
+            self.assertIn('<meta property="og:locale" content="ro_RO">', html)
+            self.assertIn('<meta name="twitter:card" content="summary_large_image">', html)
 
     def test_cloudflare_pages_404_is_static_and_has_no_execution_surface(self) -> None:
         # A root 404.html prevents Cloudflare Pages' implicit SPA fallback.
@@ -62,7 +68,13 @@ class StaticShowcaseTests(unittest.TestCase):
             self.assertIn("<h1>404", page)
             for label in LABELS:
                 self.assertIn(label, page)
-            self.assertEqual(re.findall(r'href="([^"]+)"', page), ["/"])
+            self.assertIn('lang="ro"', page)
+            self.assertIn("Pagina nu a fost găsită", page)
+            self.assertEqual(re.findall(r'href="([^"]+)"', page), ["/", "/en/"])
+            en_page = (target / "en/404.html").read_text()
+            self.assertIn('lang="en"', en_page)
+            self.assertIn("Page not found", en_page)
+            self.assertEqual(re.findall(r'href="([^"]+)"', en_page), ["/en/", "/"])
             for forbidden in (
                 "<script", "<style", "<form", "<iframe", "<img",
                 "http://", "https://", "/execute", "operator-",
@@ -70,6 +82,74 @@ class StaticShowcaseTests(unittest.TestCase):
             ):
                 self.assertNotIn(forbidden, page)
             self.assertIn("/*", (target / "_headers").read_text(encoding="utf-8"))
+
+    def test_ro_en_social_metadata_and_localized_static_content(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            target = Path(folder)
+            build(target)
+            ro = (target / "index.html").read_text(encoding="utf-8")
+            en = (target / "en/index.html").read_text(encoding="utf-8")
+            self.assertIn('<html lang="ro">', ro)
+            self.assertIn('<html lang="en">', en)
+            self.assertIn("<h1>Centru de comandă și control</h1>", ro)
+            self.assertIn("<h1>Mission Control</h1>", en)
+            self.assertIn("Oprește animația</button>", ro)
+            self.assertIn("Pause illustration</button>", en)
+            self.assertIn('href="/" hreflang="ro" lang="ro" aria-current="page"', ro)
+            self.assertIn('href="/en/" hreflang="en" lang="en" aria-current="page"', en)
+            for language, page, locale in (
+                ("ro", ro, "ro_RO"), ("en", en, "en_US")
+            ):
+                from localization import SHARE, ORIGIN
+                image = ORIGIN + "/og/" + language + ".png"
+                self.assertIn(f'<meta property="og:locale" content="{locale}">', page)
+                self.assertIn(f'<meta property="og:image" content="{image}">', page)
+                self.assertIn(f'<meta name="twitter:image" content="{image}">', page)
+                self.assertIn('href="/assets/favicon.svg"', page)
+                self.assertIn('href="/assets/favicon.ico"', page)
+                self.assertIn('href="/assets/apple-touch-icon.png"', page)
+                self.assertIn(SHARE[language]["title"], page)
+                self.assertIn(SHARE[language]["description"], page)
+                self.assertIn(f'<link rel="canonical" href="{ORIGIN}{"/" if language=="ro" else "/en/"}">', page)
+                self.assertNotIn("operator-panel", page)
+                self.assertEqual(
+                    set(re.findall(r'fetch\("([^"]+)"', page)),
+                    {"/evidence-results.json", "/authentic-evidence.json"},
+                )
+                self.assertIn("A0_SYNTHETIC", page)
+                self.assertIn("SYNTHETIC_ONLY", page)
+                self.assertIn("NOT VALIDATION OR PRODUCTION AUTHORIZATION", page)
+            self.assertNotEqual(ro, en)
+            self.assertEqual(
+                re.search(r'<script>(.*?)</script>', ro, flags=re.S).group(1),
+                re.search(r'<script>(.*?)</script>', en, flags=re.S).group(1)
+            )
+
+    def test_social_graphics_dimensions_and_favicon(self) -> None:
+        import struct
+        with tempfile.TemporaryDirectory() as folder:
+            target = Path(folder)
+            build(target)
+            for language in ("ro", "en"):
+                image = (target / "og" / f"{language}.png").read_bytes()
+                self.assertTrue(image.startswith(b"\x89PNG\r\n\x1a\n"))
+                self.assertEqual(struct.unpack(">II", image[16:24]), (1200, 630))
+                self.assertLess(len(image), 450_000)
+            self.assertNotEqual(
+                (target / "og/ro.png").read_bytes(),
+                (target / "og/en.png").read_bytes()
+            )
+            self.assertIn('viewBox="0 0 64 64"', (target / "assets/favicon.svg").read_text())
+            self.assertTrue((target / "assets/favicon.ico").read_bytes().startswith(b"\x00\x00\x01\x00"))
+            self.assertTrue((target / "assets/apple-touch-icon.png").read_bytes().startswith(b"\x89PNG"))
+            self.assertIn("img-src 'self' data:", (target / "_headers").read_text())
+
+    def test_reject_untranslated_public_text_drift(self) -> None:
+        from localization import romanian_html
+        html = public_html(CONSOLE.read_text(encoding="utf-8"))
+        self.assertIn("<html lang=\"ro\">", romanian_html(html))
+        with self.assertRaisesRegex(ValueError, "untranslated public HTML"):
+            romanian_html(html.replace("<h1>Mission Control</h1>", "<h1>New untranslated text</h1>"))
 
     def test_public_scenarios_are_strictly_reconstructed(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
@@ -145,9 +225,9 @@ class StaticShowcaseTests(unittest.TestCase):
                 "Cache-Control: no-store",
             ):
                 self.assertIn(required, headers)
-            assets = {p.name: p.read_bytes() for p in target.iterdir()}
+            assets = {str(p.relative_to(target)): p.read_bytes() for p in target.rglob("*") if p.is_file()}
             build(target)
-            self.assertEqual(assets, {p.name: p.read_bytes() for p in target.iterdir()})
+            self.assertEqual(assets, {str(p.relative_to(target)): p.read_bytes() for p in target.rglob("*") if p.is_file()})
 
 
 if __name__ == "__main__":
