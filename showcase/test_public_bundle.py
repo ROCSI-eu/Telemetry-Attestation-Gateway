@@ -18,12 +18,12 @@ from build import (
 
 
 class StaticShowcaseTests(unittest.TestCase):
-    def test_frozen_bundle_only_has_five_public_assets(self) -> None:
+    def test_frozen_bundle_only_has_six_public_assets(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             target = Path(folder)
             self.assertEqual(set(build(target)), {
-                "index.html", "evidence-results.json", "authentic-evidence.json",
-                "_headers", "robots.txt",
+                "index.html", "404.html", "evidence-results.json",
+                "authentic-evidence.json", "_headers", "robots.txt",
             })
             html = (target / "index.html").read_text(encoding="utf-8")
             self.assertIn("Mission Control", html)
@@ -49,6 +49,27 @@ class StaticShowcaseTests(unittest.TestCase):
             self.assertNotIn('style="', html)
             self.assertIn("noindex", html)
             self.assertIn("Disallow: /", (target / "robots.txt").read_text())
+
+    def test_cloudflare_pages_404_is_static_and_has_no_execution_surface(self) -> None:
+        # A root 404.html prevents Cloudflare Pages' implicit SPA fallback.
+        # Actual HTTP 404 behavior is verified only at authorized deployment.
+        with tempfile.TemporaryDirectory() as folder:
+            target = Path(folder)
+            build(target)
+            page = (target / "404.html").read_text(encoding="utf-8")
+            self.assertTrue(page.startswith("<!doctype html>"))
+            self.assertIn('<meta name="robots" content="noindex,nofollow">', page)
+            self.assertIn("<h1>404", page)
+            for label in LABELS:
+                self.assertIn(label, page)
+            self.assertEqual(re.findall(r'href="([^"]+)"', page), ["/"])
+            for forbidden in (
+                "<script", "<style", "<form", "<iframe", "<img",
+                "http://", "https://", "/execute", "operator-",
+                "fetch(", "WebSocket(", "location.href",
+            ):
+                self.assertNotIn(forbidden, page)
+            self.assertIn("/*", (target / "_headers").read_text(encoding="utf-8"))
 
     def test_public_scenarios_are_strictly_reconstructed(self) -> None:
         with tempfile.TemporaryDirectory() as folder:

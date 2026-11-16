@@ -75,6 +75,25 @@ AUTHENTIC_FIXED = {
     "proof_validity_is_telemetry_truth": False,
 }
 
+NOT_FOUND_HTML = """<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>TAG Mission Control — 404 · Not found</title>
+</head>
+<body>
+  <main>
+    <h1>404 · Page not found</h1>
+    <p>This experimental static showcase has no page or live service at this path.</p>
+    <p>EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION</p>
+    <p><a href="/">Return to Mission Control</a></p>
+  </main>
+</body>
+</html>
+"""
+
 
 def exact_fields(value: object, fields: set[str], context: str) -> dict:
     if type(value) is not dict or set(value) != fields:
@@ -305,6 +324,7 @@ def build(out: Path) -> tuple[str, ...]:
     authentic = minimized_verifier(json.loads(VERIFIER.read_text(encoding="utf-8")))
     assets = {
         "index.html": html,
+        "404.html": NOT_FOUND_HTML,
         "evidence-results.json": json.dumps(scenarios, indent=2, ensure_ascii=False) + "\n",
         "authentic-evidence.json": json.dumps(authentic, indent=2, ensure_ascii=False) + "\n",
         "_headers": security_headers(html),
