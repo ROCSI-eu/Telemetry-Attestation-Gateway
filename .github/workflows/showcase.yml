@@ -5,6 +5,9 @@ on:
     paths:
       - "showcase/**"
       - ".github/workflows/showcase.yml"
+      - "experiments/web-console-v0/index.html"
+      - "experiments/web-console-v0/authentic-evidence.json"
+      - "experiments/integrated-cli-v0/evidence-results.json"
 
 permissions:
   contents: read
@@ -19,4 +22,5 @@ jobs:
       - name: Build exact static output and validate public asset count
         run: |
           python3 showcase/build.py --out-dir "$RUNNER_TEMP/tag-showcase"
-          test "$(find "$RUNNER_TEMP/tag-showcase" -maxdepth 1 -type f | wc -l)" -eq 5
+          test "$(find "$RUNNER_TEMP/tag-showcase" -maxdepth 1 -type f | wc -l)" -eq 6
+          test -f "$RUNNER_TEMP/tag-showcase/404.html"

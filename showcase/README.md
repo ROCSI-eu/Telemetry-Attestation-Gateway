@@ -2,7 +2,7 @@
 
 > **EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION**
 
-**Code-only Draft:** this directory builds a separate, precomputed, static technology
+**Code-only static package:** this directory builds a separate, precomputed, static technology
 showcase from the already existing Mission Control console (#87). It is not a
 deployed website, validated product, live verifier, customer workflow, or permission
 to activate tag.rocsi.eu. Issue #88 remains open and is not a dependency for
@@ -17,12 +17,14 @@ python3 showcase/build.py --out-dir /tmp/tag-showcase
 python3 -m unittest discover -s showcase -p 'test_*.py' -v
 \`\`\`
 
-Use a local static HTTP server to inspect the generated *five-file directory*
+Use a local static HTTP server to inspect the generated *six-file directory*
 in a separately permitted development environment (do not use Qube/Production
 without authorization). The package is:
 
 - \`index.html\`: transformed shared Mission Control HTML/CSS/SVG/JS; operator
   card, local capabilities discovery, authentication/token and execution JS removed.
+- \`404.html\`: static inert not-found page with experimental labels and a return
+  link; prevents Cloudflare Pages' implicit SPA fallback on unknown routes.
 - \`evidence-results.json\`: **strictly reconstructed** deterministic orchestration
   mock outcomes, never actual proof-verification evidence.
 - \`authentic-evidence.json\`: **strictly reconstructed** precomputed synthetic
@@ -46,8 +48,8 @@ Build output: \`dist\`; framework preset: none; no runtime functions,
 environment secrets, analytics or SSR. Connect the Git repository under the
 existing organization's authorized Cloudflare account, configure *only* the
 approved custom hostname after a separate GO. Confirm that Pages applies
-\`_headers\` on the final deployment and that its public route serves only
-the five generated files. Keep previews restricted as appropriate: a public
+\`_headers\` on the final deployment, returns HTTP 404 for missing routes, and that its public route serves only
+the six generated files. Keep previews restricted as appropriate: a public
 preview URL is itself a public exposure and needs authorization.
 
 **Alternative:** existing ROCSI Production VM served as pure static content.
