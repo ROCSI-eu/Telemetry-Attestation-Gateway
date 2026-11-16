@@ -15,6 +15,8 @@ import json
 from pathlib import Path
 import re
 
+from localization import inject_locale_js, localize_404, romanian_html, social_metadata
+
 ROOT = Path(__file__).resolve().parents[1]
 CONSOLE = ROOT / "experiments/web-console-v0/index.html"
 SCENARIOS = ROOT / "experiments/integrated-cli-v0/evidence-results.json"
@@ -74,25 +76,6 @@ AUTHENTIC_FIXED = {
     "browser_verified": False,
     "proof_validity_is_telemetry_truth": False,
 }
-
-NOT_FOUND_HTML = """<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex,nofollow">
-  <title>TAG Mission Control — 404 · Not found</title>
-</head>
-<body>
-  <main>
-    <h1>404 · Page not found</h1>
-    <p>This experimental static showcase has no page or live service at this path.</p>
-    <p>EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION</p>
-    <p><a href="/">Return to Mission Control</a></p>
-  </main>
-</body>
-</html>
-"""
 
 
 def exact_fields(value: object, fields: set[str], context: str) -> dict:
@@ -228,8 +211,10 @@ def public_html(source: str) -> str:
     )
     html = replace_once(
         html, 'fetch("../integrated-cli-v0/evidence-results.json"',
-        'fetch("evidence-results.json"',
+        'fetch("/evidence-results.json"',
     )
+    html = replace_once(html, 'fetch("authentic-evidence.json"',
+                        'fetch("/authentic-evidence.json"')
     html = replace_once(
         html, "Local evidence could not be loaded. Serve the experiments/ directory over loopback HTTP; no external service is required.",
         "Precomputed scenario file unavailable. Check the same-origin static assets; "
@@ -293,7 +278,7 @@ def security_headers(html: str) -> str:
         "script-src " + sha256_source(script.group(1)),
         "style-src " + sha256_source(style.group(1)),
         "style-src-attr 'none'",
-        "img-src data:",
+        "img-src 'self' data:",
         "connect-src 'self'",
         "base-uri 'none'",
         "form-action 'none'",
@@ -320,22 +305,54 @@ def build(out: Path) -> tuple[str, ...]:
     if target in protected or any(target == folder for folder in protected):
         raise ValueError("cannot overwrite an experiment source directory")
     html = public_html(CONSOLE.read_text(encoding="utf-8"))
+    # The original inline data-URI placeholder is replaced by the local drone icon.
+    html = re.sub(r'  <link rel="icon" href="data:image/svg\+xml,[^"]+">\n',
+                  "", html, count=1)
+    if 'href="data:image/svg+xml,' in html:
+        raise ValueError("placeholder favicon was not removed")
+    html = inject_locale_js(html)
+    html_en = social_metadata(html, "en")
+    html_ro = social_metadata(romanian_html(html), "ro")
+    if security_headers(html_ro) != security_headers(html_en):
+        raise ValueError("localized assets have mismatching CSP inline hashes")
+    media = ROOT / "showcase/assets"
+    png = ("og/ro.png", "og/en.png", "apple-touch-icon.png")
+    for name in png:
+        payload = (media / name).read_bytes()
+        if (not payload.startswith(b"\x89PNG\r\n\x1a\n")
+            or len(payload) > 450_000):
+            raise ValueError("invalid or oversized PNG: " + name)
     scenarios = minimized_scenarios(json.loads(SCENARIOS.read_text(encoding="utf-8")))
     authentic = minimized_verifier(json.loads(VERIFIER.read_text(encoding="utf-8")))
     assets = {
-        "index.html": html,
-        "404.html": NOT_FOUND_HTML,
+        "index.html": html_ro,
+        "en/index.html": html_en,
+        "404.html": localize_404("ro"),
+        "en/404.html": localize_404("en"),
         "evidence-results.json": json.dumps(scenarios, indent=2, ensure_ascii=False) + "\n",
         "authentic-evidence.json": json.dumps(authentic, indent=2, ensure_ascii=False) + "\n",
-        "_headers": security_headers(html),
-        "robots.txt": "User-agent: *\nDisallow: /\n",
+        "_headers": security_headers(html_ro),
+        # Crawlers need access to static Open Graph metadata and PNGs. The
+        # X-Robots-Tag and HTML robots=noindex remain set for search indexing.
+        "robots.txt": "User-agent: *\nAllow: /\n",
+        "assets/favicon.svg": (media / "favicon.svg").read_bytes(),
+        "assets/favicon.ico": (media / "favicon.ico").read_bytes(),
+        "assets/apple-touch-icon.png": (media / "apple-touch-icon.png").read_bytes(),
+        "og/ro.png": (media / "og/ro.png").read_bytes(),
+        "og/en.png": (media / "og/en.png").read_bytes(),
     }
     target.mkdir(parents=True, exist_ok=True)
     for filename, content in assets.items():
         destination = target / filename
+        if not destination.resolve().is_relative_to(target):
+            raise ValueError("refusing output path escape")
+        destination.parent.mkdir(parents=True, exist_ok=True)
         if destination.is_symlink():
             raise ValueError("refusing output symlink")
-        destination.write_text(content, encoding="utf-8")
+        if isinstance(content, bytes):
+            destination.write_bytes(content)
+        else:
+            destination.write_text(content, encoding="utf-8")
     return tuple(assets)
 
 

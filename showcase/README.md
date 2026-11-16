@@ -2,11 +2,12 @@
 
 > **EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION**
 
-**Code-only static package:** this directory builds a separate, precomputed, static technology
-showcase from the already existing Mission Control console (#87). It is not a
-deployed website, validated product, live verifier, customer workflow, or permission
-to activate tag.rocsi.eu. Issue #88 remains open and is not a dependency for
-serving immutable static assets on separately authorized hosting.
+**Static package:** this directory builds a separate, precomputed, static technology
+showcase from the already existing Mission Control console (#87). The current
+English-only baseline is hosted on Cloudflare Pages at tag.rocsi.eu; new changes
+in a Draft PR are **not** deployed without separately approved merge/release.
+It is not a validated product, live verifier or customer workflow. Issue #88
+remains independent of serving immutable static assets.
 
 ## Build and scope
 
@@ -17,21 +18,27 @@ python3 showcase/build.py --out-dir /tmp/tag-showcase
 python3 -m unittest discover -s showcase -p 'test_*.py' -v
 \`\`\`
 
-Use a local static HTTP server to inspect the generated *six-file directory*
-in a separately permitted development environment (do not use Qube/Production
-without authorization). The package is:
+Use a local static HTTP server in an authorized isolated QA environment to
+inspect the generated **13 public assets**. The allowlisted package is:
 
-- \`index.html\`: transformed shared Mission Control HTML/CSS/SVG/JS; operator
-  card, local capabilities discovery, authentication/token and execution JS removed.
-- \`404.html\`: static inert not-found page with experimental labels and a return
-  link; prevents Cloudflare Pages' implicit SPA fallback on unknown routes.
+- \`index.html\`: Romanian-default public page (**Centru de comandă și control**);
+  \`en/index.html\`: English page (**Mission Control**). Both use the same
+  sanitized HTML/CSS/JS, without the operator card, authentication or execution.
+- \`404.html\` and \`en/404.html\`: localized inert not-found pages with
+  experimental markings and return links, preventing Pages' implicit SPA fallback.
+- \`og/ro.png\`, \`og/en.png\`: pre-rendered 1200×630, same graphic composition
+  (synthetic A–B–C route and illustrative drone), separately translated captions.
+- \`favicon.svg\`, \`favicon.ico\`, \`apple-touch-icon.png\`: shared drone/radar
+  site identity, without text or claims of live verification.
 - \`evidence-results.json\`: **strictly reconstructed** deterministic orchestration
   mock outcomes, never actual proof-verification evidence.
 - \`authentic-evidence.json\`: **strictly reconstructed** precomputed synthetic
   offline-verifier result; the browser does not verify it or authenticate the JSON.
 - \`_headers\`: static-host security headers including exact inline-content CSP hashes,
   same-origin-only JSON fetches, denied frames/camera/geolocation, no tracking.
-- \`robots.txt\`: explicit no-index preference for this initial experimental release.
+- \`robots.txt\`: allows social crawlers to retrieve the page's **static**
+  Open Graph/Twitter metadata and share image. **No indexing** remains enforced by
+  HTML \`robots=noindex,nofollow\` and \`X-Robots-Tag: noindex\` response header.
 
 Build fails closed if an input fixture schema, allowlisted typed value, privacy
 boundary, HTML exclusion marker or expected public-script shape changes.
@@ -42,15 +49,16 @@ and remain local-only.
 
 ## Hosting comparison and recommendation (not activation)
 
-**Preferred:** Cloudflare Pages/static edge hosting with a new isolated project.
+**Current hosting:** Cloudflare Pages Free, project \`tag-mission-control\`.
+Do not change DNS, trigger Pages builds or deploy this PR without authorization.
 Build command: \`python3 showcase/build.py --out-dir dist\`.
 Build output: \`dist\`; framework preset: none; no runtime functions,
 environment secrets, analytics or SSR. Connect the Git repository under the
 existing organization's authorized Cloudflare account, configure *only* the
 approved custom hostname after a separate GO. Confirm that Pages applies
 \`_headers\` on the final deployment, returns HTTP 404 for missing routes, and that its public route serves only
-the six generated files. Keep previews restricted as appropriate: a public
-preview URL is itself a public exposure and needs authorization.
+the 13 generated files. Production and preview auto-deploy remain **OFF** in
+Cloudflare; a Draft PR neither deploys nor authorizes a release.
 
 **Alternative:** existing ROCSI Production VM served as pure static content.
 This would add web-server/domain configuration, disk and operational coupling
@@ -60,6 +68,29 @@ first showcase without a separate shared-host assessment and approval.
 **Fallback:** a separate static-only host may be used if equivalent CSP and
 no-index headers, isolation, DNS/TLS and rollback are confirmed. No public prover
 is needed under any of these options.
+
+## Localization and social preview
+
+- \`/\` uses **Romanian** (\`<html lang="ro">\`); \`/en/\` uses English
+  (\`lang="en"\`). Native RO/EN links allow an explicit change of language.
+  No cookies, session storage, browser-language detection or redirect logic.
+- Each path has its own fully rendered HTML title, meta description, Open Graph
+  locale/title/description/image, Twitter card and image-alt text, plus
+  \`canonical\` and \`hreflang\` alternates. WhatsApp and other crawlers can
+  read these without JavaScript. The images use absolute
+  \`https://tag.rocsi.eu/og/{ro,en}.png\` URLs.
+- Type enums (\`VALID\`, \`INVALID\`, \`A0_SYNTHETIC\`, experimental boundary
+  markers) remain evidence-backed immutable values. Romanian translates UI
+  labels and display statuses, but never changes underlying JSON, policy
+  predicates or cryptographic results.
+- The social graphics and drone/radar site icon are **original synthetic art**
+  authored for this project with \`showcase/render_social_assets.py\` (Pillow
+  needed only for optional artist-side re-rendering). Cloudflare's
+  \`python3 showcase/build.py --out-dir dist\` has no Pillow or external build
+  dependency. No stock, vendor, participant or operational imagery is used.
+- Social platforms may cache previews. A changed picture becomes visible only
+  after a separately approved deployment and may need platform cache refresh.
+  \`noindex\` is kept deliberately; link-sharing metadata is not SEO approval.
 
 ## Minimal acceptance and release gate
 
@@ -109,7 +140,7 @@ no new material findings; desktop/mobile + Pause/Resume/reduced-motion
 acceptance; a manual inspection of emitted assets and public source/network
 for absent operator execution; approved hosting, TLS, response headers and
 DNS configuration; explicit owner approval for **merge** and a separate
-approval for **public activation**. Default: **NO-GO** for hostname activation.
+approval for **public activation**. Default: **NO-GO** for merging or deploying this localization PR.
 
 Rollback: disable the Pages custom domain/route or revert the static
 deployment via the authorized hosting controls. Offline independent verification

@@ -1,0 +1,402 @@
+"""Static Romanian localization, sharing metadata and exact display copy only.
+
+No operator functionality, user language profiling, or external API calls.
+The same JavaScript is emitted in both locales; CSP hashes remain identical.
+"""
+from __future__ import annotations
+
+from html import escape
+from html.parser import HTMLParser
+import re
+
+ORIGIN = "https://tag.rocsi.eu"
+
+# Exact visible text from the public *post-sanitization* page.
+# Do not translate immutable typed evidence enums or experiment boundary labels.
+RO_TEXT = {
+    "TAG Mission Control — Experimental Synthetic Showcase":
+        "TAG — Centru de comandă și control · Demonstrație sintetică experimentală",
+    "ROCSI / Telemetry Attestation Gateway":
+        "ROCSI / Telemetry Attestation Gateway",
+    "Mission Control": "Centru de comandă și control",
+    "Explore a privacy-preserving telemetry attestation concept through synthetic animation, deterministic scenario mocks and a separately recorded offline verification outcome. No live vehicle, public proof generation or verification runs here.":
+        "Descoperă un concept de atestare a telemetriei care protejează datele private, prin animații sintetice, scenarii simulate deterministe și un rezultat separat al unei verificări offline. Nu există vehicule conectate și nu se generează sau verifică dovezi în acest site.",
+    "PUBLIC SHOWCASE · PRECOMPUTED ONLY":
+        "DEMONSTRAȚIE PUBLICĂ · DOAR REZULTATE PRECALCULATE",
+    "What the recorded result can show": "Ce poate demonstra rezultatul înregistrat",
+    "A separately executed offline verifier recorded a cryptographic VALID or INVALID outcome for one synthetic proof. The browser only displays a minimized, unauthenticated JSON replay; it does not verify or authenticate the proof. The orchestration scenarios below are mocks, not proof checks.":
+        "Un verificator independent, executat offline, a înregistrat un rezultat criptografic VALID sau INVALID pentru o dovadă sintetică. Browserul afișează doar o reluare JSON minimizată și neautentificată; nu verifică și nu autentifică dovada. Scenariile de mai jos sunt simulări, nu verificări de dovezi.",
+    "What it does not establish": "Ce nu poate demonstra",
+    "Telemetry truth, source integrity, trustworthy time, interval or flight coverage, safety, compliance, policy/freshness/revocation/replay acceptance, publication, customer demand or a relying-party decision. Assurance remains A0_SYNTHETIC.":
+        "Nu confirmă corectitudinea telemetriei, integritatea sursei, timpul de încredere, acoperirea intervalului ori a zborului, siguranța, conformitatea, acceptarea politicilor, prospețimea, revocarea, protecția contra reluării, publicarea, cererea clienților sau decizia beneficiarului. Nivelul de asigurare rămâne A0_SYNTHETIC.",
+    "Mission Control · synthetic visualization": "Centru de comandă și control · vizualizare sintetică",
+    "Observation only, never vehicle control": "Doar observație, niciodată controlul vehiculului",
+    "A predefined 2.5D vehicle and route illustrate the concept. Motion is not telemetry, a measured trajectory, a live mission, proof generation, or verification progress.":
+        "Un vehicul 2.5D și un traseu prestabilit ilustrează conceptul. Animația nu reprezintă telemetrie, traiectorie măsurată, misiune reală, generare de dovezi ori progresul verificării.",
+    "Pause illustration": "Oprește animația",
+    "Illustrative synthetic observation route and 2.5D vehicle":
+        "Traseu sintetic ilustrativ și vehicul 2.5D",
+    "Abstract non-geographic waypoints and an animated synthetic vehicle. No physical coordinates, real telemetry, or verified flight path.":
+        "Puncte abstracte, fără localizare geografică, și un vehicul sintetic animat. Nu sunt prezentate coordonate reale, telemetrie reală sau trasee de zbor verificate.",
+    "SYNTHETIC ROUTE · NOT GEOGRAPHIC": "TRASEU SINTETIC · FĂRĂ REFERINȚĂ GEOGRAFICĂ",
+    "ILLUSTRATION ONLY · NO LIVE STREAM": "DOAR ILUSTRAȚIE · FĂRĂ FLUX LIVE",
+    "No live backend · independent of illustration": "Fără backend live · independent de animație",
+    "Execution deliberately disabled": "Execuție dezactivată intenționat",
+    "Execution": "Execuție",
+    "DISABLED · static showcase only": "DEZACTIVAT · doar demonstrație statică",
+    "Proof generation": "Generarea dovezii",
+    "Cryptographic verification": "Verificare criptografică",
+    "These fields never represent running computation on this public site. The mock scenario panel and independently recorded offline-verifier result below remain separate from the illustration.":
+        "Aceste câmpuri nu indică niciodată operațiuni în execuție pe site-ul public. Scenariile simulate și rezultatul verificatorului offline, înregistrat separat mai jos, sunt independente de animație.",
+    "EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION. No MAVLink commands, navigation control, mission edits, or source assurance. Animation never changes evidence status.":
+        "EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION. Fără comenzi MAVLink, controlul navigației, modificarea misiunilor sau garanții privind sursa. Animația nu modifică niciodată starea dovezilor.",
+    "Scenario replay": "Reluarea scenariilor",
+    "/ orchestration mock": "/ simulare a orchestrării",
+    "Synthetic test case": "Scenariu sintetic de test",
+    "Loading deterministic evidence…": "Se încarcă dovezile deterministe…",
+    "Show result": "Afișează rezultatul",
+    "Conceptual flow only: synthetic telemetry → normalization → proof → independent verification → optional publication. The stages below replay mocks; they are not live progress.":
+        "Flux exclusiv conceptual: telemetrie sintetică → normalizare → dovadă → verificare independentă → publicare opțională. Etapele de mai jos redau simulări, nu progres în timp real.",
+    "01 · Normalize": "01 · Normalizare",
+    "Source state": "Starea sursei",
+    "02 · Prove": "02 · Dovadă",
+    "Generation state": "Starea generării",
+    "03 · Verify": "03 · Verificare",
+    "Crypto state": "Starea criptografică",
+    "04 · Publish": "04 · Publicare",
+    "Optional mock": "Simulare opțională",
+    "Public policy predicate": "Condiție din politica publică",
+    "The private normalized speed is never displayed. This preview does not expose a public limit for each recorded case.":
+        "Viteza normalizată privată nu este afișată. Această demonstrație nu expune o limită publică pentru fiecare caz înregistrat.",
+    "Recorded cryptographic dimension": "Rezultat criptografic înregistrat",
+    "Recorded mock orchestration result, not independently verified proof evidence.":
+        "Rezultat al unei orchestrări simulate, nu dovadă verificată independent.",
+    "What this does — and does not — demonstrate": "Ce demonstrează și ce nu demonstrează",
+    "This preview demonstrates how separate typed outcomes can be presented. Its source data comes from deterministic tests that mock proof generation and verification. It does not demonstrate a newly generated genuine proof, telemetry truth, trustworthy source/time, whole-flight coverage, safety, compliance, customer demand or production readiness.":
+        "Demonstrația arată cum pot fi prezentate rezultate distincte, tipizate. Datele provin din teste deterministe care simulează generarea și verificarea dovezilor. Nu demonstrează generarea unei noi dovezi autentice, corectitudinea telemetriei, încrederea în sursă sau timp, acoperirea integrală a zborului, siguranța, conformitatea, cererea clienților ori pregătirea pentru producție.",
+    "Recorded typed outcomes": "Rezultate tipizate înregistrate",
+    "Source normalization": "Normalizarea sursei",
+    "Source trust": "Încrederea în sursă",
+    "Claim eligibility": "Eligibilitatea afirmației",
+    "Verification input": "Intrarea verificării",
+    "Assurance": "Nivel de asigurare",
+    "Optional publication mock": "Simulare de publicare opțională",
+    "State": "Stare",
+    "Attempts": "Încercări",
+    "Reconciled": "Reconciliat",
+    "Trust boundaries": "Limite de încredere",
+    "Business decision": "Decizie de afaceri",
+    "MAVLink command path": "Canal de comenzi MAVLink",
+    "Restricted disclosure": "Divulgarea datelor restricționate",
+    "Verification is not a relying party's decision. Publication is not cryptographic verification. A0_SYNTHETIC does not establish real-world telemetry assurance.":
+        "Verificarea nu este decizia beneficiarului. Publicarea nu înseamnă verificare criptografică. A0_SYNTHETIC nu oferă asigurări privind telemetria din lumea reală.",
+    "Separate evidence type · no live prover": "Tip distinct de dovadă · fără generator live",
+    "Precomputed genuine synthetic proof verification": "Verificare precalculată a unei dovezi sintetice autentice",
+    "This is a recorded result from the independent local Noir/Barretenberg verifier, not an orchestration mock. Verification happened offline before export, not in this browser. A static JSON replay is not an authenticated proof or an independently verifiable receipt. No proof, witness, key, raw telemetry, or private observation is supplied to the page.":
+        "Acesta este rezultatul înregistrat al verificatorului local independent Noir/Barretenberg, nu o simulare a orchestrării. Verificarea s-a efectuat offline, înainte de export, nu în browser. Reluarea unui fișier JSON static nu reprezintă o dovadă autentificată sau o confirmare verificabilă independent. Pagina nu primește dovezi, martori, chei, telemetrie brută sau observații private.",
+    "This frozen result was created before publication. Reloading this static file never runs a prover, verifies a proof or refreshes an offline computation.":
+        "Acest rezultat fix a fost creat înainte de publicare. Reîncărcarea fișierului static nu generează și nu verifică o dovadă și nu reexecută procesarea offline.",
+    "Reload recorded result": "Reîncarcă rezultatul înregistrat",
+    "Loading minimized offline verification replay…": "Se încarcă rezultatul minimizat al verificării offline…",
+    "Recorded offline cryptographic outcome": "Rezultat criptografic offline înregistrat",
+    "Evidence kind: PRECOMPUTED_GENUINE_SYNTHETIC_VERIFICATION. Proof generation was not observed by this verifier.":
+        "Tip de dovadă: PRECOMPUTED_GENUINE_SYNTHETIC_VERIFICATION. Generarea dovezii nu a fost observată de acest verificator.",
+    "Input reconstruction": "Reconstrucția intrării",
+    "Recorded proof rejection reason": "Motivul înregistrat al respingerii dovezii",
+    "Independent dimensions": "Dimensiuni independente",
+    "Policy": "Politică",
+    "Freshness": "Actualitate",
+    "Revocation": "Revocare",
+    "Replay": "Protecție contra reluării",
+    "Publication": "Publicare",
+    "Relying-party decision": "Decizia beneficiarului",
+    "Browser cryptographic verification": "Verificare criptografică în browser",
+    "Proof validity is not telemetry truth. One synthetic observation does not establish interval coverage, flight/safety, contractual, payment or regulatory compliance. The source record has no customer or commercial validation.":
+        "Validitatea dovezii nu garantează corectitudinea telemetriei. O observație sintetică nu demonstrează acoperirea unui interval sau a unui zbor, siguranța ori conformitatea contractuală, de plată sau reglementară. Înregistrarea sursă nu a fost validată de clienți sau comercial.",
+    "Public static technology showcase. Experimental synthetic-only, precomputed results. No visitor execution, vehicle connection, telemetry upload, analytics, tracking, external fonts or proof jobs. The browser does not independently verify proofs.":
+        "Demonstrație tehnologică publică, statică. Rezultate experimentale, exclusiv sintetice și precalculate. Fără execuții inițiate de vizitatori, conectare la vehicule, încărcare de telemetrie, analiză de trafic, urmărire, fonturi externe sau sarcini de generare a dovezilor. Browserul nu verifică independent dovezile.",
+    "A": "A", "B": "B", "C": "C", "—": "—",
+    # Preserve machine-readable evidence codes and experimental markings.
+    "EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION":
+        "EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION",
+    "speed_cm_s ≤ maximum_speed_cm_s": "speed_cm_s ≤ maximum_speed_cm_s",
+    "NOT_LOADED": "NEÎNCĂRCAT",
+    "NOT_OBSERVED": "NEOBSERVAT",
+    "NOT_EVALUATED": "NEEVALUAT",
+    "NOT_PERFORMED": "NEEFECTUAT",
+    "NOT_MADE": "NEADOPTATĂ",
+    "NONE": "NICIUNA",
+    "A0_SYNTHETIC": "A0_SYNTHETIC",
+}
+
+RO_ARIA = {
+    "Scope and limitations of synthetic evidence": "Domeniul și limitele dovezilor sintetice",
+    "Independent evidence status": "Starea independentă a dovezilor",
+    "Conceptual pipeline": "Flux conceptual",
+}
+
+SCENARIO_RO = {
+    "altered_public_input": "Date publice modificate",
+    "below_limit_local_publication": "Publicare locală sub limită",
+    "equality_publication_disabled": "Publicare dezactivată la egalitate",
+    "malformed_source": "Sursă invalidă",
+    "over_limit": "Depășirea limitei",
+    "publication_definitive_failure": "Eșec definitiv la publicare",
+    "publication_timeout_retry_reconciliation": "Timeout, reîncercare și reconciliere",
+    "publication_unavailable": "Publicare indisponibilă",
+    "tampered_proof": "Dovadă modificată",
+    "unsupported_public_version": "Versiune publică neacceptată",
+}
+
+class _Translator(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=False)
+        self.output: list[str] = []
+        self.block: str | None = None
+        self.seen: set[str] = set()
+        self.unknown: set[str] = set()
+
+    def handle_starttag(self, tag, attrs):
+        value = self.get_starttag_text()
+        if tag == "html":
+            value = value.replace('lang="en"', 'lang="ro"')
+        for en, ro in RO_ARIA.items():
+            value = value.replace(f'aria-label="{en}"', f'aria-label="{ro}"')
+        self.output.append(value)
+        if tag in {"script", "style"}:
+            self.block = tag
+
+    def handle_startendtag(self, tag, attrs):
+        self.output.append(self.get_starttag_text())
+
+    def handle_endtag(self, tag):
+        self.output.append(f"</{tag}>")
+        if tag == self.block:
+            self.block = None
+
+    def handle_data(self, text):
+        if self.block or not text.strip():
+            self.output.append(text)
+            return
+        start = len(text) - len(text.lstrip())
+        end = len(text) - len(text.rstrip())
+        core = text[start:len(text)-end if end else len(text)]
+        value = RO_TEXT.get(core)
+        if value is None:
+            self.unknown.add(core)
+            value = core
+        else:
+            self.seen.add(core)
+        self.output.append(text[:start] + value + (text[len(text)-end:] if end else ""))
+
+    def handle_entityref(self, name):
+        self.output.append(f"&{name};")
+
+    def handle_charref(self, name):
+        self.output.append(f"&#{name};")
+
+    def handle_comment(self, text):
+        self.output.append(f"<!--{text}-->")
+
+    def handle_decl(self, decl):
+        self.output.append(f"<!{decl}>")
+
+def romanian_html(english: str) -> str:
+    parser = _Translator()
+    parser.feed(english)
+    parser.close()
+    if parser.unknown:
+        raise ValueError("untranslated public HTML: " + repr(sorted(parser.unknown)))
+    result = "".join(parser.output)
+    if '<html lang="ro">' not in result:
+        raise ValueError("Romanian page language missing")
+    return result
+
+# This block is identical for RO and EN. Only localized display messages change.
+LOCALE_JS = r'''
+const isRomanian = document.documentElement.lang === "ro";
+const copy = isRomanian ? {
+  pause: "Oprește animația",
+  resume: "Reia animația",
+  reduce: "Ilustrație statică · mișcare redusă",
+  unavailable: "Fișierul scenariilor precalculate nu este disponibil. Verificați activele statice de pe același domeniu; nu există serviciu de rezervă.",
+  precomputedLoading: "Se încarcă rezultatul offline precalculat; browserul nu verifică dovezi.",
+  precomputedFailure: "Rezultatul offline nu este disponibil sau este incompatibil. Scenariile simulate rămân distincte; nu se presupune verificarea criptografică.",
+  precomputedSuccess: "Rezultatul verificatorului offline a fost încărcat. Verificare în browser: NOT_PERFORMED."
+} : {
+  pause: "Pause illustration", resume: "Resume illustration",
+  reduce: "Illustration stationary · reduced motion",
+  unavailable: "Precomputed scenario file unavailable. Check the same-origin static assets; no live fallback exists.",
+  precomputedLoading: "Loading precomputed offline result; no verification is performed in this browser.",
+  precomputedFailure: "Authentic replay unavailable or incompatible. Mock orchestration remains separate; no cryptographic verification is implied.",
+  precomputedSuccess: "Precomputed offline verifier result loaded. Browser verification: NOT_PERFORMED."
+};
+const scenarioNamesRo = %SCENARIO_NAMES_RO%;
+const localizedStatus = {
+  NOT_RECORDED:"NEÎNREGISTRAT", NOT_LOADED:"NEÎNCĂRCAT",
+  NOT_OBSERVED:"NEOBSERVAT", NOT_EVALUATED:"NEEVALUAT",
+  NOT_PERFORMED:"NEEFECTUAT", NOT_ATTEMPTED:"NEÎNCERCAT",
+  NOT_CHECKED:"NEVERIFICAT", NOT_MADE:"NEADOPTATĂ",
+  NOT_SATISFIED:"NEÎNDEPLINIT", SATISFIED:"ÎNDEPLINIT",
+  ACCEPTED:"ACCEPTAT", REJECTED:"RESPINS", UNSIGNED:"NESEMNAT",
+  NORMALIZED:"NORMALIZAT", GENERATED:"GENERAT",
+  NONE:"NICIUNA",
+  YES:"DA", NO:"NU", RECORDED:"ÎNREGISTRAT",
+  final:"FINALIZAT", failed:"EȘUAT"
+};
+'''
+
+def inject_locale_js(english: str) -> str:
+    import json
+    block = LOCALE_JS.replace(
+        "%SCENARIO_NAMES_RO%", json.dumps(SCENARIO_RO, ensure_ascii=False, sort_keys=True)
+    )
+    anchor = 'const $ = id => document.getElementById(id);'
+    if english.count(anchor) != 1:
+        raise ValueError("unexpected script initialization shape")
+    english = english.replace(anchor, anchor + "\n" + block, 1)
+    old = 'const label = key => key.replaceAll("_"," ").toLowerCase().replace(/^./,x=>x.toUpperCase());'
+    new = 'const label = key => isRomanian ? (scenarioNamesRo[key] || key) : key.replaceAll("_"," ").toLowerCase().replace(/^./,x=>x.toUpperCase());'
+    if english.count(old) != 1:
+        raise ValueError("unexpected scenario display label code")
+    english = english.replace(old, new)
+    old = 'const safe = (v) => typeof v === "string" || typeof v === "number" ? String(v) : "NOT_RECORDED";'
+    new = 'const safe = (v) => { const raw = typeof v === "string" || typeof v === "number" ? String(v) : "NOT_RECORDED"; return isRomanian ? (localizedStatus[raw] || raw) : raw; };'
+    if english.count(old) != 1:
+        raise ValueError("unexpected typed value rendering")
+    english = english.replace(old, new)
+    pairs = {
+        'toggle.textContent=reduce?"Illustration stationary · reduced motion":\n    paused?"Resume illustration":"Pause illustration";':
+            'toggle.textContent=reduce?copy.reduce:\n    paused?copy.resume:copy.pause;',
+        '$(\"error\").textContent=\"Precomputed scenario file unavailable. Check the same-origin static assets; no live fallback exists.\";':
+            '$(\"error\").textContent=copy.unavailable;',
+        '$(\"authentic-error\").textContent=\"Loading precomputed offline result; no verification is performed in this browser.\";':
+            '$(\"authentic-error\").textContent=copy.precomputedLoading;',
+        '$(\"authentic-error\").textContent=\"Authentic replay unavailable or incompatible. Mock orchestration remains separate; no cryptographic verification is implied.\";':
+            '$(\"authentic-error\").textContent=copy.precomputedFailure;',
+        '$(\"authentic-error\").textContent=\"Precomputed offline verifier result loaded. Browser verification: NOT_PERFORMED.\";':
+            '$(\"authentic-error\").textContent=copy.precomputedSuccess;',
+    }
+    for old, new in pairs.items():
+        if english.count(old) != 1:
+            raise ValueError("unexpected public message code: " + old[:55])
+        english = english.replace(old, new)
+    return english
+
+SHARE = {
+    "ro": {
+        "title": "Centru de comandă și control — Atestarea telemetriei | ROCSI",
+        "description": "Demonstrație experimentală de atestare a telemetriei: traseu sintetic, scenarii interactive și rezultate de verificare offline preînregistrate. Fără control live.",
+        "image_alt": "Centru de comandă și control TAG: dronă ilustrativă pe traseul sintetic A–B–C, fără telemetrie live.",
+    },
+    "en": {
+        "title": "Mission Control — Telemetry Attestation Gateway | ROCSI",
+        "description": "Experimental telemetry attestation showcase: synthetic route, interactive scenarios and precomputed offline verification results. No live vehicle control.",
+        "image_alt": "TAG Mission Control: illustrative drone on a synthetic A–B–C route, with no live telemetry.",
+    },
+}
+
+def social_metadata(html: str, language: str) -> str:
+    if language not in SHARE:
+        raise ValueError("unsupported social locale")
+    meta = SHARE[language]
+    url = ORIGIN + ("/" if language == "ro" else "/en/")
+    image_url = ORIGIN + ("/og/ro.png" if language == "ro" else "/og/en.png")
+    oglocale = "ro_RO" if language == "ro" else "en_US"
+    altlocale = "en_US" if language == "ro" else "ro_RO"
+    def attr(s: str) -> str:
+        return escape(s, quote=True)
+    additions = f'''
+  <link rel="canonical" href="{url}">
+  <link rel="alternate" hreflang="ro" href="{ORIGIN}/">
+  <link rel="alternate" hreflang="en" href="{ORIGIN}/en/">
+  <link rel="alternate" hreflang="x-default" href="{ORIGIN}/">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="alternate icon" type="image/x-icon" href="/assets/favicon.ico">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <meta name="description" content="{attr(meta['description'])}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ROCSI · Telemetry Attestation Gateway">
+  <meta property="og:locale" content="{oglocale}">
+  <meta property="og:locale:alternate" content="{altlocale}">
+  <meta property="og:title" content="{attr(meta['title'])}">
+  <meta property="og:description" content="{attr(meta['description'])}">
+  <meta property="og:url" content="{url}">
+  <meta property="og:image" content="{image_url}">
+  <meta property="og:image:secure_url" content="{image_url}">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="{attr(meta['image_alt'])}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{attr(meta['title'])}">
+  <meta name="twitter:description" content="{attr(meta['description'])}">
+  <meta name="twitter:image" content="{image_url}">
+  <meta name="twitter:image:alt" content="{attr(meta['image_alt'])}">
+'''
+    # Keep the existing document title translated by romanian_html().
+    if html.count("</head>") != 1:
+        raise ValueError("head marker invalid")
+    html = html.replace("</head>", additions + "</head>", 1)
+    switch = (
+        '<nav class="language-switch" aria-label="Limbă / Language">'
+        f'<a href="/" hreflang="ro" lang="ro" aria-current="{"page" if language=="ro" else "false"}">RO</a>'
+        f'<a href="/en/" hreflang="en" lang="en" aria-current="{"page" if language=="en" else "false"}">EN</a>'
+        "</nav>"
+    )
+    anchor = '<div class="pill" id="console-mode">'
+    if html.count(anchor) != 1:
+        raise ValueError("locale switch anchor missing")
+    html = html.replace(anchor, switch + "\n    " + anchor, 1)
+    css = '''
+    .pill{white-space:normal;max-width:100%;overflow-wrap:anywhere}
+    .language-switch{display:inline-flex;gap:5px;border:1px solid #53758d;border-radius:999px;padding:4px;align-self:start}
+    .language-switch a{min-width:36px;text-align:center;text-decoration:none;color:#bde4f1;font-size:.78rem;font-weight:750;padding:5px 8px;border-radius:999px}
+    .language-switch a[aria-current="page"]{background:#81d9e7;color:#102336}
+    .language-switch a:focus-visible{outline:3px solid #9ee9fb;outline-offset:2px}
+'''
+    if html.count("</style>") != 1:
+        raise ValueError("style marker invalid")
+    html = html.replace("</style>", css + "  </style>", 1)
+    return html
+
+def localize_404(language: str) -> str:
+    if language == "ro":
+        return '''<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>TAG — 404 · Pagina nu a fost găsită</title>
+</head>
+<body>
+  <main>
+    <h1>404 · Pagina nu a fost găsită</h1>
+    <p>Acest demonstrator static experimental nu are pagini sau servicii live la această adresă.</p>
+    <p>EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION</p>
+    <p><a href="/">Înapoi la Centrul de comandă și control</a> · <a href="/en/">English</a></p>
+  </main>
+</body>
+</html>
+'''
+    if language == "en":
+        return '''<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>TAG Mission Control — 404 · Not found</title>
+</head>
+<body>
+  <main>
+    <h1>404 · Page not found</h1>
+    <p>This experimental static showcase has no page or live service at this path.</p>
+    <p>EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION</p>
+    <p><a href="/en/">Return to Mission Control</a> · <a href="/">Română</a></p>
+  </main>
+</body>
+</html>
+'''
+    raise ValueError("unsupported locale")
