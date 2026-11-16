@@ -18,12 +18,12 @@ from build import (
 
 
 class StaticShowcaseTests(unittest.TestCase):
-    def test_frozen_bundle_has_only_thirteen_allowlisted_assets(self) -> None:
+    def test_frozen_bundle_has_only_fourteen_allowlisted_files(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             target = Path(folder)
             self.assertEqual(set(build(target)), {
                 "index.html", "en/index.html", "404.html", "en/404.html",
-                "evidence-results.json", "authentic-evidence.json", "_headers",
+                "evidence-results.json", "authentic-evidence.json", "_headers", "_redirects",
                 "robots.txt", "assets/favicon.svg", "assets/favicon.ico", "assets/apple-touch-icon.png",
                 "og/ro.png", "og/en.png",
             })
@@ -55,6 +55,20 @@ class StaticShowcaseTests(unittest.TestCase):
             self.assertIn('content="noindex,nofollow"', html)
             self.assertIn('<meta property="og:locale" content="ro_RO">', html)
             self.assertIn('<meta name="twitter:card" content="summary_large_image">', html)
+
+    def test_romanian_alias_uses_single_permanent_pages_redirect(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            target = Path(folder)
+            build(target)
+            self.assertEqual(
+                (target / "_redirects").read_text(encoding="utf-8"),
+                "/ro/ / 301\n",
+            )
+            self.assertFalse((target / "ro").exists())
+            html = (target / "index.html").read_text(encoding="utf-8")
+            self.assertIn('<link rel="canonical" href="https://tag.rocsi.eu/">', html)
+            self.assertIn('<link rel="alternate" hreflang="ro" href="https://tag.rocsi.eu/">', html)
+            self.assertIn('<meta property="og:image" content="https://tag.rocsi.eu/og/ro.png">', html)
 
     def test_cloudflare_pages_404_is_static_and_has_no_execution_surface(self) -> None:
         # A root 404.html prevents Cloudflare Pages' implicit SPA fallback.

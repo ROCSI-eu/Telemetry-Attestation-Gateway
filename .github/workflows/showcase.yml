@@ -22,5 +22,5 @@ jobs:
       - name: Build exact static output and validate public asset count
         run: |
           python3 showcase/build.py --out-dir "$RUNNER_TEMP/tag-showcase"
-          test "$(find "$RUNNER_TEMP/tag-showcase" -maxdepth 1 -type f | wc -l)" -eq 6
+          test "$(find "$RUNNER_TEMP/tag-showcase" -maxdepth 1 -type f | wc -l)" -eq 7
           test -f "$RUNNER_TEMP/tag-showcase/404.html"

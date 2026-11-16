@@ -4,7 +4,7 @@
 
 **Static package:** this directory builds a separate, precomputed, static technology
 showcase from the already existing Mission Control console (#87). The current
-English-only baseline is hosted on Cloudflare Pages at tag.rocsi.eu; new changes
+Romanian-first bilingual baseline is hosted on Cloudflare Pages at tag.rocsi.eu; new changes
 in a Draft PR are **not** deployed without separately approved merge/release.
 It is not a validated product, live verifier or customer workflow. Issue #88
 remains independent of serving immutable static assets.
@@ -19,7 +19,7 @@ python3 -m unittest discover -s showcase -p 'test_*.py' -v
 \`\`\`
 
 Use a local static HTTP server in an authorized isolated QA environment to
-inspect the generated **13 public assets**. The allowlisted package is:
+inspect the generated **14 files** (13 existing assets plus one Pages redirect configuration). The allowlisted package is:
 
 - \`index.html\`: Romanian-default public page (**Centru de comandă și control**);
   \`en/index.html\`: English page (**Mission Control**). Both use the same
@@ -36,6 +36,8 @@ inspect the generated **13 public assets**. The allowlisted package is:
   offline-verifier result; the browser does not verify it or authenticate the JSON.
 - \`_headers\`: static-host security headers including exact inline-content CSP hashes,
   same-origin-only JSON fetches, denied frames/camera/geolocation, no tracking.
+- \`_redirects\`: Cloudflare Pages rule \`/ro/ / 301\` permanently redirects
+  the optional Romanian alias to canonical \`/\` without duplicating its HTML.
 - \`robots.txt\`: allows social crawlers to retrieve the page's **static**
   Open Graph/Twitter metadata and share image. **No indexing** remains enforced by
   HTML \`robots=noindex,nofollow\` and \`X-Robots-Tag: noindex\` response header.
