@@ -332,6 +332,7 @@ def build(out: Path) -> tuple[str, ...]:
         "evidence-results.json": json.dumps(scenarios, indent=2, ensure_ascii=False) + "\n",
         "authentic-evidence.json": json.dumps(authentic, indent=2, ensure_ascii=False) + "\n",
         "_headers": security_headers(html_ro),
+        "_redirects": '/ro/ / 301\n',
         # Crawlers need access to static Open Graph metadata and PNGs. The
         # X-Robots-Tag and HTML robots=noindex remain set for search indexing.
         "robots.txt": "User-agent: *\nAllow: /\n",
