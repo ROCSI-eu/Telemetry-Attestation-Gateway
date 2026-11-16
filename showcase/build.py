@@ -1,0 +1,328 @@
+#!/usr/bin/env python3
+"""Build a strictly static, minimized public Mission Control showcase.
+
+EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC
+NOT VALIDATION OR PRODUCTION AUTHORIZATION
+
+This builder never invokes a CLI, verifier, network service, or operator endpoint.
+"""
+from __future__ import annotations
+
+import argparse
+import base64
+import hashlib
+import json
+from pathlib import Path
+import re
+
+ROOT = Path(__file__).resolve().parents[1]
+CONSOLE = ROOT / "experiments/web-console-v0/index.html"
+SCENARIOS = ROOT / "experiments/integrated-cli-v0/evidence-results.json"
+VERIFIER = ROOT / "experiments/web-console-v0/authentic-evidence.json"
+LABELS = [
+    "EXPERIMENTAL", "SYNTHETIC_ONLY", "A0_SYNTHETIC",
+    "NOT VALIDATION OR PRODUCTION AUTHORIZATION",
+]
+SCENARIO_NAMES = {
+    "altered_public_input", "below_limit_local_publication",
+    "equality_publication_disabled", "malformed_source", "over_limit",
+    "publication_definitive_failure", "publication_timeout_retry_reconciliation",
+    "publication_unavailable", "tampered_proof", "unsupported_public_version",
+}
+CASE_KEYS = {
+    "assurance", "claim", "command_path", "cryptographic", "proof_generation",
+    "publication", "relying_party_decision", "restricted_fields_disclosed",
+    "source", "source_trust", "verification_input",
+}
+PUBLICATION_KEYS = {"attempts", "error_code", "mode", "reconciled", "state"}
+CASE_ENUMS = {
+    "assurance": {"A0_SYNTHETIC"},
+    "claim": {"SATISFIED", "NOT_SATISFIED", "NOT_EVALUATED"},
+    "command_path": {"NONE"},
+    "cryptographic": {"VALID", "INVALID", "NOT_CHECKED"},
+    "proof_generation": {"GENERATED", "NOT_ATTEMPTED"},
+    "relying_party_decision": {"NOT_MADE"},
+    "source": {"NORMALIZED", "REJECTED"},
+    "source_trust": {"UNSIGNED", "NOT_EVALUATED"},
+    "verification_input": {"ACCEPTED", "REJECTED", "NOT_CHECKED"},
+}
+PUBLICATION_ENUMS = {
+    "error_code": {
+        None, "CLAIM_NOT_ELIGIBLE", "SOURCE_NOT_ELIGIBLE",
+        "VERIFICATION_NOT_VALID", "PUBLICATION_DISABLED",
+        "SUBSTRATE_REJECTED", "SUBSTRATE_UNAVAILABLE",
+    },
+    "mode": {"local", "disabled"},
+    "state": {"final", "failed", "NOT_PERFORMED", "NOT_RECORDED"},
+}
+AUTHENTIC_FIXED = {
+    "schema_version": "TAG_PRECOMPUTED_SYNTHETIC_VERIFIER_REPLAY_V0_EXPERIMENTAL",
+    "evidence_kind": "PRECOMPUTED_GENUINE_SYNTHETIC_VERIFICATION",
+    "verification_basis": "INDEPENDENT_OFFLINE_CHECK_AT_EXPORT",
+    "verification_input": "ACCEPTED",
+    "proof_generation": "NOT_OBSERVED",
+    "source_trust": "NOT_EVALUATED",
+    "assurance": "A0_SYNTHETIC",
+    "policy": "NOT_EVALUATED",
+    "freshness": "NOT_EVALUATED",
+    "revocation": "NOT_EVALUATED",
+    "replay": "NOT_EVALUATED",
+    "publication": "NOT_PERFORMED",
+    "relying_party_decision": "NOT_MADE",
+    "command_path": "NONE",
+    "private_fields_disclosed": False,
+    "browser_verified": False,
+    "proof_validity_is_telemetry_truth": False,
+}
+
+
+def exact_fields(value: object, fields: set[str], context: str) -> dict:
+    if type(value) is not dict or set(value) != fields:
+        raise ValueError("incompatible public fields: " + context)
+    return value
+
+
+def minimized_scenarios(source: dict) -> dict:
+    exact_fields(source, {
+        "boundaries", "cases", "evidence_kind", "evidence_note",
+        "experiment", "labels",
+    }, "source")
+    if (source["labels"] != LABELS
+        or source["experiment"] != "integrated-cli-v0"
+        or source["evidence_kind"] != "deterministic orchestration/control-flow evidence"):
+        raise ValueError("unrecognized orchestration evidence provenance")
+    boundaries = exact_fields(source["boundaries"], {
+        "exact_normalized_speed_disclosed", "hardware_required",
+        "mavlink_command_path", "network_required", "private_witness_disclosed",
+        "raw_telemetry_disclosed", "relying_party_business_decision",
+        "stable_identity_disclosed",
+    }, "boundaries")
+    if any(value is not False for value in boundaries.values()):
+        raise ValueError("source evidence boundary is not false")
+    cases = exact_fields(source["cases"], SCENARIO_NAMES, "scenario list")
+    clean = {}
+    for name, case in cases.items():
+        exact_fields(case, CASE_KEYS, name)
+        if any(case[key] not in options for key, options in CASE_ENUMS.items()):
+            raise ValueError("incompatible typed case: " + name)
+        if (case["restricted_fields_disclosed"] is not False
+            or type(case["publication"]) is not dict):
+            raise ValueError("restricted disclosure or publication shape")
+        pub = exact_fields(case["publication"], PUBLICATION_KEYS, name + "/publication")
+        if (any(pub[key] not in options for key, options in PUBLICATION_ENUMS.items())
+            or type(pub["attempts"]) is not int or pub["attempts"] not in (0, 1, 2)
+            or type(pub["reconciled"]) is not bool):
+            raise ValueError("incompatible publication metadata")
+        clean[name] = {
+            **{key: case[key] for key in sorted(CASE_KEYS - {"publication"})},
+            "publication": {key: pub[key] for key in sorted(PUBLICATION_KEYS)},
+        }
+    return {
+        "labels": LABELS,
+        "evidence_kind": "deterministic orchestration/control-flow evidence",
+        "cases": clean,
+    }
+
+
+def minimized_verifier(source: dict) -> dict:
+    keys = set(AUTHENTIC_FIXED) | {"labels", "cryptographic", "cryptographic_reason"}
+    exact_fields(source, keys, "offline verifier")
+    if (source["labels"] != LABELS
+        or any(source[k] != v or type(source[k]) is not type(v)
+               for k, v in AUTHENTIC_FIXED.items())
+        or source["cryptographic"] not in ("VALID", "INVALID")
+        or source["cryptographic_reason"] != (
+            None if source["cryptographic"] == "VALID" else "PROOF_REJECTED"
+        )):
+        raise ValueError("incompatible offline-verifier result")
+    return {key: source[key] for key in sorted(keys)}
+
+
+def replace_once(html: str, old: str, new: str) -> str:
+    if html.count(old) != 1:
+        raise ValueError("shared-console source anchor changed")
+    return html.replace(old, new, 1)
+
+
+def remove_between(html: str, start: str, end: str) -> str:
+    if html.count(start) != 1 or html.count(end) != 1:
+        raise ValueError("shared-console exclusion anchor changed")
+    a = html.index(start)
+    b = html.index(end)
+    if b <= a:
+        raise ValueError("shared-console exclusion order changed")
+    return html[:a] + html[b:]
+
+
+def public_html(source: str) -> str:
+    html = remove_between(
+        source, "    .operator[hidden],.operator-result[hidden]{display:none}",
+        '    .status[data-tone="good"]',
+    )
+    html = remove_between(
+        html, '  <section class="card operator" id="operator-panel"',
+        '  <div class="layout">\n    <section class="card" aria-labelledby="scenario-title">',
+    )
+    html = remove_between(
+        html, "// Progressive enhancement: the shared page remains a recorded-only console",
+        '$("authentic-reload").addEventListener("click",initializeAuthentic);',
+    )
+    html = replace_once(html, "\ninitializeOperator();", "")
+    html = replace_once(
+        html, "<title>TAG — Mission Control · Synthetic Research</title>",
+        '<title>TAG Mission Control — Experimental Synthetic Showcase</title>\n'
+        '  <meta name="robots" content="noindex,nofollow">',
+    )
+    html = replace_once(
+        html,
+        '<p class="sub">Explore the orchestration states of privacy-preserving bounded-speed attestation. Recorded mock orchestration and offline verifier evidence remain separate. On the authenticated local CLI preview only, this same console also enables one bounded synthetic execution. No proof or verification runs in the browser.</p>',
+        '<p class="sub">Explore a privacy-preserving telemetry attestation concept through '
+        'synthetic animation, deterministic scenario mocks and a separately recorded offline '
+        'verification outcome. No live vehicle, public proof generation or verification runs here.</p>',
+    )
+    html = replace_once(
+        html, 'LOCAL PREVIEW · PRECOMPUTED ONLY</div>',
+        'PUBLIC SHOWCASE · PRECOMPUTED ONLY</div>',
+    )
+    html = replace_once(
+        html, "Backend truth · separate from animation",
+        "No live backend · independent of illustration",
+    )
+    html = replace_once(html, "<h3>Accepted final CLI result</h3>",
+                        "<h3>Execution deliberately disabled</h3>")
+    html = replace_once(
+        html, "NOT_OBSERVED · no active CLI result</dd>",
+        "DISABLED · static showcase only</dd>",
+    )
+    html = replace_once(
+        html, "Only a validated final response from the existing one-shot CLI bridge updates these fields. Request in flight never means a pipeline stage completed. Recorded mocks and offline replay remain separate below.",
+        "These fields never represent running computation on this public site. "
+        "The mock scenario panel and independently recorded offline-verifier result "
+        "below remain separate from the illustration.",
+    )
+    html = replace_once(
+        html, '      <div class="flow" aria-label="Conceptual pipeline">',
+        '      <p class="small">Conceptual flow only: synthetic telemetry → normalization → '
+        'proof → independent verification → optional publication. The stages below replay mocks; '
+        'they are not live progress.</p>\n'
+        '      <div class="flow" aria-label="Conceptual pipeline">',
+    )
+    html = replace_once(
+        html, 'fetch("../integrated-cli-v0/evidence-results.json"',
+        'fetch("evidence-results.json"',
+    )
+    html = replace_once(
+        html, "Local evidence could not be loaded. Serve the experiments/ directory over loopback HTTP; no external service is required.",
+        "Precomputed scenario file unavailable. Check the same-origin static assets; "
+        "no live fallback exists.",
+    )
+    html = replace_once(
+        html, ' id="authentic-panel" aria-labelledby="authentic-title" style="margin-top:18px"',
+        ' id="authentic-panel" aria-labelledby="authentic-title"',
+    )
+    html = replace_once(
+        html, '#authentic-panel{overflow-wrap:anywhere}',
+        '#authentic-panel{overflow-wrap:anywhere;margin-top:18px}',
+    )
+    html = replace_once(
+        html, "A local JSON replay is not an authenticated proof",
+        "A static JSON replay is not an authenticated proof",
+    )
+    html = replace_once(
+        html,
+        "To update this panel, first run the separate private offline CLI refresh, then reload its recorded result below. This button never runs the CLI, proves a claim or starts verification.",
+        "This frozen result was created before publication. Reloading this static file "
+        "never runs a prover, verifies a proof or refreshes an offline computation.",
+    )
+    html = replace_once(
+        html, "Local/offline demonstration preview only. No analytics, remote APIs, uploads, external fonts, or proof jobs. Sources are separately labeled: deterministic mock orchestration and an offline-verifier-generated, minimized synthetic replay. The browser does not verify proofs.",
+        "Public static technology showcase. Experimental synthetic-only, precomputed results. "
+        "No visitor execution, vehicle connection, telemetry upload, analytics, tracking, "
+        "external fonts or proof jobs. The browser does not independently verify proofs.",
+    )
+    forbidden = (
+        "operator-panel", "operator-token", "operator-run", "operator-capabilities",
+        "initializeOperator", "OPERATOR_KEYS", "X-TAG-Local-Token",
+        '"execute"', "/execute", "one-shot", "http://", "https://",
+        "WebSocket(", "EventSource(", "localStorage", "sessionStorage",
+        "navigator.sendBeacon", "setInterval(", "<form",
+    )
+    if any(token in html for token in forbidden):
+        raise ValueError("public HTML retains restricted local/external feature")
+    if html.count('<script>') != 1 or html.count('<style>') != 1:
+        raise ValueError("unexpected HTML script/style surface")
+    if re.search(r'\sstyle="', html):
+        raise ValueError("inline style attribute incompatible with strict CSP")
+    if not all(label in html for label in LABELS):
+        raise ValueError("missing experimental label in public HTML")
+    return html
+
+
+def sha256_source(text: str) -> str:
+    return "'sha256-" + base64.b64encode(
+        hashlib.sha256(text.encode("utf-8")).digest()
+    ).decode("ascii") + "'"
+
+
+def security_headers(html: str) -> str:
+    style = re.search(r"<style>(.*?)</style>", html, flags=re.S)
+    script = re.search(r"<script>(.*?)</script>", html, flags=re.S)
+    if not style or not script:
+        raise ValueError("inline content missing for CSP")
+    csp = "; ".join((
+        "default-src 'none'",
+        "script-src " + sha256_source(script.group(1)),
+        "style-src " + sha256_source(style.group(1)),
+        "style-src-attr 'none'",
+        "img-src data:",
+        "connect-src 'self'",
+        "base-uri 'none'",
+        "form-action 'none'",
+        "frame-ancestors 'none'",
+        "object-src 'none'",
+        "upgrade-insecure-requests",
+    ))
+    return (
+        "/*\n"
+        "  Content-Security-Policy: " + csp + "\n"
+        "  X-Content-Type-Options: nosniff\n"
+        "  Referrer-Policy: no-referrer\n"
+        "  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()\n"
+        "  X-Frame-Options: DENY\n"
+        "  Cache-Control: no-store\n"
+        "  X-Robots-Tag: noindex\n"
+    )
+
+
+def build(out: Path) -> tuple[str, ...]:
+    target = out.resolve()
+    protected = (ROOT.resolve(), CONSOLE.parent.resolve(),
+                 SCENARIOS.parent.resolve())
+    if target in protected or any(target == folder for folder in protected):
+        raise ValueError("cannot overwrite an experiment source directory")
+    html = public_html(CONSOLE.read_text(encoding="utf-8"))
+    scenarios = minimized_scenarios(json.loads(SCENARIOS.read_text(encoding="utf-8")))
+    authentic = minimized_verifier(json.loads(VERIFIER.read_text(encoding="utf-8")))
+    assets = {
+        "index.html": html,
+        "evidence-results.json": json.dumps(scenarios, indent=2, ensure_ascii=False) + "\n",
+        "authentic-evidence.json": json.dumps(authentic, indent=2, ensure_ascii=False) + "\n",
+        "_headers": security_headers(html),
+        "robots.txt": "User-agent: *\nDisallow: /\n",
+    }
+    target.mkdir(parents=True, exist_ok=True)
+    for filename, content in assets.items():
+        destination = target / filename
+        if destination.is_symlink():
+            raise ValueError("refusing output symlink")
+        destination.write_text(content, encoding="utf-8")
+    return tuple(assets)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--out-dir", type=Path, required=True)
+    args = parser.parse_args()
+    names = build(args.out_dir)
+    print("EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION")
+    print("Static-only public assets:", ", ".join(names))
