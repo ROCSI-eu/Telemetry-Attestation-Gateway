@@ -185,9 +185,14 @@ def stop_owned(proc: subprocess.Popen[bytes]) -> None:
 
 
 def run(seconds: int, parent: Path, check_only: bool,
-        report_resources: bool = False) -> int:
+        report_resources: bool = False,
+        offline_toolchain_root: Path | None = None) -> int:
     private_parent(parent)
     bridge.trusted_bwrap()  # fail before any listener or process
+    if offline_toolchain_root is not None:
+        # Reuse the bridge's strict owner-private, preprovisioned validation.
+        # No binary, CRS, service or network is provisioned by this launcher.
+        offline_toolchain_root = bridge.offline_toolchain(offline_toolchain_root)
     old_umask = os.umask(0o077)
     try:
         with exclusive_session_parent(parent), tempfile.TemporaryDirectory(
@@ -207,8 +212,8 @@ def run(seconds: int, parent: Path, check_only: bool,
                 sys.executable, "-I", str(HERE / "local_cli_bridge.py"),
                 "--seconds", str(seconds),
             ]
-            # Never pass a toolchain path: genuine proof generation is unavailable
-            # in this minimal package unless separately provisioned and authorized.
+            if offline_toolchain_root is not None:
+                cmd.extend(["--offline-toolchain-root", str(offline_toolchain_root)])
             previous = {}
             def on_stop(signum: int, frame: object) -> None:
                 raise StopRequested
@@ -258,16 +263,22 @@ def main(argv: list[str] | None = None) -> int:
                       help="read-only local lease/leftover diagnosis, no bwrap or listener")
     parser.add_argument("--report-resources", action="store_true",
                         help="opt-in post-session Linux child CPU/RSS observation")
+    parser.add_argument("--offline-toolchain-root", type=Path,
+                        help="optional existing owner-private Noir/bb/CRS research toolchain; "
+                             "validated before starting the local bridge")
     args = parser.parse_args(argv)
     if not 1 <= args.seconds <= 300:
         parser.error("preview lifetime must be 1-300 seconds")
     if args.report_resources and (args.check_only or args.inspect_only):
         parser.error("resource observation requires a foreground local session")
+    if args.inspect_only and args.offline_toolchain_root is not None:
+        parser.error("toolchain selection is not available during inspection")
     if args.inspect_only:
         return inspect_local_parent(args.runtime_parent)
     try:
         return run(args.seconds, args.runtime_parent, args.check_only,
-                   args.report_resources)
+                   args.report_resources,
+                   offline_toolchain_root=args.offline_toolchain_root)
     except (Unavailable, bridge.Rejected, OSError, ValueError,
             subprocess.TimeoutExpired, subprocess.SubprocessError):
         print("UNAVAILABLE · local isolation or lifecycle preflight failed", file=sys.stderr)
