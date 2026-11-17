@@ -156,6 +156,26 @@ def remove_between(html: str, start: str, end: str) -> str:
     return html[:a] + html[b:]
 
 
+PUBLIC_INTRO_AND_SCOPE_OPEN = """  <section class="primer" aria-labelledby="primer-title">
+    <p class="primer-kicker">THE CONCEPT IN BRIEF</p>
+    <h2 id="primer-title">Verify a condition without revealing all the telemetry</h2>
+    <p>TAG investigates cryptographic verification of selected telemetry conditions with limited disclosure. Instead of providing a full mission record, a system could provide a proof about a specific condition, subject to trusted inputs and appropriate validation.</p>
+    <p class="primer-example"><strong>Illustrative example:</strong> A speed value satisfies a predefined limit without revealing the exact private value. This page does not test a real measurement or attest an actual mission.</p>
+    <p class="primer-links"><a href="#mission-control">Explore the synthetic route</a><a href="#scenario-title">Inspect recorded scenarios</a><a href="#authentic-title">See the separate offline verifier result</a></p>
+  </section>
+  <section class="use-cases" aria-labelledby="use-cases-title">
+    <h2 id="use-cases-title">Potential applications, not validated deployments</h2>
+    <div class="use-cases-grid">
+      <article><h3>Telemetry audits</h3><p>An operator could present evidence about a predefined condition without exposing the complete underlying dataset. No audit acceptance is established by this showcase.</p></article>
+      <article><h3>Autonomous platforms</h3><p>Future integrations could be investigated for aerial, ground or maritime vehicles. This page does not connect to or control any vehicle.</p></article>
+      <article><h3>Existing workflows</h3><p>CLI tools and possible future connectors could support integration with other systems. The public site exposes no execution endpoint.</p></article>
+    </div>
+  </section>
+  <details class="scope-disclosure" id="technical-scope">
+    <summary>Full experimental scope and limitations</summary>
+  <section class="scope" aria-label="Scope and limitations of synthetic evidence">"""
+
+
 def public_html(source: str) -> str:
     html = remove_between(
         source, "    .operator[hidden],.operator-result[hidden]{display:none}",
@@ -172,19 +192,44 @@ def public_html(source: str) -> str:
     html = replace_once(html, "\ninitializeOperator();", "")
     html = replace_once(
         html, "<title>TAG — Mission Control · Synthetic Research</title>",
-        '<title>TAG Mission Control — Experimental Synthetic Showcase</title>\n'
+        '<title>TAG — Privacy-Preserving Telemetry Attestation | ROCSI</title>\n'
         '  <meta name="robots" content="noindex,nofollow">',
     )
     html = replace_once(
         html,
         '<p class="sub">Explore the orchestration states of privacy-preserving bounded-speed attestation. Recorded mock orchestration and offline verifier evidence remain separate. On the authenticated local CLI preview only, this same console also enables one bounded synthetic execution. No proof or verification runs in the browser.</p>',
-        '<p class="sub">Explore a privacy-preserving telemetry attestation concept through '
-        'synthetic animation, deterministic scenario mocks and a separately recorded offline '
-        'verification outcome. No live vehicle, public proof generation or verification runs here.</p>',
+        '<p class="sub">TAG explores how specific telemetry conditions could be verified without sharing all underlying data. This experimental public page only displays synthetic animations, mock scenarios and a recorded offline verification outcome; no live vehicle connection, control, proof generation or browser verification occurs.</p>',
     )
     html = replace_once(
         html, 'LOCAL PREVIEW · PRECOMPUTED ONLY</div>',
         'PUBLIC SHOWCASE · PRECOMPUTED ONLY</div>',
+    )
+    html = replace_once(
+        html,
+        '  <section class="scope" aria-label="Scope and limitations of synthetic evidence">',
+        PUBLIC_INTRO_AND_SCOPE_OPEN,
+    )
+    html = replace_once(
+        html, '  </section>\n  <section class="mission-control" id="mission-control"',
+        '  </section>\n  </details>\n  <section class="mission-control" id="mission-control"',
+    )
+    html = replace_once(
+        html, '#authentic-panel{overflow-wrap:anywhere}',
+        '#authentic-panel{overflow-wrap:anywhere}\n'
+        '.primer{margin:0 0 18px;padding:20px;border:1px solid #35647c;border-radius:16px;background:#112739;min-width:0}\n'
+        '.primer h2{font-size:1.3rem;margin:0 0 10px;color:#e1f8fb}\n'
+        '.primer p{color:#d2e4ee;font-size:.91rem;line-height:1.55;margin:9px 0}\n'
+        '.primer .primer-kicker{font-size:.72rem;color:#81d9e7;font-weight:800;letter-spacing:.08em}\n'
+        '.primer .primer-example{border-left:3px solid #81d9e7;padding:6px 0 6px 12px}\n'
+        '.primer .primer-links{display:flex;flex-wrap:wrap;gap:8px 20px;margin:15px 0 0}\n'
+        '.use-cases{margin:0 0 18px}.use-cases h2{margin:0 0 12px}\n'
+        '.use-cases-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}\n'
+        '.use-cases article{background:#102538;border:1px solid #38556a;border-radius:12px;padding:15px;min-width:0}\n'
+        '.use-cases h3{margin:0 0 8px;font-size:.94rem;color:#d5f5fa}\n'
+        '.use-cases p{margin:0;color:#c4d7e6;font-size:.85rem;line-height:1.48}\n'
+        '.scope-disclosure{margin:0 0 18px;padding:13px 16px;border:1px solid #38556a;border-radius:12px;background:#0e2031}\n'
+        '.scope-disclosure summary{color:#d5f5fa}.scope-disclosure .scope{margin:15px 0 0}\n'
+        '@media(max-width:750px){.use-cases-grid{grid-template-columns:1fr}}',
     )
     html = replace_once(
         html, "Backend truth · separate from animation",
