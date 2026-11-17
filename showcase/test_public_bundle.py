@@ -57,6 +57,33 @@ class StaticShowcaseTests(unittest.TestCase):
             self.assertIn("nu se conectează la vehicule", ro)
             self.assertIn("does not connect to or control any vehicle", en)
 
+    def test_visual_final_remains_synthetic_bilingual_and_read_only(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            target = Path(folder)
+            build(target)
+            ro = (target / "index.html").read_text(encoding="utf-8")
+            en = (target / "en/index.html").read_text(encoding="utf-8")
+            for page, words in (
+                (ro, ("TAG / OBSERVAȚIE SINTETICĂ", "DOAR OBSERVAȚIE",
+                      "Condiție prestabilită", "Nu este luată aici")),
+                (en, ("TAG / SYNTHETIC OBSERVATION", "OBSERVATION ONLY",
+                      "Predefined condition", "Not made on this page")),
+            ):
+                self.assertIn('class="hero-scene"', page)
+                self.assertIn('class="hero-vehicle"', page)
+                self.assertIn('class="evidence-path"', page)
+                self.assertIn('aria-hidden="true"', page)
+                self.assertIn('role="group"', page)
+                self.assertIn('prefers-reduced-motion:reduce', page)
+                for item in words:
+                    self.assertIn(item, page)
+                self.assertNotIn('class="hero-axis"', page)
+            self.assertIn('evidence-path', ro)
+            self.assertEqual(
+                re.search(r'<script>(.*?)</script>', ro, flags=re.S).group(1),
+                re.search(r'<script>(.*?)</script>', en, flags=re.S).group(1),
+            )
+
     def test_frozen_bundle_has_only_fourteen_allowlisted_files(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             target = Path(folder)

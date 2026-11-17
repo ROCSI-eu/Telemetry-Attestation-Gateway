@@ -158,6 +158,23 @@ RO_TEXT = {
     "Verify the condition. Keep the rest private.": "Verifică o condiție. Păstrează restul privat.",
     "Explore the illustration": "Explorează ilustrația",
     "Review technical evidence": "Examinează dovezile tehnice",
+    "TAG / SYNTHETIC OBSERVATION": "TAG / OBSERVAȚIE SINTETICĂ",
+    "A–B–C / 01": "A–B–C / 01",
+    "OBS / 02": "OBS / 02",
+    "ROUTE / SYN": "TRASEU / SINT",
+    "A0 / SYNTHETIC · OBSERVATION ONLY": "A0 / SINTETIC · DOAR OBSERVAȚIE",
+    "TAG explores verification without disclosing all telemetry. This public scene is synthetic and its separate verifier result was recorded offline; the browser neither connects to vehicles nor verifies proofs.":
+        "TAG explorează verificarea fără divulgarea întregii telemetrii. Scena publică este sintetică, iar rezultatul verificatorului separat a fost înregistrat offline; browserul nu se conectează la vehicule și nu verifică dovezi.",
+    "Explore the scene": "Explorează scena",
+    "Review the evidence": "Examinează dovezile",
+    "01 / CLAIM": "01 / CONDIȚIE",
+    "02 / PROOF": "02 / DOVADĂ",
+    "03 / CHECK": "03 / VERIFICARE",
+    "04 / DECISION": "04 / DECIZIE",
+    "Predefined condition": "Condiție prestabilită",
+    "Synthetic research artifact": "Artefact de cercetare sintetică",
+    "Recorded offline result": "Rezultat înregistrat offline",
+    "Not made on this page": "Nu este luată aici",
     "TAG / EXPERIMENT": "TAG / EXPERIMENT",
     "A0 / SYNTHETIC": "A0 / SINTETIC",
     "The orchestration is simulated. The separate verifier outcome was recorded offline; the browser displays both without independently checking proofs.":
@@ -183,6 +200,7 @@ RO_ARIA = {
     "Independent evidence status": "Starea independentă a dovezilor",
     "Conceptual pipeline": "Flux conceptual",
     "Page sections": "Secțiunile paginii",
+    "Conceptual evidence path, not executed in the browser": "Secvență conceptuală a dovezilor, neexecutată în browser",
 }
 
 SCENARIO_RO = {
