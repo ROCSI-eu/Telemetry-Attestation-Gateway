@@ -255,7 +255,7 @@ class StaticShowcaseTests(unittest.TestCase):
                     self.assertIn(token, script)
                 self.assertNotIn('operator-panel', page)
                 self.assertEqual(
-                    set(re.findall(r'fetch\\("([^"]+)"', page)),
+                    set(re.findall(r'fetch\("([^"]+)"', page)),
                     {"/evidence-results.json", "/authentic-evidence.json"},
                 )
             self.assertEqual(
