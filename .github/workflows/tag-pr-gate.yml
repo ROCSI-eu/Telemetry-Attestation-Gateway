@@ -1,0 +1,31 @@
+name: TAG PR gate
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tag-pr-gate:
+    name: tag-pr-gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Validate documentation
+        run: python3 scripts/check_docs.py
+      - name: Validate experimental research
+        run: python3 scripts/check_experiments.py
+      - name: Verify public static showcase
+        run: python3 -m unittest discover -s showcase -p 'test_*.py' -v
+      - name: Build and verify fourteen static assets
+        run: |
+          python3 showcase/build.py --out-dir "$RUNNER_TEMP/tag-showcase"
+          test "$(find "$RUNNER_TEMP/tag-showcase" -type f | wc -l)" -eq 14
+          test -f "$RUNNER_TEMP/tag-showcase/index.html"
+          test -f "$RUNNER_TEMP/tag-showcase/en/index.html"
+          test -f "$RUNNER_TEMP/tag-showcase/_headers"
+          test -f "$RUNNER_TEMP/tag-showcase/_redirects"
+          test -f "$RUNNER_TEMP/tag-showcase/og/ro.png"
+          test -f "$RUNNER_TEMP/tag-showcase/og/en.png"
