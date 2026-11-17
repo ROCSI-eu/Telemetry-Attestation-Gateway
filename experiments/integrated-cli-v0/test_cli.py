@@ -47,6 +47,51 @@ def fake_run_fixture(
 
 
 class IntegratedCliTests(unittest.TestCase):
+    def test_opt_in_loopback_reuses_same_demo_capture_boundary(self) -> None:
+        capture = {"decision_received_at_ms": 100, "max_age_ms": 1500,
+                   "events": [{"frame_hex": "synthetic-only-private", "received_at_ms": 50}]}
+        with patch.object(cli.demo, "run_fixture", side_effect=AssertionError("fixture path")):
+            with patch.object(cli.demo, "run_capture", return_value=valid_demo_result()) as run:
+                result = cli.run_integrated(
+                    cli.MAVLINK_DIR / "fixtures.json", "sitl-loopback", 600,
+                    capture_data=capture,
+                )
+        self.assertEqual(run.call_args.args[:3], ("sitl-loopback", capture, 600))
+        self.assertEqual(result["source"]["normalization"], "NORMALIZED")
+        self.assertEqual(result["proof"]["cryptographic"]["status"], "VALID")
+        self.assertEqual(result["relying_party_decision"], "NOT_MADE")
+        self.assertEqual(result["command_path"], "NONE")
+        self.assertNotIn("synthetic-only-private", json.dumps(result))
+
+    def test_sitl_capture_cannot_select_publication_or_other_capture(self) -> None:
+        for mode, name in (("local", "sitl-loopback"), ("disabled", "other")):
+            with self.subTest(mode=mode, name=name):
+                with self.assertRaises(ValueError):
+                    cli.run_integrated(
+                        cli.MAVLINK_DIR / "fixtures.json", name, 600,
+                        publication_mode=mode, capture_data={"events": []},
+                    )
+
+    def test_sitl_receiver_failure_is_minimized_typed_without_proof(self) -> None:
+        from contextlib import redirect_stdout
+        from unittest.mock import patch
+        with patch.object(cli.sitl_receive, "receive_capture",
+                          side_effect=cli.sitl_receive.ReceiveError("SOURCE_LOSS")):
+            with patch.object(cli, "run_integrated", side_effect=AssertionError("no proof")):
+                with patch("sys.argv", ["cli.py", "--source", "sitl-loopback",
+                                        "--maximum-speed-cm-s", "600",
+                                        "--format", "json"]):
+                    buffer = io.StringIO()
+                    with redirect_stdout(buffer):
+                        code = cli.main()
+        doc = json.loads(buffer.getvalue())
+        self.assertEqual(code, 2)
+        self.assertEqual(doc["source"]["reason"], "SOURCE_LOSS")
+        self.assertEqual(doc["source"]["source_trust"], "NOT_EVALUATED")
+        self.assertEqual(doc["proof"]["cryptographic"]["status"], "NOT_CHECKED")
+        self.assertEqual(doc["command_path"], "NONE")
+        self.assertFalse(any(doc["disclosure"].values()))
+
     def test_machine_result_keeps_dimensions_and_redacts_private_material(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             package = Path(tmp) / "package"

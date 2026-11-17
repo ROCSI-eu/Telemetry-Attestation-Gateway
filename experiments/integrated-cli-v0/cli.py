@@ -21,14 +21,16 @@ EXPERIMENTS_ROOT = Path(__file__).resolve().parents[1]
 MAVLINK_DIR = EXPERIMENTS_ROOT / "mavlink-normalization-v0"
 E2E_DIR = EXPERIMENTS_ROOT / "end-to-end-v0"
 PUBLICATION_DIR = EXPERIMENTS_ROOT / "publication-adapter-v0"
+SITL_DIR = EXPERIMENTS_ROOT / "sitl-receive-v0"
 
-for module_dir in (PUBLICATION_DIR, E2E_DIR, MAVLINK_DIR):
+for module_dir in (PUBLICATION_DIR, E2E_DIR, MAVLINK_DIR, SITL_DIR):
     module_path = str(module_dir)
     if module_path not in sys.path:
         sys.path.insert(0, module_path)
 
 import demo  # noqa: E402
 import publication_adapter as publication  # noqa: E402
+import sitl_receive  # noqa: E402
 
 LABELS = demo.LABELS
 SCHEMA_VERSION = "TAG_INTEGRATED_CLI_RESULT_V0_EXPERIMENTAL"
@@ -319,14 +321,21 @@ def _run_in_workspace(
     publication_fault: str | None,
     verification_case: str,
     package_dir: Path,
+    capture_data: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     try:
-        demo_result = demo.run_fixture(
-            capture_file,
-            capture_name,
-            maximum_speed_cm_s,
-            package_dir=package_dir,
-        )
+        # An explicitly opted-in loopback capture is never written to disk.
+        # The same end-to-end normalization/prove/verify boundary is reused.
+        if capture_data is None:
+            demo_result = demo.run_fixture(
+                capture_file, capture_name, maximum_speed_cm_s,
+                package_dir=package_dir,
+            )
+        else:
+            demo_result = demo.run_capture(
+                capture_name, capture_data, maximum_speed_cm_s,
+                package_dir=package_dir,
+            )
     except demo.DemoError as exc:
         demo_result = _demo_error_result(capture_name, exc)
 
@@ -409,8 +418,15 @@ def run_integrated(
     publication_fault: str | None = None,
     verification_case: str = "normal",
     package_dir: Path | None = None,
+    capture_data: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Run one minimized integrated synthetic flow and return redacted typed state."""
+    if capture_data is not None and (
+        capture_name != "sitl-loopback"
+        or publication_mode != "disabled"
+        or verification_case != "normal"
+    ):
+        raise ValueError("SITL intake requires explicit name and disabled publication")
     if publication_mode not in {"disabled", "local"}:
         raise ValueError("unsupported publication mode")
     if publication_fault is not None and publication_mode != "local":
@@ -430,6 +446,7 @@ def run_integrated(
             publication_fault,
             verification_case,
             package_dir,
+            capture_data,
         )
 
     with tempfile.TemporaryDirectory(prefix="tag-integrated-cli-") as temporary:
@@ -443,6 +460,7 @@ def run_integrated(
             publication_fault,
             verification_case,
             workspace / "proof-package",
+            capture_data,
         )
 
 
@@ -535,6 +553,10 @@ def exit_code(result: dict[str, Any]) -> int:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
+        "--source", choices=("fixture", "sitl-loopback"), default="fixture",
+        help="fixture (default) or bounded receive-only local SITL UDP observations",
+    )
+    parser.add_argument(
         "--capture-name",
         default="unsigned-consistent",
         help="named synthetic capture from the fixture file",
@@ -580,15 +602,34 @@ def main() -> int:
     if args.publication_fault is not None and args.publication != "local":
         parser.error("--publication-fault requires --publication local")
 
-    result = run_integrated(
-        MAVLINK_DIR / "fixtures.json",
-        args.capture_name,
-        args.maximum_speed_cm_s,
-        publication_mode=args.publication,
-        publication_state=args.publication_state,
-        publication_fault=args.publication_fault,
-        verification_case=args.verification_case,
-    )
+    if args.source == "sitl-loopback" and (
+        args.capture_name != "unsigned-consistent"
+        or args.publication != "disabled"
+        or args.verification_case != "normal"
+    ):
+        parser.error("SITL loopback needs default capture name, normal verification and disabled publication")
+
+    capture_name = "sitl-loopback" if args.source == "sitl-loopback" else args.capture_name
+    try:
+        capture_data = sitl_receive.receive_capture() if args.source == "sitl-loopback" else None
+    except sitl_receive.ReceiveError as error:
+        # Redacted typed failure only; no raw MAVLink or socket metadata.
+        demo_result = _demo_error_result(capture_name, demo.DemoError(error.code))
+        result = _result_from_demo(
+            capture_name, args.maximum_speed_cm_s, "normal", demo_result,
+            _not_attempted_publication("disabled", "SOURCE_NOT_ELIGIBLE"),
+        )
+    else:
+        result = run_integrated(
+            MAVLINK_DIR / "fixtures.json",
+            capture_name,
+            args.maximum_speed_cm_s,
+            publication_mode=args.publication,
+            publication_state=args.publication_state,
+            publication_fault=args.publication_fault,
+            verification_case=args.verification_case,
+            capture_data=capture_data,
+        )
     if args.format == "json":
         print(json.dumps(result, indent=2, sort_keys=True))
     else:

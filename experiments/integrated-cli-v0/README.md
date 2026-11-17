@@ -50,6 +50,55 @@ For the experimental machine-readable transport:
 python3 experiments/integrated-cli-v0/cli.py --maximum-speed-cm-s 600 --format json
 ```
 
+## Optional receive-only SITL source (experimental, not installed by default)
+
+The fixture mode above remains the default offline path and CI baseline.
+Issue #86 adds an explicitly opted-in, **loopback-only UDP receive path**;
+it never sends, requests, acknowledges, relays, or issues MAVLink commands.
+
+The pinned synthetic target is **ArduPilot Copter 4.7.1**, MAVLink2
+`common.xml` dialect 0 (submodule commit
+`288b907c384a892c8519bfe271682424b1e1a3a0`). Only two
+`GLOBAL_POSITION_INT` observation frames are retained privately in memory.
+The existing parser/normalizer, proof-generator, and independent verifier
+receive the same typed input contract. A UDP sender is not authenticated as
+ArduPilot, so source assurance always remains experimental `A0_SYNTHETIC`.
+The public output is minimized and never includes raw frames, coordinates,
+private speed, source identity, or timestamps.
+
+In an **isolated local test environment with a separately provisioned pinned SITL
+emitting MAVLink2 observations to 127.0.0.1:14550**, start the TAG receiver
+before the telemetry producer:
+
+```text
+python3 experiments/integrated-cli-v0/cli.py --source sitl-loopback --maximum-speed-cm-s 600 --format json
+```
+
+The receiver binds *only* `127.0.0.1:14550`, has a three-second
+total deadline, bounds datagram count and size, requires two primary
+observations, and terminates on loss/timeout/malformed inputs. Unexpected
+message IDs are ignored without decoding. The existing normalizer checks
+CRC, source changes, stale observations, source-time regression and trust.
+Signing keys are intentionally absent: unsigned remains `UNSIGNED`;
+signed without a test key remains `UNKNOWN`. No source is promoted
+to trusted by virtue of arriving from the loopback interface.
+
+For the first increment, publication and alternate verification cases cannot
+be selected in SITL mode. Any real simulator startup/compatibility testing
+is **PENDING** until the pinned runtime is explicitly provisioned and approved.
+There is no change to the public Mission Control showcase.
+
+Run only the offline fake-socket checks now:
+
+```text
+python3 experiments/sitl-receive-v0/test_sitl_receive.py
+python3 experiments/integrated-cli-v0/test_cli.py
+```
+
+These tests send **no UDP packets** and never start a simulator. No demonstrated
+hardware compatibility, telemetry truth, time assurance or production readiness
+is claimed.
+
 ## Optional deterministic local publication
 
 Publication is disabled by default. To exercise the disposable local adapter after a valid proof verifies:
