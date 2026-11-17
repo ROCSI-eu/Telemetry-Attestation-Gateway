@@ -229,6 +229,39 @@ class StaticShowcaseTests(unittest.TestCase):
                 re.search(r'<script>(.*?)</script>', en, flags=re.S).group(1),
             )
 
+    def test_scenario_ux_pairs_existing_selector_and_typed_results(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            target = Path(folder)
+            build(target)
+            ro = (target / "index.html").read_text(encoding="utf-8")
+            en = (target / "en/index.html").read_text(encoding="utf-8")
+            for page in (ro, en):
+                self.assertEqual(page.count('id="scenario"'), 1)
+                self.assertEqual(page.count('id="scenario-results"'), 1)
+                self.assertEqual(page.count('id="scenario-active"'), 1)
+                self.assertIn('aria-controls="scenario-explanation scenario-results"', page)
+                self.assertIn('class="card scenario-controller"', page)
+                self.assertIn('class="card scenario-results"', page)
+                self.assertIn('id="scenario-active" aria-live="off"', page)
+                self.assertIn('id="scenario-explanation" role="status" aria-live="polite"', page)
+                self.assertIn('.scenario-results dd[data-tone="good"]', page)
+                self.assertIn('.scenario-results dd[data-tone="warn"]', page)
+                self.assertIn('.scenario-results dd[data-tone="neutral"]', page)
+                script = re.search(r'<script>(.*?)</script>', page, flags=re.S).group(1)
+                self.assertIn('$("scenario-active").textContent=', script)
+                self.assertIn('$(field).dataset.tone=', script)
+                for token in ('"NOT_SATISFIED"', '"NOT_RECORDED"', '"final"', '"NOT_CHECKED"'):
+                    self.assertIn(token, script)
+                self.assertNotIn('operator-panel', page)
+                self.assertEqual(
+                    set(re.findall(r'fetch\\("([^"]+)"', page)),
+                    {"/evidence-results.json", "/authentic-evidence.json"},
+                )
+            self.assertEqual(
+                re.search(r'<script>(.*?)</script>', ro, flags=re.S).group(1),
+                re.search(r'<script>(.*?)</script>', en, flags=re.S).group(1),
+            )
+
     def test_frozen_bundle_has_only_fourteen_allowlisted_files(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             target = Path(folder)
