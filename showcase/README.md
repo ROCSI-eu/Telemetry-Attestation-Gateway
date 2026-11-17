@@ -4,8 +4,10 @@
 
 **Static package:** this directory builds a separate, precomputed, static technology
 showcase from the already existing Mission Control console (#87). The current
-Romanian-first bilingual baseline is hosted on Cloudflare Pages at tag.rocsi.eu; new changes
-in a Draft PR are **not** deployed without separately approved merge/release.
+Romanian-first bilingual baseline is hosted on Cloudflare Pages at tag.rocsi.eu.
+A Draft PR does not itself authorize publication; a merge **may trigger an
+automatic Cloudflare deployment when enabled**. Assess that side effect before
+merging, and do not infer the publicly served SHA from a GitHub check alone.
 It is not a validated product, live verifier or customer workflow. Issue #88
 remains independent of serving immutable static assets.
 
@@ -55,12 +57,16 @@ and remain local-only.
 Do not change DNS, trigger Pages builds or deploy this PR without authorization.
 Build command: \`python3 showcase/build.py --out-dir dist\`.
 Build output: \`dist\`; framework preset: none; no runtime functions,
-environment secrets, analytics or SSR. Connect the Git repository under the
-existing organization's authorized Cloudflare account, configure *only* the
-approved custom hostname after a separate GO. Confirm that Pages applies
-\`_headers\` on the final deployment, returns HTTP 404 for missing routes, and that its public route serves only
-the 13 generated files. Production and preview auto-deploy remain **OFF** in
-Cloudflare; a Draft PR neither deploys nor authorizes a release.
+environment secrets, analytics or SSR. The Pages project and custom hostname are
+existing accepted setup, not provisioning tasks to repeat at each handoff.
+Reuse the last verified checkpoint for unchanged work. Production/Preview
+auto-deploy, current deployment identity and available rollback are **mutable
+account state**, not repo invariants: do not assume they are OFF or demand fresh
+dashboard screenshots for read-only/code-only tasks. Before an authorized
+merge or release, check only the relevant mutable facts that could affect
+publication. At a separately authorized public-activation gate, confirm
+the target version's \`_headers\`, HTTP behavior and static assets. Do not
+mistake GitHub SUCCESS for a live deployment or redeploy an already-live SHA.
 
 **Alternative:** existing ROCSI Production VM served as pure static content.
 This would add web-server/domain configuration, disk and operational coupling
