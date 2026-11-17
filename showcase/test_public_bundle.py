@@ -250,7 +250,8 @@ class StaticShowcaseTests(unittest.TestCase):
                 script = re.search(r'<script>(.*?)</script>', page, flags=re.S).group(1)
                 self.assertIn('$("scenario-active").textContent=', script)
                 self.assertIn('$(field).dataset.tone=', script)
-                for token in ('"NOT_SATISFIED"', '"NOT_RECORDED"', '"final"', '"NOT_CHECKED"'):
+                self.assertIn('positive.includes(value)?"good":caution.includes(value)?"warn":"neutral"', script)
+                for token in ('"NOT_SATISFIED"', '"NOT_RECORDED"', '"final"'):
                     self.assertIn(token, script)
                 self.assertNotIn('operator-panel', page)
                 self.assertEqual(
