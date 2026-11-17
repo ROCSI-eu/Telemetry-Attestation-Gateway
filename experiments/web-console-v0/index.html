@@ -74,8 +74,19 @@
     .mission-viewport .mission-grid{stroke:#4b7892;stroke-width:.7;opacity:.2}
     .mission-path-underlay{fill:none;stroke:#21445e;stroke-width:14;stroke-linejoin:round;stroke-linecap:round}
     .mission-path{fill:none;stroke:#61cdd4;stroke-width:3;stroke-dasharray:10 9;stroke-linecap:round;opacity:.9}
-    .mission-craft{transform:translate(120px,290px);animation:synthetic-route 18s linear infinite alternate;will-change:transform}
-    .mission-control[data-motion="paused"] .mission-craft,.mission-control[data-visibility="hidden"] .mission-craft{animation-play-state:paused}
+    .mission-craft{transform:translate(120px,290px)}
+    .mission-control[data-scene-started="true"][data-scene="pass"] .mission-craft{animation:mission-pass 12s linear both}
+    .mission-control[data-scene-started="true"][data-scene="hold"] .mission-craft{animation:mission-hold 12s linear both}
+    .mission-control[data-scene-started="true"][data-scene="return"] .mission-craft{animation:mission-return 12s linear both}
+    .mission-control[data-scene-started="true"][data-motion="paused"] .mission-craft,.mission-control[data-scene-started="true"][data-visibility="hidden"] .mission-craft{animation-play-state:paused}
+    .mission-actions{display:flex;gap:9px;flex-wrap:wrap;align-items:end}
+    .mission-actions label{font-size:.73rem;color:#c4d9e8;font-weight:700}
+    .mission-actions select{margin-top:4px;padding:8px;min-width:195px;font-size:.78rem}
+    .mission-timeline{height:5px;border-radius:8px;background:#1d3a50;margin-top:13px;overflow:hidden}
+    .mission-timeline-fill{display:block;width:100%;height:100%;background:#73dcd2;transform:scaleX(0);transform-origin:left}
+    .mission-control[data-scene-started="true"] .mission-timeline-fill{animation:mission-progress 12s linear both}
+    .mission-control[data-motion="paused"] .mission-timeline-fill,.mission-control[data-visibility="hidden"] .mission-timeline-fill{animation-play-state:paused}
+    .mission-scene-status{margin:8px 0 0;min-height:1.3em}
     .mission-legend{position:absolute;bottom:10px;left:12px;right:12px;display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between;font-size:.65rem;font-weight:760;letter-spacing:.05em;color:#c7e9f4;pointer-events:none}
     .mission-legend span{background:#081a2ae6;padding:4px 8px;border-radius:6px}
     .mission-side{display:flex;flex-direction:column;gap:12px;min-width:0}
@@ -88,9 +99,12 @@
     .mission-control button{padding:9px 14px;font-size:.79rem}
     .mission-control button:disabled{opacity:.78}
     .mission-boundary{margin:12px 0 0;font-size:.75rem;color:#c4d9e8}
-    @keyframes synthetic-route{0%{transform:translate(120px,290px)}25%{transform:translate(275px,249px)}50%{transform:translate(430px,194px)}75%{transform:translate(585px,142px)}100%{transform:translate(714px,87px)}}
+    @keyframes mission-pass{0%{transform:translate(120px,290px)}25%{transform:translate(275px,249px)}50%{transform:translate(430px,194px)}75%{transform:translate(585px,142px)}100%{transform:translate(714px,87px)}}
+    @keyframes mission-hold{0%{transform:translate(120px,290px)}60%,100%{transform:translate(430px,194px)}}
+    @keyframes mission-return{0%,100%{transform:translate(120px,290px)}50%{transform:translate(430px,194px)}}
+    @keyframes mission-progress{from{transform:scaleX(0)}to{transform:scaleX(1)}}
     @media(max-width:750px){.mission-control{padding:16px}.mission-layout{grid-template-columns:1fr}}
-    @media(prefers-reduced-motion:reduce){.mission-craft{animation:none;transform:translate(430px,194px);will-change:auto}}
+    @media(prefers-reduced-motion:reduce){.mission-craft{animation:none!important;transform:translate(430px,194px);will-change:auto}.mission-timeline-fill{animation:none!important}}
     @media(max-width:750px){.layout{grid-template-columns:1fr}.wrap{padding:20px 12px}.card{padding:17px}.flow{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(prefers-reduced-motion:no-preference){button{transition:background .16s ease}.step{transition:border-color .16s ease,background .16s ease}}
   </style>
@@ -112,14 +126,24 @@
       <p>Telemetry truth, source integrity, trustworthy time, interval or flight coverage, safety, compliance, policy/freshness/revocation/replay acceptance, publication, customer demand or a relying-party decision. Assurance remains A0_SYNTHETIC.</p>
     </article>
   </section>
-  <section class="mission-control" id="mission-control" data-motion="playing" data-visibility="visible" aria-labelledby="mission-title">
+  <section class="mission-control" id="mission-control" data-motion="paused" data-visibility="visible" data-scene="pass" data-scene-started="false" data-scene-complete="false" aria-labelledby="mission-title">
     <div class="mission-top">
       <div>
         <div class="mission-label">Mission Control · synthetic visualization</div>
         <h2 id="mission-title">Observation only, never vehicle control</h2>
         <p class="small">A predefined 2.5D vehicle and route illustrate the concept. Motion is not telemetry, a measured trajectory, a live mission, proof generation, or verification progress.</p>
       </div>
-      <button id="mission-motion-toggle" type="button" aria-pressed="false" aria-controls="mission-scene">Pause illustration</button>
+      <div class="mission-actions">
+        <label for="mission-pattern">Illustrative scene
+          <select id="mission-pattern" aria-controls="mission-scene">
+            <option value="pass">Observation pass · A–B–C</option>
+            <option value="hold">Hold at waypoint · A–B</option>
+            <option value="return">Return route · A–B–A</option>
+          </select>
+        </label>
+        <button id="mission-replay" type="button" aria-controls="mission-scene">Replay illustration</button>
+        <button id="mission-motion-toggle" type="button" aria-pressed="true" aria-controls="mission-scene" disabled>Resume illustration</button>
+      </div>
     </div>
     <div class="mission-layout">
       <div class="mission-viewport" id="mission-scene">
@@ -173,6 +197,8 @@
         </div>
       </aside>
     </div>
+    <div class="mission-timeline" aria-hidden="true"><span class="mission-timeline-fill"></span></div>
+    <p class="mission-scene-status small" id="mission-scene-status" role="status" aria-live="polite">Ready · prerecorded illustration only</p>
     <p class="mission-boundary">EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION. No MAVLink commands, navigation control, mission edits, or source assurance. Animation never changes evidence status.</p>
   </section>
   <section class="card operator" id="operator-panel" aria-labelledby="operator-title" hidden>
@@ -305,26 +331,78 @@ const setText = (id, value) => { $(id).textContent = safe(value); };
 function stage(id, value, success) {
   $(id).dataset.state = value === success ? "complete" : "stopped";
 }
-// Purely illustrative, fixed SVG geometry. Never read telemetry or pipeline state
-// to drive vehicle motion: no network requests, backend polling or timers.
+// Entirely predetermined illustrative geometry. The scene is independently
+// user-controlled, never driven by proof, telemetry, verifier or CLI outcomes.
 const mission=$("mission-control");
+const craft=mission.querySelector(".mission-craft");
 const motionPreference=window.matchMedia("(prefers-reduced-motion: reduce)");
+const sceneCopy = document.documentElement.lang==="ro" ? {
+  ready:"Pregătit · doar ilustrație preînregistrată",
+  playing:"Se redă ilustrația · fără misiune reală",
+  paused:"Ilustrație în pauză · fără misiune reală",
+  complete:"Ilustrație finalizată · fără verificare executată",
+  reduced:"Ilustrație statică · mișcare redusă"
+} : {
+  ready:"Ready · prerecorded illustration only",
+  playing:"Playing illustration · no live mission",
+  paused:"Illustration paused · no live mission",
+  complete:"Illustration complete · no verification executed",
+  reduced:"Static illustration · reduced motion"
+};
+function sceneStatus(key) {
+  $("mission-scene-status").textContent=sceneCopy[key];
+}
 function syncMissionMotion() {
   const reduce=motionPreference.matches;
   mission.dataset.visibility=document.hidden?"hidden":"visible";
   const paused=mission.dataset.motion==="paused";
+  const active=mission.dataset.sceneStarted==="true" && mission.dataset.sceneComplete!=="true";
   const toggle=$("mission-motion-toggle");
-  toggle.disabled=reduce;
+  toggle.disabled=reduce || !active;
+  $("mission-replay").disabled=reduce;
   toggle.setAttribute("aria-pressed",String(paused));
   toggle.textContent=reduce?"Illustration stationary · reduced motion":
     paused?"Resume illustration":"Pause illustration";
+  if(reduce) sceneStatus("reduced");
 }
+function resetMissionScene() {
+  mission.dataset.sceneStarted="false";
+  mission.dataset.sceneComplete="false";
+  mission.dataset.motion="paused";
+  sceneStatus(motionPreference.matches?"reduced":"ready");
+  syncMissionMotion();
+}
+$("mission-pattern").addEventListener("change",()=>{
+  mission.dataset.scene=$("mission-pattern").value;
+  resetMissionScene();
+});
+$("mission-replay").addEventListener("click",()=>{
+  if(motionPreference.matches)return;
+  mission.dataset.sceneStarted="false";
+  mission.dataset.sceneComplete="false";
+  void mission.offsetWidth; // Restart the finite CSS replay without timers.
+  mission.dataset.motion="playing";
+  mission.dataset.sceneStarted="true";
+  sceneStatus("playing");
+  syncMissionMotion();
+});
 $("mission-motion-toggle").addEventListener("click",()=>{
+  if(motionPreference.matches || mission.dataset.sceneStarted!=="true" || mission.dataset.sceneComplete==="true")return;
   mission.dataset.motion=mission.dataset.motion==="paused"?"playing":"paused";
+  sceneStatus(mission.dataset.motion==="paused"?"paused":"playing");
+  syncMissionMotion();
+});
+craft.addEventListener("animationend",event=>{
+  if(event.target!==craft || !["mission-pass","mission-hold","mission-return"].includes(event.animationName))return;
+  mission.dataset.sceneComplete="true";
+  sceneStatus("complete");
   syncMissionMotion();
 });
 document.addEventListener("visibilitychange",syncMissionMotion);
-motionPreference.addEventListener("change",syncMissionMotion);
+motionPreference.addEventListener("change",()=>{
+  if(motionPreference.matches)resetMissionScene();
+  else {sceneStatus("ready");syncMissionMotion();}
+});
 syncMissionMotion();
 function render(e) {
   setText("source",e.source); setText("trust",e.source_trust);

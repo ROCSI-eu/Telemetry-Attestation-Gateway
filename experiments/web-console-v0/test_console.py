@@ -119,7 +119,11 @@ class ConsoleFixtureTests(unittest.TestCase):
         start = html.index('<section class="mission-control"')
         end = html.index('<section class="card operator"', start)
         scene = html[start:end]
-        self.assertIn('id="mission-control" data-motion="playing"', scene)
+        self.assertIn('id="mission-control" data-motion="paused"', scene)
+        self.assertIn('data-scene="pass" data-scene-started="false"', scene)
+        self.assertIn('id="mission-pattern" aria-controls="mission-scene"', scene)
+        self.assertIn('id="mission-replay" type="button"', scene)
+        self.assertIn('id="mission-scene-status" role="status" aria-live="polite"', scene)
         self.assertIn('aria-labelledby="mission-scene-title mission-scene-description"', scene)
         self.assertIn('SYNTHETIC ROUTE · NOT GEOGRAPHIC', scene)
         self.assertIn('ILLUSTRATION ONLY · NO LIVE STREAM', scene)
@@ -136,17 +140,22 @@ class ConsoleFixtureTests(unittest.TestCase):
 
     def test_mission_motion_pauses_and_respects_reduced_motion(self) -> None:
         html = PAGE.read_text(encoding="utf-8")
-        self.assertIn('id="mission-motion-toggle" type="button" aria-pressed="false"', html)
+        self.assertIn('id="mission-motion-toggle" type="button" aria-pressed="true"', html)
         self.assertIn('document.addEventListener("visibilitychange",syncMissionMotion)', html)
-        self.assertIn('motionPreference.addEventListener("change",syncMissionMotion)', html)
+        self.assertIn('motionPreference.addEventListener("change",()=>{', html)
         self.assertIn('window.matchMedia("(prefers-reduced-motion: reduce)")', html)
-        self.assertIn('.mission-control[data-motion="paused"] .mission-craft', html)
-        self.assertIn('.mission-control[data-visibility="hidden"] .mission-craft{animation-play-state:paused}', html)
-        self.assertIn('@media(prefers-reduced-motion:reduce){.mission-craft{animation:none', html)
-        self.assertIn('toggle.disabled=reduce;', html)
+        self.assertIn('.mission-control[data-scene-started="true"][data-motion="paused"] .mission-craft', html)
+        self.assertIn('.mission-control[data-scene-started="true"][data-visibility="hidden"] .mission-craft{animation-play-state:paused}', html)
+        self.assertIn('@media(prefers-reduced-motion:reduce){.mission-craft{animation:none!important', html)
+        self.assertIn('data-scene-started="true"][data-scene="pass"', html)
+        self.assertIn('data-scene-started="true"][data-scene="hold"', html)
+        self.assertIn('data-scene-started="true"][data-scene="return"', html)
+        self.assertIn('craft.addEventListener("animationend"', html)
+        self.assertIn('void mission.offsetWidth', html)
+        self.assertIn('toggle.disabled=reduce || !active;', html)
         self.assertIn('toggle.setAttribute("aria-pressed",String(paused))', html)
         self.assertIn('mission.dataset.visibility=document.hidden?"hidden":"visible"', html)
-        motion = html.split('// Purely illustrative, fixed SVG geometry.', 1)[1].split('function render(e)', 1)[0]
+        motion = html.split('// Entirely predetermined illustrative geometry.', 1)[1].split('function render(e)', 1)[0]
         for forbidden in ('fetch(', 'renderOperator(', 'execute(', 'setInterval(', 'WebSocket('):
             self.assertNotIn(forbidden, motion)
 
