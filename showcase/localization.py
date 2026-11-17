@@ -34,6 +34,13 @@ RO_TEXT = {
     "A predefined 2.5D vehicle and route illustrate the concept. Motion is not telemetry, a measured trajectory, a live mission, proof generation, or verification progress.":
         "Un vehicul 2.5D și un traseu prestabilit ilustrează conceptul. Animația nu reprezintă telemetrie, traiectorie măsurată, misiune reală, generare de dovezi ori progresul verificării.",
     "Pause illustration": "Oprește animația",
+    "Illustrative scene": "Scenă ilustrativă",
+    "Observation pass · A–B–C": "Trecere de observație · A–B–C",
+    "Hold at waypoint · A–B": "Oprire la punctul B · A–B",
+    "Return route · A–B–A": "Traseu de întoarcere · A–B–A",
+    "Replay illustration": "Reia ilustrația de la început",
+    "Resume illustration": "Continuă animația",
+    "Ready · prerecorded illustration only": "Pregătit · doar ilustrație preînregistrată",
     "Illustrative synthetic observation route and 2.5D vehicle":
         "Traseu sintetic ilustrativ și vehicul 2.5D",
     "Abstract non-geographic waypoints and an animated synthetic vehicle. No physical coordinates, real telemetry, or verified flight path.":

@@ -107,8 +107,8 @@ class StaticShowcaseTests(unittest.TestCase):
             self.assertIn('<html lang="en">', en)
             self.assertIn("<h1>Centru de comandă și control</h1>", ro)
             self.assertIn("<h1>Mission Control</h1>", en)
-            self.assertIn("Oprește animația</button>", ro)
-            self.assertIn("Pause illustration</button>", en)
+            self.assertIn("Continuă animația</button>", ro)
+            self.assertIn("Resume illustration</button>", en)
             self.assertIn('href="/" hreflang="ro" lang="ro" aria-current="page"', ro)
             self.assertIn('href="/en/" hreflang="en" lang="en" aria-current="page"', en)
             for language, page, locale in (
@@ -213,13 +213,13 @@ class StaticShowcaseTests(unittest.TestCase):
 
     def test_motion_accessibility_and_no_backend_animation_coupling(self) -> None:
         html = public_html(CONSOLE.read_text(encoding="utf-8"))
-        self.assertIn('id="mission-motion-toggle" type="button" aria-pressed="false"', html)
+        self.assertIn('id="mission-motion-toggle" type="button" aria-pressed="true"', html)
         self.assertIn("document.addEventListener(\"visibilitychange\",syncMissionMotion)", html)
-        self.assertIn('motionPreference.addEventListener("change",syncMissionMotion)', html)
-        self.assertIn('@media(prefers-reduced-motion:reduce){.mission-craft{animation:none', html)
-        self.assertIn('.mission-control[data-motion="paused"] .mission-craft', html)
-        self.assertIn("toggle.disabled=reduce;", html)
-        motion = html.split("// Purely illustrative, fixed SVG geometry.", 1)[1].split("function render(e)", 1)[0]
+        self.assertIn('motionPreference.addEventListener("change",()=>{', html)
+        self.assertIn('@media(prefers-reduced-motion:reduce){.mission-craft{animation:none!important', html)
+        self.assertIn('.mission-control[data-scene-started="true"][data-motion="paused"] .mission-craft', html)
+        self.assertIn("toggle.disabled=reduce || !active;", html)
+        motion = html.split("// Entirely predetermined illustrative geometry.", 1)[1].split("function render(e)", 1)[0]
         for forbidden in ("fetch(", "execute(", "setInterval(", "WebSocket(", "renderOperator("):
             self.assertNotIn(forbidden, motion)
 
