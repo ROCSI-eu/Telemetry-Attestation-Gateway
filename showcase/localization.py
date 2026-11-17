@@ -143,6 +143,27 @@ RO_TEXT = {
         "Validitatea dovezii nu garantează corectitudinea telemetriei. O observație sintetică nu demonstrează acoperirea unui interval sau a unui zbor, siguranța ori conformitatea contractuală, de plată sau reglementară. Înregistrarea sursă nu a fost validată de clienți sau comercial.",
     "Public static technology showcase. Experimental synthetic-only, precomputed results. No visitor execution, vehicle connection, telemetry upload, analytics, tracking, external fonts or proof jobs. The browser does not independently verify proofs.":
         "Demonstrație tehnologică publică, statică. Rezultate experimentale, exclusiv sintetice și precalculate. Fără execuții inițiate de vizitatori, conectare la vehicule, încărcare de telemetrie, analiză de trafic, urmărire, fonturi externe sau sarcini de generare a dovezilor. Browserul nu verifică independent dovezile.",
+    # Public-only TAG visual narrative; immutable typed evidence remains untranslated.
+    "TAG": "TAG",
+    "Page sections": "Secțiunile paginii",
+    "The Principle": "Principiul",
+    "Mission Observability": "Observabilitatea misiunii",
+    "Technical Evidence": "Dovezi tehnice",
+    "01 / THE PRINCIPLE": "01 / PRINCIPIUL",
+    "02 / OBSERVATIONAL RESEARCH": "02 / CERCETARE OBSERVAȚIONALĂ",
+    "03 / POTENTIAL APPLICATIONS": "03 / APLICAȚII POTENȚIALE",
+    "04 / EVIDENCE BOUNDARIES": "04 / LIMITELE DOVEZILOR",
+    "05 / EXPERIMENTAL BOUNDARY": "05 / LIMITE EXPERIMENTALE",
+    "EXPERIMENTAL / SYNTHETIC-ONLY RESEARCH": "CERCETARE EXPERIMENTALĂ / DATE SINTETICE",
+    "Verify the condition. Keep the rest private.": "Verifică o condiție. Păstrează restul privat.",
+    "Explore the illustration": "Explorează ilustrația",
+    "Review technical evidence": "Examinează dovezile tehnice",
+    "TAG / EXPERIMENT": "TAG / EXPERIMENT",
+    "A0 / SYNTHETIC": "A0 / SINTETIC",
+    "The orchestration is simulated. The separate verifier outcome was recorded offline; the browser displays both without independently checking proofs.":
+        "Orchestrarea este simulată. Rezultatul separat al verificatorului a fost înregistrat offline; browserul le afișează pe ambele fără să verifice independent dovezile.",
+    "Research": "Cercetare",
+    "Limitations": "Limitări",
     "A": "A", "B": "B", "C": "C", "—": "—",
     # Preserve machine-readable evidence codes and experimental markings.
     "EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION":
@@ -161,6 +182,7 @@ RO_ARIA = {
     "Scope and limitations of synthetic evidence": "Domeniul și limitele dovezilor sintetice",
     "Independent evidence status": "Starea independentă a dovezilor",
     "Conceptual pipeline": "Flux conceptual",
+    "Page sections": "Secțiunile paginii",
 }
 
 SCENARIO_RO = {

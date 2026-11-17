@@ -37,11 +37,12 @@ class StaticShowcaseTests(unittest.TestCase):
                 self.assertIn(application, page)
                 self.assertIn(scope, page)
                 self.assertIn("<title>"+title+"</title>", page)
-                self.assertLess(page.index('id="primer-title"'), page.index('id="use-cases-title"'))
-                self.assertLess(page.index('id="use-cases-title"'), page.index('id="technical-scope"'))
-                self.assertLess(page.index('id="technical-scope"'), page.index('id="mission-control"'))
-                self.assertLess(page.index('id="mission-control"'), page.index('id="scenario-title"'))
-                self.assertLess(page.index('id="scenario-title"'), page.index('id="authentic-title"'))
+                ordered = ('id="hero-title"', 'id="primer-title"', 'id="mission-control"',
+                           'id="use-cases-title"', 'id="technical-evidence-title"',
+                           'id="scenario-title"', 'id="authentic-title"',
+                           'id="research-limitations-title"', 'id="technical-scope"')
+                self.assertEqual([page.index(marker) for marker in ordered],
+                                 sorted(page.index(marker) for marker in ordered))
                 self.assertIn('<summary>'+scope+'</summary>', page)
                 self.assertIn('id="scope-proves"', page)
                 self.assertIn('id="scope-limits"', page)
@@ -143,8 +144,8 @@ class StaticShowcaseTests(unittest.TestCase):
             en = (target / "en/index.html").read_text(encoding="utf-8")
             self.assertIn('<html lang="ro">', ro)
             self.assertIn('<html lang="en">', en)
-            self.assertIn("<h1>Centru de comandă și control</h1>", ro)
-            self.assertIn("<h1>Mission Control</h1>", en)
+            self.assertIn('<h1 id="hero-title">Verifică o condiție. Păstrează restul privat.</h1>', ro)
+            self.assertIn('<h1 id="hero-title">Verify the condition. Keep the rest private.</h1>', en)
             self.assertIn("Continuă animația</button>", ro)
             self.assertIn("Resume illustration</button>", en)
             self.assertIn('href="/" hreflang="ro" lang="ro" aria-current="page"', ro)
@@ -201,7 +202,7 @@ class StaticShowcaseTests(unittest.TestCase):
         html = public_html(CONSOLE.read_text(encoding="utf-8"))
         self.assertIn("<html lang=\"ro\">", romanian_html(html))
         with self.assertRaisesRegex(ValueError, "untranslated public HTML"):
-            romanian_html(html.replace("<h1>Mission Control</h1>", "<h1>New untranslated text</h1>"))
+            romanian_html(html.replace("Verify the condition. Keep the rest private.", "New untranslated text"))
 
     def test_public_scenarios_are_strictly_reconstructed(self) -> None:
         with tempfile.TemporaryDirectory() as folder:

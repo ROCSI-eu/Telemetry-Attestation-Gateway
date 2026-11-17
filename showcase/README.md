@@ -11,6 +11,47 @@ merging, and do not infer the publicly served SHA from a GitHub check alone.
 It is not a validated product, live verifier or customer workflow. Issue #88
 remains independent of serving immutable static assets.
 
+## TAG-VISUAL-REFRESH-01 — public presentation layer
+
+The visual refresh changes the **static public showcase only**, without changing
+the shared local console, CLI, verifier, scenario fixtures or browser scripts.
+The new editorial sequence is **Hero → The Principle → Mission Observability →
+Potential Applications → Technical Evidence → Research & Limitations**.
+Headlines are "Verifică o condiție. Păstrează restul privat." (RO) and
+"Verify the condition. Keep the rest private." (EN).
+
+The original TAG visual language uses system fonts, large type, dark industrial
+surfaces, original CSS geometry and restrained warm signal accents. It adopts
+general high-impact editorial design principles rather than reusing Anduril
+branding, photography, fonts, code, layouts or other third-party assets.
+The public-only transformation lives in showcase/visual_refresh.py and is
+applied after strict operator-surface removal in showcase/build.py; its
+source anchors deliberately fail closed if the console structure changes.
+Only HTML section order, text and CSS change. The static site remains noindex,
+bilingual, CSP-hash protected and free of analytics, external resources, real
+vehicle controls or browser cryptography. All three existing synthetic
+animation patterns, Pause/Resume, reduced-motion support and separate
+precomputed evidence types retain their original logic.
+
+**Code-only Draft PR**: neither creating the PR nor passing QA authorizes
+merging, an automatic hosting side effect or deploying the live site. Accept
+the visual design in a browser and separately authorize integration. At that
+point assess the currently effective Pages automatic deployment settings
+before any merge, because merging may publish automatically.
+
+### Focused acceptance
+
+Build the same 14 files using python3 showcase/build.py --out-dir LOCAL_QA_PATH.
+Run python3 -m unittest discover -s showcase -p 'test_*.py' -v and
+python3 scripts/check_docs.py. In an isolated Chromium/Chrome session served
+over loopback, inspect RO and EN at 1440px, 375px and 320px. Confirm the exact
+hero headlines, section order and mobile navigation without overflow; verify
+scenario mock data and the distinct recorded offline verifier outcome. Only
+retest the changed browser presentation and its interaction with the preserved
+animation controls, including settled pause/frozen SVG transform and
+prefers-reduced-motion; reuse prior unaffected evidence. No localhost result
+is a live-domain acceptance or a release gate.
+
 ## Build and scope
 
 From the repository root:

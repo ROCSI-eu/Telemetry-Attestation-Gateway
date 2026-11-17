@@ -16,6 +16,7 @@ from pathlib import Path
 import re
 
 from localization import inject_locale_js, localize_404, romanian_html, social_metadata
+from visual_refresh import redesign_public_html
 
 ROOT = Path(__file__).resolve().parents[1]
 CONSOLE = ROOT / "experiments/web-console-v0/index.html"
@@ -289,6 +290,7 @@ def public_html(source: str) -> str:
         "No visitor execution, vehicle connection, telemetry upload, analytics, tracking, "
         "external fonts or proof jobs. The browser does not independently verify proofs.",
     )
+    html = redesign_public_html(html)
     forbidden = (
         "operator-panel", "operator-token", "operator-run", "operator-capabilities",
         "initializeOperator", "OPERATOR_KEYS", "X-TAG-Local-Token",
