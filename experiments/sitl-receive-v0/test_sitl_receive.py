@@ -126,7 +126,7 @@ class ReceiveOnlyTests(unittest.TestCase):
     def test_invalid_crc_and_unsupported_wire(self):
         broken = bytearray(GPI)
         broken[-1] ^= 1
-        for packet, code in [(bytes(broken), "BAD_CRC"), (b"\\xfe" + GPI[1:], "UNSUPPORTED_MAVLINK_PROTOCOL"), (GPI[:-1], "TRUNCATED_MAVLINK_FRAME"), (b"x"*1201, "DATAGRAM_LENGTH_REJECTED")]:
+        for packet, code in [(bytes(broken), "BAD_CRC"), (b"\xfe" + GPI[1:], "UNSUPPORTED_MAVLINK_PROTOCOL"), (GPI[:-1], "TRUNCATED_MAVLINK_FRAME"), (b"x"*1201, "DATAGRAM_LENGTH_REJECTED")]:
             with self.subTest(code=code):
                 with self.assertRaises(intake.ReceiveError) as ctx:
                     intake.observation_frames(packet)
