@@ -204,6 +204,17 @@ RO_TEXT = {
     "TAG experimental implementation": "Implementarea experimentală TAG",
     "A cryptographically valid proof does not establish telemetry truth, trusted sensors or time, whole-flight coverage, safety or legal compliance. This public page shows recorded synthetic outcomes: the browser neither generates nor verifies a proof.":
         "O dovadă criptografică validă nu confirmă corectitudinea telemetriei, încrederea în senzori ori timp, acoperirea întregului zbor, siguranța sau conformitatea legală. Pagina publică afișează rezultate sintetice înregistrate: browserul nu generează și nu verifică dovezi.",
+    # TAG-TECH-ANIMATION-01: static labels; the shared script translates controls.
+    "01 / NOIR": "01 / NOIR",
+    "02 / BARRETENBERG": "02 / BARRETENBERG",
+    "03 / OFFLINE": "03 / OFFLINE",
+    "CONCEPTUAL ANIMATION / NOT A PROOF RUN": "ANIMAȚIE CONCEPTUALĂ / FĂRĂ GENERAREA DOVEZII",
+    "Replay explanation": "Reia explicația",
+    "Pause illustration": "Oprește animația",
+    "Three illustrative stages, not measured computation or a live verifier.":
+        "Trei etape ilustrative, fără calcul măsurat sau verificator live.",
+    "Conceptual illustration · no proving or verification in this browser":
+        "Ilustrație conceptuală · fără generare sau verificare în browser",
     # Preserve machine-readable evidence codes and experimental markings.
     "EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION":
         "EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION",

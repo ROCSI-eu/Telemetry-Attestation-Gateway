@@ -171,6 +171,53 @@ VISUAL_CSS = """
     .proof-tooling-links{display:flex;gap:10px 22px;flex-wrap:wrap;font-size:.83rem;margin:0 0 22px}
     .proof-tooling-links a{color:#e7c58e;text-underline-offset:3px}
     .proof-tooling-boundary{border-left:2px solid #bda072;padding-left:15px;margin:0}
+
+    /* TAG-TECH-ANIMATION-01: browser-only conceptual illustration; not evidence. */
+    .tech-animation{margin:22px 0 28px;padding:clamp(14px,2.4vw,24px);border:1px solid #456066;background:radial-gradient(ellipse at 50% 15%,#1a343d,#0b161b 78%);min-width:0}
+    .tech-animation svg{display:block;width:100%;height:auto;overflow:visible}
+    .tech-animation .tech-panel{fill:#12272d;stroke:#42626b;stroke-width:2}
+    .tech-animation .tech-guide{fill:none;stroke:#809da2;stroke-width:3;stroke-dasharray:8 9;opacity:.68}
+    .tech-animation .tech-glyph{fill:none;stroke:#9cc8ca;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+    .tech-animation .tech-public{fill:#dfc48b}
+    .tech-animation .tech-secret{fill:#19292c;stroke:#d5bd85;stroke-width:2}
+    .tech-animation .tech-highlight{opacity:0;stroke:#77b8c5;stroke-width:2}
+    .tech-animation .tech-end-signal{opacity:0}
+    .tech-animation[data-started="true"] .tech-highlight-one{animation:tech-define 12s ease-in-out both}
+    .tech-animation[data-started="true"] .tech-highlight-two{animation:tech-prove 12s ease-in-out both}
+    .tech-animation[data-started="true"] .tech-highlight-three{animation:tech-verify 12s ease-in-out both}
+    .tech-animation[data-started="true"] .tech-end-signal{animation:tech-end 12s linear both}
+    .tech-animation[data-started="true"] .tech-transfer-one{animation:tech-transfer-one 12s ease-in-out both}
+    .tech-animation[data-started="true"] .tech-transfer-two{animation:tech-transfer-two 12s ease-in-out both}
+    .tech-animation[data-motion="paused"] .tech-highlight,
+    .tech-animation[data-motion="paused"] .tech-end-signal,
+    .tech-animation[data-visibility="hidden"] .tech-highlight,
+    .tech-animation[data-visibility="hidden"] .tech-end-signal,
+    .tech-animation[data-motion="paused"] .tech-transfer,
+    .tech-animation[data-visibility="hidden"] .tech-transfer{animation-play-state:paused}
+    .tech-animation .tech-transfer{fill:#dfc48b;opacity:0}
+    @keyframes tech-transfer-one{0%,24%{opacity:0;transform:translateX(-10px)}30%{opacity:1}37%{opacity:0;transform:translateX(25px)}100%{opacity:0;transform:translateX(25px)}}
+    @keyframes tech-transfer-two{0%,59%{opacity:0;transform:translateX(-10px)}65%{opacity:1}72%{opacity:0;transform:translateX(25px)}100%{opacity:0;transform:translateX(25px)}}
+    @keyframes tech-define{0%,2%{opacity:0}9%,25%{opacity:.85}33%,100%{opacity:0}}
+    @keyframes tech-prove{0%,32%{opacity:0}40%,57%{opacity:.85}65%,100%{opacity:0}}
+    @keyframes tech-verify{0%,65%{opacity:0}73%,94%{opacity:.85}100%{opacity:.35}}
+    @keyframes tech-end{0%,99%{opacity:0}100%{opacity:.01}}
+    .tech-animation-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .tech-animation-label{font-size:.68rem;font-weight:800;letter-spacing:.12em;color:#e2c58e;text-transform:uppercase}
+    .tech-animation-caption{margin:8px 0 14px;color:#b8c9ca;font-size:.82rem;line-height:1.5}
+    .tech-animation-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .tech-animation-actions button{padding:10px 14px;font-size:.76rem;font-weight:700;min-height:42px}
+    .tech-animation-actions button:disabled{opacity:.55;cursor:not-allowed}
+    .tech-animation-status{font-size:.78rem;color:#c4d0cd;line-height:1.6;min-height:1.3em;margin:14px 0 0}
+    @media(max-width:750px){
+      .tech-animation{padding:13px;margin:20px 0 26px}
+      .tech-animation-actions{width:100%}
+      .tech-animation-actions button{flex:1;min-width:0}
+    }
+    @media(prefers-reduced-motion:reduce){
+      .tech-animation .tech-highlight,.tech-animation .tech-end-signal,.tech-animation .tech-transfer{animation:none!important}
+      .tech-animation .tech-highlight{opacity:.27}
+      .tech-animation .tech-transfer,.tech-animation .tech-end-signal{opacity:0}
+    }
     .technical-evidence .layout{align-items:stretch}
     .technical-evidence .card{background:#10191c;border-color:#3b5052}
     .technical-evidence .card h2{color:#f4f0e6}
@@ -220,6 +267,52 @@ TECH_TOOLING = """  <section class="proof-tooling" aria-labelledby="proof-toolin
     <p class="proof-tooling-kicker">EXPERIMENTAL PROOF TOOLCHAIN</p>
     <h3 id="proof-tooling-title">How Noir and Barretenberg are used in TAG</h3>
     <p class="proof-tooling-intro">The synthetic bounded-speed experiment uses a pinned research toolchain: Noir/Nargo 1.0.0-beta.26 and Barretenberg bb 5.2.0. This is not a production technology selection.</p>
+    <figure class="tech-animation" id="tech-animation" data-started="false" data-complete="false" data-motion="paused" data-visibility="hidden">
+      <div class="tech-animation-top">
+        <span class="tech-animation-label">CONCEPTUAL ANIMATION / NOT A PROOF RUN</span>
+        <div class="tech-animation-actions">
+          <button type="button" id="tech-animation-replay" aria-controls="tech-animation-svg">Replay explanation</button>
+          <button type="button" id="tech-animation-pause" aria-controls="tech-animation-svg" aria-pressed="false" disabled>Pause illustration</button>
+        </div>
+      </div>
+      <p class="tech-animation-caption">Three illustrative stages, not measured computation or a live verifier.</p>
+      <svg id="tech-animation-svg" viewBox="0 0 900 240" focusable="false" aria-hidden="true">
+        <defs>
+          <linearGradient id="tech-panel-glow" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#84dfe2" stop-opacity=".32"/>
+            <stop offset="1" stop-color="#236475" stop-opacity=".12"/>
+          </linearGradient>
+        </defs>
+        <rect x="9" y="18" width="264" height="198" rx="5" class="tech-panel"/>
+        <rect x="318" y="18" width="264" height="198" rx="5" class="tech-panel"/>
+        <rect x="627" y="18" width="264" height="198" rx="5" class="tech-panel"/>
+        <rect x="12" y="21" width="258" height="192" rx="4" class="tech-highlight tech-highlight-one" fill="url(#tech-panel-glow)"/>
+        <rect x="321" y="21" width="258" height="192" rx="4" class="tech-highlight tech-highlight-two" fill="url(#tech-panel-glow)"/>
+        <rect x="630" y="21" width="258" height="192" rx="4" class="tech-highlight tech-highlight-three" fill="url(#tech-panel-glow)"/>
+        <path d="M277 118H310m-10-8 10 8-10 8M586 118h33m-10-8 10 8-10 8" class="tech-guide"/>
+        <circle cx="287" cy="118" r="6" class="tech-transfer tech-transfer-one"/>
+        <circle cx="595" cy="118" r="6" class="tech-transfer tech-transfer-two"/>
+        <g class="tech-glyph">
+          <path d="M80 82h125v75H80zM118 82V61h48v21M119 111l15 15-15 15M165 111l-15 15 15 15"/>
+          <path d="M391 79h116v82H391zM416 96l21 19-21 19m30 0h30M460 82v-19M460 161v18"/>
+          <path d="M758 66l47 18v43c0 30-24 48-47 55-23-7-47-25-47-55V84z"/>
+          <path d="m735 124 17 17 32-34"/>
+        </g>
+        <circle cx="217" cy="64" r="13" class="tech-secret"/>
+        <path d="M211 62v-4a6 6 0 0 1 12 0v4m-13 0h14v11h-14z" fill="none" stroke="#e6c891" stroke-width="2"/>
+        <circle cx="522" cy="64" r="10" class="tech-public"/>
+        <path d="M517 64h10m-5-5v10" stroke="#16303a" stroke-width="2.5"/>
+        <circle cx="805" cy="62" r="11" class="tech-public"/>
+        <path d="m800 62 4 4 7-8" fill="none" stroke="#16303a" stroke-width="2.5"/>
+        <g fill="#d0d8d6" font-family="Arial,Helvetica,sans-serif" font-weight="700" text-anchor="middle" font-size="17">
+          <text x="140" y="199">01 / NOIR</text>
+          <text x="450" y="199">02 / BARRETENBERG</text>
+          <text x="760" y="199">03 / OFFLINE</text>
+        </g>
+        <rect x="0" y="0" width="1" height="1" class="tech-end-signal"/>
+      </svg>
+      <figcaption class="tech-animation-status" id="tech-animation-status" role="status" aria-live="polite">Conceptual illustration · no proving or verification in this browser</figcaption>
+    </figure>
     <ol class="toolchain-diagram" aria-label="Experimental proof flow, executed offline">
       <li><span>01 / DEFINE</span><strong>Noir</strong><p>Noir expresses a constraint comparing a private speed value with a public limit; Nargo compiles the circuit.</p></li>
       <li><span>02 / PROVE</span><strong>Barretenberg</strong><p>With the private witness, the pinned bb backend generates a zero-knowledge proof of the constrained statement.</p></li>
@@ -232,6 +325,87 @@ TECH_TOOLING = """  <section class="proof-tooling" aria-labelledby="proof-toolin
     </nav>
     <p class="proof-tooling-boundary">A cryptographically valid proof does not establish telemetry truth, trusted sensors or time, whole-flight coverage, safety or legal compliance. This public page shows recorded synthetic outcomes: the browser neither generates nor verifies a proof.</p>
   </section>
+"""
+
+
+TECH_ANIMATION_JS = r"""
+// TAG-TECH-ANIMATION-01: finite, illustrative-only SVG/CSS. Never touches evidence.
+const techAnimation=$("tech-animation");
+const techPause=$("tech-animation-pause");
+const techReplay=$("tech-animation-replay");
+const techStatus=$("tech-animation-status");
+const techEnd=techAnimation.querySelector(".tech-end-signal");
+const techCopy=document.documentElement.lang==="ro"?{
+  pause:"Oprește animația",resume:"Continuă animația",replay:"Reia explicația",
+  ready:"Ilustrație conceptuală · fără generare sau verificare în browser",
+  playing:"Ilustrație conceptuală în redare · nu este progres backend",
+  paused:"Ilustrație conceptuală în pauză · fără execuție backend",
+  complete:"Ilustrație conceptuală încheiată · fără dovadă verificată aici",
+  reduced:"Ilustrație statică · mișcare redusă; fără execuție backend"
+}:{
+  pause:"Pause illustration",resume:"Resume illustration",replay:"Replay explanation",
+  ready:"Conceptual illustration · no proving or verification in this browser",
+  playing:"Playing conceptual illustration · not backend progress",
+  paused:"Conceptual illustration paused · no backend execution",
+  complete:"Conceptual illustration complete · no proof verified here",
+  reduced:"Static illustration · reduced motion; no backend execution"
+};
+function syncTechAnimation(){
+  const reduce=motionPreference.matches;
+  techAnimation.dataset.visibility=document.hidden||techAnimation.dataset.inview!=="true"?"hidden":"visible";
+  const started=techAnimation.dataset.started==="true";
+  const completed=techAnimation.dataset.complete==="true";
+  const paused=techAnimation.dataset.motion==="paused";
+  techReplay.disabled=reduce;
+  techPause.disabled=reduce||!started||completed;
+  techReplay.textContent=techCopy.replay;
+  techPause.textContent=paused?techCopy.resume:techCopy.pause;
+  techPause.setAttribute("aria-pressed",String(paused&&started&&!completed));
+  techStatus.textContent=reduce?techCopy.reduced:
+    completed?techCopy.complete:!started?techCopy.ready:paused?techCopy.paused:techCopy.playing;
+}
+function startTechAnimation(){
+  if(motionPreference.matches)return;
+  techAnimation.dataset.started="false";
+  techAnimation.dataset.complete="false";
+  void techAnimation.offsetWidth; // Finite CSS keyframes restart without timers.
+  techAnimation.dataset.motion="playing";
+  techAnimation.dataset.started="true";
+  syncTechAnimation();
+}
+techReplay.addEventListener("click",startTechAnimation);
+techPause.addEventListener("click",()=>{
+  if(motionPreference.matches||techAnimation.dataset.started!=="true"||techAnimation.dataset.complete==="true")return;
+  techAnimation.dataset.motion=techAnimation.dataset.motion==="paused"?"playing":"paused";
+  syncTechAnimation();
+});
+techEnd.addEventListener("animationend",event=>{
+  if(event.target!==techEnd||event.animationName!=="tech-end")return;
+  techAnimation.dataset.complete="true";
+  syncTechAnimation();
+});
+const techObserver=new IntersectionObserver(entries=>{
+  const visible=entries[0].isIntersecting;
+  techAnimation.dataset.inview=String(visible);
+  if(visible&&techAnimation.dataset.started==="false"&&!motionPreference.matches){
+    startTechAnimation();
+  }else{
+    syncTechAnimation();
+  }
+},{threshold:.2});
+techObserver.observe(techAnimation);
+document.addEventListener("visibilitychange",syncTechAnimation);
+motionPreference.addEventListener("change",()=>{
+  if(motionPreference.matches){
+    techAnimation.dataset.started="false";
+    techAnimation.dataset.complete="false";
+    techAnimation.dataset.motion="paused";
+  }else if(techAnimation.dataset.inview==="true"){
+    startTechAnimation();
+  }
+  syncTechAnimation();
+});
+syncTechAnimation();
 """
 
 
@@ -362,4 +536,7 @@ def redesign_public_html(html: str) -> str:
     html = html[:a] + intro + mission + applications + technical + research + html[f:]
     if html.count("</style>") != 1:
         raise ValueError("public style shape changed")
+    if html.count("</script>") != 1:
+        raise ValueError("public script shape changed")
+    html = html.replace("</script>", TECH_ANIMATION_JS + "\n</script>", 1)
     return html.replace("</style>", VISUAL_CSS + "  </style>", 1)

@@ -150,6 +150,52 @@ class StaticShowcaseTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "single navigation link"):
                 public_html(source)
 
+    def test_educational_animation_is_bilingual_static_only_and_isolated(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            target = Path(folder)
+            build(target)
+            ro = (target / "index.html").read_text(encoding="utf-8")
+            en = (target / "en/index.html").read_text(encoding="utf-8")
+            for page, headline, action in (
+                (ro, "ANIMAȚIE CONCEPTUALĂ", "Reia explicația"),
+                (en, "CONCEPTUAL ANIMATION", "Replay explanation"),
+            ):
+                self.assertEqual(page.count('id="tech-animation"'), 1)
+                self.assertIn('id="tech-animation-svg"', page)
+                self.assertIn('aria-hidden="true"', page)
+                self.assertIn('id="tech-animation-pause"', page)
+                self.assertIn('id="tech-animation-replay"', page)
+                self.assertIn('data-motion="paused"', page)
+                self.assertIn('data-started="false"', page)
+                self.assertIn('class="tech-end-signal"', page)
+                self.assertIn('class="tech-transfer tech-transfer-one"', page)
+                self.assertIn('class="tech-transfer tech-transfer-two"', page)
+                self.assertIn('animation:tech-define 12s', page)
+                self.assertIn('animation:tech-prove 12s', page)
+                self.assertIn('animation:tech-verify 12s', page)
+                self.assertIn('tech-animation .tech-transfer{animation:none!important}', page)
+                self.assertIn(headline, page)
+                self.assertIn(action, page)
+                self.assertTrue(page.index('id="technical-evidence-title"')
+                                < page.index('id="tech-animation"')
+                                < page.index('id="scenario-title"'))
+                self.assertEqual(
+                    set(re.findall(r'fetch\("([^"]+)"', page)),
+                    {"/evidence-results.json", "/authentic-evidence.json"},
+                )
+                self.assertNotIn('type="module"', page)
+            self.assertIn('fără generare sau verificare în browser', ro)
+            self.assertIn('no proving or verification in this browser', en)
+            script = re.search(r'<script>(.*?)</script>', en, flags=re.S).group(1)
+            self.assertIn('const techObserver=new IntersectionObserver', script)
+            self.assertIn('document.addEventListener("visibilitychange",syncTechAnimation)', script)
+            self.assertIn('motionPreference.addEventListener("change",()=>{', script)
+            self.assertIn('techEnd.addEventListener("animationend",event=>{', script)
+            self.assertNotIn('setInterval(', script)
+            self.assertNotIn('setTimeout(', script)
+            self.assertEqual(script,
+                             re.search(r'<script>(.*?)</script>', ro, flags=re.S).group(1))
+
     def test_frozen_bundle_has_only_fourteen_allowlisted_files(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             target = Path(folder)
