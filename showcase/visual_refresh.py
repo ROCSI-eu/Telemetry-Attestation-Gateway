@@ -124,6 +124,81 @@ VISUAL_CSS = """
       .research-limits{padding:75px 0}
     }
     @media(max-width:420px){.brand-detail{font-size:.58rem}.section-nav{flex-wrap:wrap;overflow-x:visible;gap:7px 16px;padding-bottom:0}.section-nav a{white-space:normal;font-size:.69rem}.hero h1{font-size:clamp(2.75rem,12.2vw,3.3rem)}.hero-actions a{width:100%;text-align:center}.mission-actions select{min-width:0;width:100%}.mission-actions label{width:100%}.mission-actions{width:100%}.mission-actions button{flex:1}.hero-art{min-height:205px}}
+
+    /* TAG-VISUAL-FINAL-01: presentation only, no change to simulation or evidence. */
+    .hero{grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr);gap:clamp(22px,4.2vw,66px);min-height:clamp(620px,79vh,830px);padding:clamp(50px,6vw,82px) 0 clamp(55px,7vw,99px)}
+    .hero h1{font-size:clamp(3.6rem,6.35vw,7.1rem);max-width:11ch;line-height:.97;margin:22px 0 25px}
+    .hero .sub{max-width:57ch;color:#d4d8d6;font-size:clamp(.97rem,1.1vw,1.08rem);line-height:1.64}
+    .hero-actions{margin-top:25px}
+    .hero-actions a{transition:border-color .18s ease,background-color .18s ease}
+    .hero-art{min-height:clamp(490px,48vw,715px);border:1px solid #355056;background:radial-gradient(ellipse at 58% 53%,#203e47 0,#0d1a20 53%,#0b1216 88%);isolation:isolate}
+    .hero-art:before{content:"";position:absolute;inset:0;border:0;border-radius:0;width:auto;aspect-ratio:auto;top:0;left:0;transform:none;opacity:.75;background:repeating-linear-gradient(0deg,transparent 0 65px,#3b5a6040 66px),repeating-linear-gradient(90deg,transparent 0 65px,#3b5a6040 66px)}
+    .hero-art:after{content:"";position:absolute;inset:0;border:0;border-radius:0;width:auto;aspect-ratio:auto;top:0;left:0;transform:none;opacity:1;background:linear-gradient(180deg,#0c1418ae,transparent 17%,transparent 81%,#0b151bdc)}
+    .hero-scene{display:block;position:absolute;inset:0;width:100%;height:100%;z-index:1}
+    .hero-art-label,.hero-art-caption,.hero-art-index{position:absolute;z-index:2;font-size:.65rem;letter-spacing:.16em;font-weight:800;text-transform:uppercase}
+    .hero-art-label{top:22px;left:22px}
+    .hero-art-index{top:22px;right:22px;color:#95b8b9}
+    .hero-art-caption{bottom:21px;left:22px;color:#e8c58b}
+    .section-overline{display:flex;align-items:center;gap:13px;line-height:1.4}
+    .section-overline:before{content:"";display:inline-block;width:20px;height:2px;background:#e3be83;flex:none}
+    .section-display{letter-spacing:-.065em;max-width:18ch}
+    .mission-control{padding-top:clamp(75px,8vw,125px);padding-bottom:clamp(82px,9vw,140px)}
+    .mission-control .section-display{margin-bottom:42px}
+    .mission-layout{grid-template-columns:minmax(0,2.15fr) minmax(245px,.65fr)}
+    .mission-viewport{background:radial-gradient(ellipse at 53% 52%,#16404a,#0a1419 73%);box-shadow:inset 0 0 90px #0810128a}
+    .mission-readout{padding:clamp(22px,2.5vw,38px);background:linear-gradient(160deg,#102125,#0e171a)}
+    .mission-readout h3{font-size:1.2rem;line-height:1.15;max-width:22ch}
+    .mission-readout dt{margin-top:17px;font-size:.66rem;letter-spacing:.09em;text-transform:uppercase;color:#9cb4b5}
+    .mission-readout dd{font-size:.86rem;font-weight:700;color:#d6f0ee}
+    .mission-legend span{background:#0a171bcf;border:1px solid #365159}
+    .mission-boundary{max-width:100ch;font-size:.75rem}
+    .evidence-intro{margin-bottom:24px}
+    .evidence-path{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:0 0 34px;border-top:1px solid #5a6f71;border-bottom:1px solid #465759}
+    .evidence-path>div{padding:22px 20px 25px;border-right:1px solid #405153;min-width:0}
+    .evidence-path>div:first-child{padding-left:0}
+    .evidence-path>div:last-child{border-right:0}
+    .evidence-path span{display:block;color:#dfbf89;font-size:.65rem;font-weight:800;letter-spacing:.12em;margin-bottom:12px}
+    .evidence-path strong{display:block;font-weight:650;color:#e9f0eb;font-size:clamp(.88rem,1.12vw,1.05rem);line-height:1.35}
+    .technical-evidence .layout{align-items:stretch}
+    .technical-evidence .card{background:#10191c;border-color:#3b5052}
+    .technical-evidence .card h2{color:#f4f0e6}
+    .technical-evidence .step{border-top:2px solid #bda072}
+    .technical-evidence .metric{border-left:2px solid #47767d}
+    @media(max-width:1120px){
+      .hero{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr)}
+      .hero h1{font-size:clamp(3.4rem,6.6vw,6rem)}
+    }
+    @media(max-width:750px){
+      .hero{grid-template-columns:1fr;min-height:0;gap:19px;padding:35px 0 47px}
+      .hero h1{font-size:clamp(2.7rem,10.5vw,4.3rem);margin:12px 0 17px;line-height:1.01;letter-spacing:-.055em}
+      .hero .sub{font-size:.92rem;line-height:1.52}
+      .hero-actions{margin-top:21px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:8px}
+      .hero-actions a{display:flex;align-items:center;justify-content:center;text-align:center;font-size:.72rem;letter-spacing:.01em;padding:12px 9px;line-height:1.35;min-height:47px}
+      .hero-art{min-height:315px}
+      .hero-art-label,.hero-art-caption,.hero-art-index{font-size:.54rem}
+      .hero-art-label{top:16px;left:15px}.hero-art-index{top:16px;right:15px}.hero-art-caption{bottom:15px;left:15px}
+      .section-display{font-size:clamp(2.45rem,8vw,3.9rem)}
+      .mission-control .section-display{margin-bottom:27px}
+      .mission-layout{grid-template-columns:minmax(0,1fr)}
+      .mission-viewport{min-width:0}
+      .mission-viewport svg{width:125%;max-width:none;transform:translateX(-10%)}
+      .mission-legend{position:relative;inset:auto;justify-content:space-between;padding:0 10px 10px;font-size:.58rem}
+      .mission-readout{padding:20px 22px}
+      .evidence-path{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .evidence-path>div{padding:20px 12px;border-bottom:1px solid #405153}
+      .evidence-path>div:nth-child(odd){padding-left:0}
+      .evidence-path>div:nth-child(even){border-right:0;padding-right:0}
+      .evidence-path>div:nth-last-child(-n+2){border-bottom:0}
+    }
+    @media(max-width:420px){
+      .hero h1{font-size:clamp(2.65rem,10.6vw,3.3rem)}
+      .hero-actions a{width:auto;font-size:.68rem}
+      .hero-art{min-height:260px}
+      .hero .sub{font-size:.91rem}
+    }
+    @media(prefers-reduced-motion:reduce){
+      .hero-actions a{transition:none}
+    }
 """
 
 
@@ -149,10 +224,62 @@ def redesign_public_html(html: str) -> str:
     <div class="hero-content">
       <p class="hero-overline">EXPERIMENTAL / SYNTHETIC-ONLY RESEARCH</p>
       <h1 id="hero-title">Verify the condition. Keep the rest private.</h1>
-      <p class="sub">{intro_text.group(1)}</p>
-      <div class="hero-actions"><a href="#mission-control">Explore the illustration</a><a href="#technical-evidence">Review technical evidence</a></div>
+      <p class="sub">TAG explores verification without disclosing all telemetry. This public scene is synthetic and its separate verifier result was recorded offline; the browser neither connects to vehicles nor verifies proofs.</p>
+      <div class="hero-actions"><a href="#mission-control">Explore the scene</a><a href="#technical-evidence">Review the evidence</a></div>
     </div>
-    <div class="hero-art" aria-hidden="true"><span class="hero-art-label">TAG / EXPERIMENT</span><span class="hero-axis"></span><span class="hero-art-caption">A0 / SYNTHETIC</span></div>
+    <div class="hero-art" aria-hidden="true">
+      <span class="hero-art-label">TAG / SYNTHETIC OBSERVATION</span>
+      <span class="hero-art-index">A–B–C / 01</span>
+      <svg class="hero-scene" viewBox="0 0 760 700" preserveAspectRatio="xMidYMid meet" focusable="false">
+        <defs>
+          <linearGradient id="hero-craft-shell" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#f4eddb"/><stop offset=".44" stop-color="#91c8cf"/><stop offset="1" stop-color="#27536a"/>
+          </linearGradient>
+          <linearGradient id="hero-craft-wing" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#78c8d6"/><stop offset="1" stop-color="#1d4f60"/>
+          </linearGradient>
+          <radialGradient id="hero-craft-halo">
+            <stop offset="0" stop-color="#328e9b" stop-opacity=".24"/><stop offset="1" stop-color="#328e9b" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <circle cx="382" cy="346" r="286" fill="url(#hero-craft-halo)"/>
+        <g class="hero-reticle" fill="none" stroke="#70969b" stroke-width="1">
+          <circle cx="385" cy="346" r="225" opacity=".22"/>
+          <circle cx="385" cy="346" r="145" opacity=".26"/>
+          <path d="M385 74V618 M118 346H650" opacity=".15"/>
+          <path d="M116 536L202 506M594 203L662 161" opacity=".58"/>
+        </g>
+        <path d="M98 548 C235 514 298 446 389 350 S559 228 681 136" fill="none" stroke="#172c35" stroke-width="30" opacity=".5"/>
+        <path d="M98 548 C235 514 298 446 389 350 S559 228 681 136" fill="none" stroke="#78d4db" stroke-width="3" stroke-dasharray="13 12" opacity=".92"/>
+        <g fill="#e6c28a" stroke="#1a3338" stroke-width="5">
+          <circle cx="98" cy="548" r="10"/><circle cx="389" cy="350" r="10"/><circle cx="681" cy="136" r="10"/>
+        </g>
+        <g fill="#d8e3df" font-size="19" font-family="Arial,Helvetica,sans-serif" font-weight="700" letter-spacing="3">
+          <text x="75" y="584">A</text><text x="414" y="341">B</text><text x="684" y="118">C</text>
+        </g>
+        <g class="hero-vehicle" transform="translate(389 350) rotate(-24)">
+          <ellipse cx="2" cy="66" rx="122" ry="26" fill="#020b12" opacity=".5"/>
+          <path d="M-120 -35L-58 -13 M58 -13L120 -35 M-62 21L-102 70 M62 21L102 70" stroke="#447d8d" stroke-width="17" stroke-linecap="round"/>
+          <g fill="#5bb8be" opacity=".72">
+            <ellipse cx="-120" cy="-35" rx="48" ry="12"/><ellipse cx="120" cy="-35" rx="48" ry="12"/>
+            <ellipse cx="-102" cy="70" rx="39" ry="10"/><ellipse cx="102" cy="70" rx="39" ry="10"/>
+          </g>
+          <path d="M-67 -16L0 -60L67 -16L0 38Z" fill="url(#hero-craft-shell)" stroke="#e3f5ef" stroke-width="3"/>
+          <path d="M-67 -16L0 38L0 62L-67 2Z" fill="url(#hero-craft-wing)"/>
+          <path d="M67 -16L0 38L0 62L67 2Z" fill="#143f54"/>
+          <path d="M0 -60L0 38" fill="none" stroke="#f5e9cb" stroke-width="2" opacity=".7"/>
+          <path d="M-39 -11L0 -36L39 -11" fill="none" stroke="#d7e9e7" stroke-width="2"/>
+          <circle cx="0" cy="-16" r="8" fill="#e8c58b"/>
+        </g>
+        <g fill="none" stroke="#c5d2cc" opacity=".45" stroke-width="1">
+          <path d="M443 354H586V390"/><path d="M236 502H124V463"/>
+        </g>
+        <g font-family="Arial,Helvetica,sans-serif" fill="#c2dbdc" font-size="13" letter-spacing="2">
+          <text x="593" y="409">OBS / 02</text><text x="90" y="453">ROUTE / SYN</text>
+        </g>
+      </svg>
+      <span class="hero-art-caption">A0 / SYNTHETIC · OBSERVATION ONLY</span>
+    </div>
   </section>"""
     html = html.replace(original_header.group(), header, 1)
 
@@ -190,7 +317,7 @@ def redesign_public_html(html: str) -> str:
         '  <section class="technical-evidence" id="technical-evidence" aria-labelledby="technical-evidence-title">\n'
         '    <p class="section-overline">04 / EVIDENCE BOUNDARIES</p>\n'
         '    <h2 class="section-display" id="technical-evidence-title">Technical Evidence</h2>\n'
-        '    <p class="evidence-intro">The orchestration is simulated. The separate verifier outcome was recorded offline; the browser displays both without independently checking proofs.</p>\n'
+        '    <p class="evidence-intro">The orchestration is simulated. The separate verifier outcome was recorded offline; the browser displays both without independently checking proofs.</p>\n    <div class="evidence-path" role="group" aria-label="Conceptual evidence path, not executed in the browser">\n      <div><span>01 / CLAIM</span><strong>Predefined condition</strong></div>\n      <div><span>02 / PROOF</span><strong>Synthetic research artifact</strong></div>\n      <div><span>03 / CHECK</span><strong>Recorded offline result</strong></div>\n      <div><span>04 / DECISION</span><strong>Not made on this page</strong></div>\n    </div>\n'
         + evidence + '  </section>\n'
     )
     research = (
