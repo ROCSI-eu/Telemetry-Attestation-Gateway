@@ -400,10 +400,10 @@ def social_metadata(html: str, language: str) -> str:
     html = html.replace(anchor, switch + "\n    " + anchor, 1)
     css = '''
     .pill{white-space:normal;max-width:100%;overflow-wrap:anywhere}
-    .language-switch{display:inline-flex;gap:5px;border:1px solid #53758d;border-radius:999px;padding:4px;align-self:start}
-    .language-switch a{min-width:36px;text-align:center;text-decoration:none;color:#bde4f1;font-size:.78rem;font-weight:750;padding:5px 8px;border-radius:999px}
-    .language-switch a[aria-current="page"]{background:#81d9e7;color:#102336}
-    .language-switch a:focus-visible{outline:3px solid #9ee9fb;outline-offset:2px}
+    .language-switch{display:inline-flex;gap:5px;border:1px solid #596567;border-radius:0;padding:4px;align-self:start}
+    .language-switch a{min-width:36px;text-align:center;text-decoration:none;color:#e4e1d8;font-size:.78rem;font-weight:750;padding:5px 8px;border-radius:0}
+    .language-switch a[aria-current="page"]{background:#d9bd8a;color:#151918}
+    .language-switch a:focus-visible{outline:3px solid #f1d4a2;outline-offset:2px}
 '''
     if html.count("</style>") != 1:
         raise ValueError("style marker invalid")
