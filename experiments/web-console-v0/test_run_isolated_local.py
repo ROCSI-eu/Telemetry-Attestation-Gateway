@@ -88,6 +88,75 @@ class LocalSessionTests(unittest.TestCase):
         self.assertFalse(Path(kwargs["cwd"]).exists())
         self.assertEqual(list(self.parent.iterdir()), [])
 
+    def test_optional_toolchain_is_validated_then_forwarded_without_execution(self) -> None:
+        # The path is a test-only selector; no Noir/Barretenberg process runs.
+        selected = self.parent / "synthetic-pinned-toolchain"
+        child = Mock()
+        child.pid = 32458
+        child.wait.return_value = 0
+        child.poll.return_value = 0
+        with patch.object(pkg.bridge, "trusted_bwrap", return_value="/usr/bin/bwrap"), \
+             patch.object(pkg.bridge, "offline_toolchain", return_value=selected) as validate, \
+             patch.object(pkg.subprocess, "Popen", return_value=child) as spawn:
+            self.assertEqual(pkg.main([
+                "--runtime-parent", str(self.parent), "--seconds", "25",
+                "--offline-toolchain-root", str(selected),
+            ]), 0)
+        validate.assert_called_once_with(selected)
+        spawn.assert_called_once()
+        cmd, kwargs = spawn.call_args
+        self.assertEqual(
+            cmd[0][-4:],
+            ["--seconds", "25", "--offline-toolchain-root", str(selected)],
+        )
+        self.assertTrue(kwargs["start_new_session"])
+        self.assertNotIn("offline-toolchain", str(kwargs["env"]))
+        self.assertEqual(kwargs["env"]["PATH"], "/usr/bin:/bin")
+        self.assertEqual(list(self.parent.iterdir()), [])
+
+    def test_missing_toolchain_fails_closed_before_spawn_or_runtime(self) -> None:
+        selected = self.parent / "nonexistent-private-toolchain"
+        output = io.StringIO()
+        with patch.object(pkg.bridge, "trusted_bwrap", return_value="/usr/bin/bwrap"), \
+             patch.object(pkg.subprocess, "Popen") as spawn, \
+             contextlib.redirect_stderr(output):
+            self.assertEqual(pkg.main([
+                "--runtime-parent", str(self.parent),
+                "--offline-toolchain-root", str(selected),
+            ]), 1)
+            spawn.assert_not_called()
+        self.assertIn("UNAVAILABLE", output.getvalue())
+        self.assertNotIn(str(selected), output.getvalue())
+        self.assertEqual(list(self.parent.iterdir()), [])
+
+    def test_toolchain_check_only_validates_without_launching(self) -> None:
+        selected = self.parent / "selected-pinned-toolchain"
+        with patch.object(pkg.bridge, "trusted_bwrap", return_value="/usr/bin/bwrap"), \
+             patch.object(pkg.bridge, "offline_toolchain", return_value=selected) as validate, \
+             patch.object(pkg.subprocess, "Popen") as spawn:
+            self.assertEqual(pkg.main([
+                "--runtime-parent", str(self.parent), "--check-only",
+                "--offline-toolchain-root", str(selected),
+            ]), 0)
+            spawn.assert_not_called()
+        validate.assert_called_once_with(selected)
+        self.assertEqual(list(self.parent.iterdir()), [])
+
+    def test_inspection_never_accepts_a_toolchain_selector(self) -> None:
+        selected = self.parent / "irrelevant-toolchain"
+        with patch.object(pkg.bridge, "offline_toolchain",
+                          side_effect=AssertionError("must not inspect toolchain")), \
+             patch.object(pkg.subprocess, "Popen",
+                          side_effect=AssertionError("must not spawn")), \
+             contextlib.redirect_stderr(io.StringIO()):
+            with self.assertRaises(SystemExit) as raised:
+                pkg.main([
+                    "--inspect-only", "--runtime-parent", str(self.parent),
+                    "--offline-toolchain-root", str(selected),
+                ])
+        self.assertEqual(raised.exception.code, 2)
+        self.assertEqual(list(self.parent.iterdir()), [])
+
     def test_bounded_wait_force_stops_only_owned_group(self) -> None:
         child = Mock()
         child.pid = 32457

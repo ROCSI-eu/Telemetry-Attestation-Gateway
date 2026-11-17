@@ -178,13 +178,17 @@ Run the offline-default checks through `python3 scripts/check_experiments.py`, p
 
 **Question:** can the already integrated local CLI + web console be started, checked and stopped reproducibly as one disposable Linux test session without any shared-VM deployment, cryptographic reprovisioning, persistent operator state or public exposure?
 
-**Proposed scope:** a standard-library, foreground-only wrapper `run_isolated_local.py` around the unchanged, previously tested `local_cli_bridge.py`. This is a **local/Qube research package only**, not an installable service or a readiness decision for a shared production VM. Startup is opt-in. The existing bridge still serves the allowlisted page and synthetic fixtures only on an OS-assigned `127.0.0.1` port; exactly one bearer-token-authenticated, pinned scenario can run. Both default short-circuit presets require no Noir/Barretenberg/CRS. A `verified_synthetic` selection fails closed because this minimal wrapper never forwards a toolchain root. The prior genuinely verified synthetic replay remains **precomputed evidence**, not a fresh proof.
+**Proposed scope:** a standard-library, foreground-only wrapper `run_isolated_local.py` around the unchanged, previously tested `local_cli_bridge.py`. This is a **local/Qube research package only**, not an installable service or a readiness decision for a shared production VM. Startup is opt-in. The existing bridge still serves the allowlisted page and synthetic fixtures only on an OS-assigned `127.0.0.1` port; exactly one bearer-token-authenticated, pinned scenario can run. Both default short-circuit presets require no Noir/Barretenberg/CRS. Without an explicit toolchain root, `verified_synthetic` still fails closed. The optional `--offline-toolchain-root` selects **only an already provisioned, owner-private** Noir/Barretenberg/CRS research toolchain; the launcher validates it using the existing bridge check **before creating any session or listener**, then forwards it to the unchanged loopback bridge. This opt-in path neither installs dependencies nor runs a proof by itself. The prior genuinely verified synthetic replay remains **precomputed evidence**, not a fresh proof.
 
 From a **clean, SHA-pinned checkout on the same non-production machine as the browser**, after confirming no conflicting browser/QA ownership and a non-root Linux account:
 
 ```sh
 python3 experiments/web-console-v0/run_isolated_local.py --check-only
 python3 experiments/web-console-v0/run_isolated_local.py --seconds 90
+
+# Only when a separately provisioned, pinned private toolchain already exists:
+python3 experiments/web-console-v0/run_isolated_local.py --check-only --offline-toolchain-root /PRIVATE/TOOLCHAIN
+python3 experiments/web-console-v0/run_isolated_local.py --seconds 90 --offline-toolchain-root /PRIVATE/TOOLCHAIN
 ```
 
 Use the printed local loopback URL and token only within that machine and short session. Do **not** copy the token to Git, screenshots, logs, chat or a public site. Do not use a tunnel, reverse proxy, shared VM or DNS. A Ctrl-C or TERM/HUP ends the owned bridge process group; a hard deadline also bounds a stuck session. The bridge itself enforces its 1–300 second listener lifetime, its no-retry token, `bwrap --unshare-net`, bounded CLI execution and output minimization. The wrapper does not execute a shell, download material, install software, launch browsers, start background services or log request content.
