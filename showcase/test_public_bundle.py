@@ -196,6 +196,39 @@ class StaticShowcaseTests(unittest.TestCase):
             self.assertEqual(script,
                              re.search(r'<script>(.*?)</script>', ro, flags=re.S).group(1))
 
+    def test_scenario_explanation_reuses_ten_typed_mocks_in_both_locales(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            target = Path(folder)
+            build(target)
+            ro = (target / "index.html").read_text(encoding="utf-8")
+            en = (target / "en/index.html").read_text(encoding="utf-8")
+            cases = set(json.loads(SCENARIOS.read_text(encoding="utf-8"))["cases"])
+            for page in (ro, en):
+                self.assertEqual(page.count('id="scenario"'), 1)
+                self.assertEqual(page.count('id="scenario-explanation"'), 1)
+                self.assertTrue(page.index('id="scenario"') < page.index('id="scenario-explanation"'))
+                self.assertIn('renderScenarioInterpretation($("scenario").value,e);', page)
+                script = re.search(r'<script>(.*?)</script>', page, flags=re.S).group(1)
+                mappings = script.split("const scenarioInterpretations={", 1)[1].split("};", 1)[0]
+                self.assertEqual(
+                    set(re.findall(r'^  ([a-z_]+):\[', mappings, flags=re.M)),
+                    cases,
+                )
+                self.assertIn("e.publication.error_code", script)
+                self.assertEqual(
+                    set(re.findall(r'fetch\("([^"]+)"', page)),
+                    {"/evidence-results.json", "/authentic-evidence.json"},
+                )
+                self.assertNotIn("setInterval(", script)
+                self.assertNotIn("WebSocket(", script)
+                self.assertNotIn("operator-run", page)
+            self.assertIn("Orchestrare simulată", ro)
+            self.assertIn("Recorded orchestration mock", en)
+            self.assertEqual(
+                re.search(r'<script>(.*?)</script>', ro, flags=re.S).group(1),
+                re.search(r'<script>(.*?)</script>', en, flags=re.S).group(1),
+            )
+
     def test_frozen_bundle_has_only_fourteen_allowlisted_files(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             target = Path(folder)
