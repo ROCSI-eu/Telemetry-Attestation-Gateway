@@ -18,6 +18,44 @@ from build import (
 
 
 class StaticShowcaseTests(unittest.TestCase):
+    def test_introductory_layer_is_bilingual_and_technical_limits_remain_accessible(self) -> None:
+        from localization import SHARE
+        with tempfile.TemporaryDirectory() as folder:
+            target = Path(folder)
+            build(target)
+            ro = (target / "index.html").read_text(encoding="utf-8")
+            en = (target / "en/index.html").read_text(encoding="utf-8")
+            for page, heading, application, scope, title in (
+                (ro, "Verifică o condiție fără să divulgi toată telemetria",
+                 "Aplicații potențiale, nu implementări validate",
+                 "Domeniul complet și limitele experimentale", SHARE["ro"]["title"]),
+                (en, "Verify a condition without revealing all the telemetry",
+                 "Potential applications, not validated deployments",
+                 "Full experimental scope and limitations", SHARE["en"]["title"]),
+            ):
+                self.assertIn(heading, page)
+                self.assertIn(application, page)
+                self.assertIn(scope, page)
+                self.assertIn("<title>"+title+"</title>", page)
+                self.assertLess(page.index('id="primer-title"'), page.index('id="use-cases-title"'))
+                self.assertLess(page.index('id="use-cases-title"'), page.index('id="technical-scope"'))
+                self.assertLess(page.index('id="technical-scope"'), page.index('id="mission-control"'))
+                self.assertLess(page.index('id="mission-control"'), page.index('id="scenario-title"'))
+                self.assertLess(page.index('id="scenario-title"'), page.index('id="authentic-title"'))
+                self.assertIn('<summary>'+scope+'</summary>', page)
+                self.assertIn('id="scope-proves"', page)
+                self.assertIn('id="scope-limits"', page)
+                self.assertIn('href="#authentic-title"', page)
+                self.assertIn('href="#scenario-title"', page)
+                self.assertIn('EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC', page)
+                self.assertIn('NOT VALIDATION OR PRODUCTION AUTHORIZATION', page)
+                self.assertIn('id="mission-pattern"', page)
+                self.assertIn("PRECOMPUTED_GENUINE_SYNTHETIC_VERIFICATION", page)
+            self.assertIn("nu atestă o misiune efectivă", ro)
+            self.assertIn("does not test a real measurement", en)
+            self.assertIn("nu se conectează la vehicule", ro)
+            self.assertIn("does not connect to or control any vehicle", en)
+
     def test_frozen_bundle_has_only_fourteen_allowlisted_files(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             target = Path(folder)

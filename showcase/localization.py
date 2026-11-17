@@ -14,13 +14,34 @@ ORIGIN = "https://tag.rocsi.eu"
 # Exact visible text from the public *post-sanitization* page.
 # Do not translate immutable typed evidence enums or experiment boundary labels.
 RO_TEXT = {
-    "TAG Mission Control — Experimental Synthetic Showcase":
-        "TAG — Centru de comandă și control · Demonstrație sintetică experimentală",
+    "TAG — Privacy-Preserving Telemetry Attestation | ROCSI":
+        "TAG — Verificarea telemetriei cu divulgare minimă | ROCSI",
     "ROCSI / Telemetry Attestation Gateway":
         "ROCSI / Telemetry Attestation Gateway",
     "Mission Control": "Centru de comandă și control",
-    "Explore a privacy-preserving telemetry attestation concept through synthetic animation, deterministic scenario mocks and a separately recorded offline verification outcome. No live vehicle, public proof generation or verification runs here.":
-        "Descoperă un concept de atestare a telemetriei care protejează datele private, prin animații sintetice, scenarii simulate deterministe și un rezultat separat al unei verificări offline. Nu există vehicule conectate și nu se generează sau verifică dovezi în acest site.",
+    "TAG explores how specific telemetry conditions could be verified without sharing all underlying data. This experimental public page only displays synthetic animations, mock scenarios and a recorded offline verification outcome; no live vehicle connection, control, proof generation or browser verification occurs.":
+        "TAG explorează verificarea unor condiții privind telemetria fără divulgarea tuturor datelor. Această pagină experimentală prezintă doar animații sintetice, scenarii simulate și un rezultat offline înregistrat; nu conectează sau controlează vehicule și nu generează ori verifică dovezi în browser.",
+    "THE CONCEPT IN BRIEF": "CONCEPTUL, PE SCURT",
+    "Verify a condition without revealing all the telemetry": "Verifică o condiție fără să divulgi toată telemetria",
+    "TAG investigates cryptographic verification of selected telemetry conditions with limited disclosure. Instead of providing a full mission record, a system could provide a proof about a specific condition, subject to trusted inputs and appropriate validation.":
+        "TAG investighează verificarea criptografică a unor condiții privind telemetria, cu divulgare limitată. În loc să transmită întregul istoric al unei misiuni, un sistem ar putea furniza o dovadă despre o condiție precisă, cu condiția utilizării unor date de intrare de încredere și a unei validări adecvate.",
+    "Illustrative example:": "Exemplu ilustrativ:",
+    "A speed value satisfies a predefined limit without revealing the exact private value. This page does not test a real measurement or attest an actual mission.":
+        "O valoare a vitezei respectă o limită prestabilită fără divulgarea valorii private exacte. Această pagină nu testează măsurători reale și nu atestă o misiune efectivă.",
+    "Explore the synthetic route": "Explorează traseul sintetic",
+    "Inspect recorded scenarios": "Examinează scenariile înregistrate",
+    "See the separate offline verifier result": "Vezi rezultatul separat al verificatorului offline",
+    "Potential applications, not validated deployments": "Aplicații potențiale, nu implementări validate",
+    "Telemetry audits": "Auditul telemetriei",
+    "An operator could present evidence about a predefined condition without exposing the complete underlying dataset. No audit acceptance is established by this showcase.":
+        "Un operator ar putea prezenta dovezi privind o condiție prestabilită fără să expună întregul set de date. Această demonstrație nu stabilește acceptarea în cadrul unui audit.",
+    "Autonomous platforms": "Platforme autonome",
+    "Future integrations could be investigated for aerial, ground or maritime vehicles. This page does not connect to or control any vehicle.":
+        "Ar putea fi investigate integrări viitoare cu vehicule aeriene, terestre sau navale. Pagina nu se conectează la vehicule și nu le controlează.",
+    "Existing workflows": "Fluxuri existente",
+    "CLI tools and possible future connectors could support integration with other systems. The public site exposes no execution endpoint.":
+        "Instrumentele CLI și posibilii conectori viitori ar putea permite integrarea cu alte sisteme. Site-ul public nu expune niciun punct de execuție.",
+    "Full experimental scope and limitations": "Domeniul complet și limitele experimentale",
     "PUBLIC SHOWCASE · PRECOMPUTED ONLY":
         "DEMONSTRAȚIE PUBLICĂ · DOAR REZULTATE PRECALCULATE",
     "What the recorded result can show": "Ce poate demonstra rezultatul înregistrat",
@@ -292,13 +313,13 @@ def inject_locale_js(english: str) -> str:
 
 SHARE = {
     "ro": {
-        "title": "Centru de comandă și control — Atestarea telemetriei | ROCSI",
-        "description": "Demonstrație experimentală de atestare a telemetriei: traseu sintetic, scenarii interactive și rezultate de verificare offline preînregistrate. Fără control live.",
+        "title": "TAG — Verificarea telemetriei cu divulgare minimă | ROCSI",
+        "description": "Descoperă verificarea condițiilor despre telemetrie cu divulgare minimă. Demonstrație experimentală cu scenarii sintetice și rezultate precalculate.",
         "image_alt": "Centru de comandă și control TAG: dronă ilustrativă pe traseul sintetic A–B–C, fără telemetrie live.",
     },
     "en": {
-        "title": "Mission Control — Telemetry Attestation Gateway | ROCSI",
-        "description": "Experimental telemetry attestation showcase: synthetic route, interactive scenarios and precomputed offline verification results. No live vehicle control.",
+        "title": "TAG — Privacy-Preserving Telemetry Attestation | ROCSI",
+        "description": "Explore telemetry condition verification with limited disclosure. Experimental showcase with synthetic scenarios and precomputed results.",
         "image_alt": "TAG Mission Control: illustrative drone on a synthetic A–B–C route, with no live telemetry.",
     },
 }
