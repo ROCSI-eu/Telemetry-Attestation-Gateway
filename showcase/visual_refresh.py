@@ -159,6 +159,18 @@ VISUAL_CSS = """
     .evidence-path>div:last-child{border-right:0}
     .evidence-path span{display:block;color:#dfbf89;font-size:.65rem;font-weight:800;letter-spacing:.12em;margin-bottom:12px}
     .evidence-path strong{display:block;font-weight:650;color:#e9f0eb;font-size:clamp(.88rem,1.12vw,1.05rem);line-height:1.35}
+    .proof-tooling{border:1px solid #405357;background:#10191c;padding:clamp(20px,3vw,36px);margin:0 0 38px;min-width:0}
+    .proof-tooling-kicker,.toolchain-diagram span{color:#dfbf89;font-size:.67rem;letter-spacing:.13em;font-weight:800}
+    .proof-tooling h3{font-size:clamp(1.45rem,2.2vw,2.2rem);line-height:1.18;letter-spacing:-.04em;margin:12px 0}
+    .proof-tooling-intro,.proof-tooling-boundary{color:#bdcbca;font-size:.93rem;line-height:1.7;max-width:94ch}
+    .toolchain-diagram{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;padding:0;margin:26px 0}
+    .toolchain-diagram li{position:relative;min-width:0;padding:20px 18px;background:#16252a;border-top:2px solid #bda072}
+    .toolchain-diagram li:not(:last-child):after{content:"→";position:absolute;right:-17px;top:38%;z-index:1;color:#dfbf89;font-size:1.3rem}
+    .toolchain-diagram strong{display:block;color:#edf0e8;font-size:1.1rem;margin:9px 0}
+    .toolchain-diagram p{color:#c2d0ce;font-size:.85rem;line-height:1.62;margin:0}
+    .proof-tooling-links{display:flex;gap:10px 22px;flex-wrap:wrap;font-size:.83rem;margin:0 0 22px}
+    .proof-tooling-links a{color:#e7c58e;text-underline-offset:3px}
+    .proof-tooling-boundary{border-left:2px solid #bda072;padding-left:15px;margin:0}
     .technical-evidence .layout{align-items:stretch}
     .technical-evidence .card{background:#10191c;border-color:#3b5052}
     .technical-evidence .card h2{color:#f4f0e6}
@@ -189,6 +201,8 @@ VISUAL_CSS = """
       .evidence-path>div:nth-child(odd){padding-left:0}
       .evidence-path>div:nth-child(even){border-right:0;padding-right:0}
       .evidence-path>div:nth-last-child(-n+2){border-bottom:0}
+      .toolchain-diagram{grid-template-columns:1fr;gap:9px}
+      .toolchain-diagram li:not(:last-child):after{display:none}
     }
     @media(max-width:420px){
       .hero h1{font-size:clamp(2.65rem,10.6vw,3.3rem)}
@@ -199,6 +213,25 @@ VISUAL_CSS = """
     @media(prefers-reduced-motion:reduce){
       .hero-actions a{transition:none}
     }
+"""
+
+
+TECH_TOOLING = """  <section class="proof-tooling" aria-labelledby="proof-tooling-title">
+    <p class="proof-tooling-kicker">EXPERIMENTAL PROOF TOOLCHAIN</p>
+    <h3 id="proof-tooling-title">How Noir and Barretenberg are used in TAG</h3>
+    <p class="proof-tooling-intro">The synthetic bounded-speed experiment uses a pinned research toolchain: Noir/Nargo 1.0.0-beta.26 and Barretenberg bb 5.2.0. This is not a production technology selection.</p>
+    <ol class="toolchain-diagram" aria-label="Experimental proof flow, executed offline">
+      <li><span>01 / DEFINE</span><strong>Noir</strong><p>Noir expresses a constraint comparing a private speed value with a public limit; Nargo compiles the circuit.</p></li>
+      <li><span>02 / PROVE</span><strong>Barretenberg</strong><p>With the private witness, the pinned bb backend generates a zero-knowledge proof of the constrained statement.</p></li>
+      <li><span>03 / VERIFY</span><strong>Offline verifier</strong><p>A separately invoked verifier reconstructs public inputs from canonical CBOR and checks the proof with the expected verification key, without the private speed.</p></li>
+    </ol>
+    <nav class="proof-tooling-links" aria-label="Tool documentation and TAG implementation">
+      <a href="https://www.noir-lang.org/docs/">Noir documentation</a>
+      <a href="https://barretenberg.aztec.network/docs/">Barretenberg documentation</a>
+      <a href="https://github.com/ROCSI-eu/Telemetry-Attestation-Gateway/tree/main/experiments/bounded-speed-proof-v0">TAG experimental implementation</a>
+    </nav>
+    <p class="proof-tooling-boundary">A cryptographically valid proof does not establish telemetry truth, trusted sensors or time, whole-flight coverage, safety or legal compliance. This public page shows recorded synthetic outcomes: the browser neither generates nor verifies a proof.</p>
+  </section>
 """
 
 
@@ -318,7 +351,7 @@ def redesign_public_html(html: str) -> str:
         '    <p class="section-overline">04 / EVIDENCE BOUNDARIES</p>\n'
         '    <h2 class="section-display" id="technical-evidence-title">Technical Evidence</h2>\n'
         '    <p class="evidence-intro">The orchestration is simulated. The separate verifier outcome was recorded offline; the browser displays both without independently checking proofs.</p>\n    <div class="evidence-path" role="group" aria-label="Conceptual evidence path, not executed in the browser">\n      <div><span>01 / CLAIM</span><strong>Predefined condition</strong></div>\n      <div><span>02 / PROOF</span><strong>Synthetic research artifact</strong></div>\n      <div><span>03 / CHECK</span><strong>Recorded offline result</strong></div>\n      <div><span>04 / DECISION</span><strong>Not made on this page</strong></div>\n    </div>\n'
-        + evidence + '  </section>\n'
+        + TECH_TOOLING + evidence + '  </section>\n'
     )
     research = (
         '  <section class="research-limits" id="research-limitations" aria-labelledby="research-limitations-title">\n'
