@@ -10,6 +10,7 @@ from pathlib import Path
 import re
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from build import (
     CASE_KEYS, CONSOLE, LABELS, SCENARIOS, VERIFIER, build,
@@ -83,6 +84,71 @@ class StaticShowcaseTests(unittest.TestCase):
                 re.search(r'<script>(.*?)</script>', ro, flags=re.S).group(1),
                 re.search(r'<script>(.*?)</script>', en, flags=re.S).group(1),
             )
+
+    def test_proof_tooling_is_bilingual_static_and_in_evidence_section(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            target = Path(folder)
+            build(target)
+            ro = (target / "index.html").read_text(encoding="utf-8")
+            en = (target / "en/index.html").read_text(encoding="utf-8")
+            expected = (
+                'https://www.noir-lang.org/docs/',
+                'https://barretenberg.aztec.network/docs/',
+                'https://github.com/ROCSI-eu/Telemetry-Attestation-Gateway/tree/main/experiments/bounded-speed-proof-v0',
+            )
+            for page, title, define, verify, boundary in (
+                (ro, "Cum sunt folosite Noir și Barretenberg în TAG",
+                 "Noir exprimă o constrângere", "reconstruiește intrările publice",
+                 "browserul nu generează și nu verifică dovezi"),
+                (en, "How Noir and Barretenberg are used in TAG",
+                 "Noir expresses a constraint", "reconstructs public inputs",
+                 "the browser neither generates nor verifies a proof"),
+            ):
+                self.assertEqual(page.count('class="proof-tooling"'), 1)
+                section = re.search(
+                    r'<section class="proof-tooling".*?</section>', page, flags=re.S
+                ).group()
+                self.assertIn(title, section)
+                self.assertIn(define, section)
+                self.assertIn(verify, section)
+                self.assertIn(boundary, section)
+                self.assertIn("1.0.0-beta.26", section)
+                self.assertIn("5.2.0", section)
+                self.assertEqual(section.count("<li>"), 3)
+                self.assertIn("canonical CBOR" if page is en else "CBOR canonic", section)
+                self.assertTrue(page.index('id="technical-evidence-title"')
+                                < page.index('id="proof-tooling-title"')
+                                < page.index('id="scenario-title"'))
+                for url in expected:
+                    self.assertEqual(section.count(f'href="{url}"'), 1)
+                self.assertNotIn("<script", section)
+                self.assertNotIn("fetch(", section)
+                self.assertIn(".toolchain-diagram{grid-template-columns:1fr", page)
+            self.assertIn('aria-label="Flux experimental al dovezii, executat offline"', ro)
+            self.assertIn('aria-label="Experimental proof flow, executed offline"', en)
+            self.assertEqual(
+                re.search(r"<script>(.*?)</script>", ro, flags=re.S).group(1),
+                re.search(r"<script>(.*?)</script>", en, flags=re.S).group(1),
+            )
+
+    def test_unapproved_external_links_fail_closed(self) -> None:
+        import visual_refresh
+        source = CONSOLE.read_text(encoding="utf-8")
+        official = "https://www.noir-lang.org/docs/"
+        with patch.object(
+            visual_refresh, "TECH_TOOLING",
+            visual_refresh.TECH_TOOLING.replace(official, "https://tracker.invalid/docs/"),
+        ):
+            with self.assertRaisesRegex(ValueError, "unapproved external reference"):
+                public_html(source)
+        with patch.object(
+            visual_refresh, "TECH_TOOLING",
+            visual_refresh.TECH_TOOLING.replace(
+                f'href="{official}"', f'data-url="{official}"'
+            ),
+        ):
+            with self.assertRaisesRegex(ValueError, "single navigation link"):
+                public_html(source)
 
     def test_frozen_bundle_has_only_fourteen_allowlisted_files(self) -> None:
         with tempfile.TemporaryDirectory() as folder:

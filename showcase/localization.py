@@ -182,6 +182,28 @@ RO_TEXT = {
     "Research": "Cercetare",
     "Limitations": "Limitări",
     "A": "A", "B": "B", "C": "C", "—": "—",
+    # TAG-TECH-EXPLAIN-01: display-only public explanation (not a proof runner).
+    "EXPERIMENTAL PROOF TOOLCHAIN": "INSTRUMENTE EXPERIMENTALE PENTRU DOVEZI",
+    "How Noir and Barretenberg are used in TAG": "Cum sunt folosite Noir și Barretenberg în TAG",
+    "The synthetic bounded-speed experiment uses a pinned research toolchain: Noir/Nargo 1.0.0-beta.26 and Barretenberg bb 5.2.0. This is not a production technology selection.":
+        "Experimentul sintetic privind limita de viteză utilizează versiuni fixate ale instrumentelor de cercetare: Noir/Nargo 1.0.0-beta.26 și Barretenberg bb 5.2.0. Acestea nu reprezintă o alegere tehnologică pentru producție.",
+    "01 / DEFINE": "01 / DEFINIRE",
+    "02 / PROVE": "02 / GENERARE",
+    "03 / VERIFY": "03 / VERIFICARE",
+    "Noir": "Noir",
+    "Barretenberg": "Barretenberg",
+    "Offline verifier": "Verificator offline",
+    "Noir expresses a constraint comparing a private speed value with a public limit; Nargo compiles the circuit.":
+        "Noir exprimă o constrângere care compară viteza privată cu o limită publică; Nargo compilează circuitul.",
+    "With the private witness, the pinned bb backend generates a zero-knowledge proof of the constrained statement.":
+        "Folosind martorul privat, backendul bb cu versiune fixată generează o dovadă zero-knowledge pentru condiția definită.",
+    "A separately invoked verifier reconstructs public inputs from canonical CBOR and checks the proof with the expected verification key, without the private speed.":
+        "Un verificator invocat separat reconstruiește intrările publice din CBOR canonic și verifică dovada cu cheia de verificare așteptată, fără acces la viteza privată.",
+    "Noir documentation": "Documentație Noir",
+    "Barretenberg documentation": "Documentație Barretenberg",
+    "TAG experimental implementation": "Implementarea experimentală TAG",
+    "A cryptographically valid proof does not establish telemetry truth, trusted sensors or time, whole-flight coverage, safety or legal compliance. This public page shows recorded synthetic outcomes: the browser neither generates nor verifies a proof.":
+        "O dovadă criptografică validă nu confirmă corectitudinea telemetriei, încrederea în senzori ori timp, acoperirea întregului zbor, siguranța sau conformitatea legală. Pagina publică afișează rezultate sintetice înregistrate: browserul nu generează și nu verifică dovezi.",
     # Preserve machine-readable evidence codes and experimental markings.
     "EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION":
         "EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION",
@@ -201,6 +223,8 @@ RO_ARIA = {
     "Conceptual pipeline": "Flux conceptual",
     "Page sections": "Secțiunile paginii",
     "Conceptual evidence path, not executed in the browser": "Secvență conceptuală a dovezilor, neexecutată în browser",
+    "Experimental proof flow, executed offline": "Flux experimental al dovezii, executat offline",
+    "Tool documentation and TAG implementation": "Documentația instrumentelor și implementarea TAG",
 }
 
 SCENARIO_RO = {

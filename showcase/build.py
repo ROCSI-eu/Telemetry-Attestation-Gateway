@@ -21,6 +21,12 @@ from visual_refresh import redesign_public_html
 ROOT = Path(__file__).resolve().parents[1]
 CONSOLE = ROOT / "experiments/web-console-v0/index.html"
 SCENARIOS = ROOT / "experiments/integrated-cli-v0/evidence-results.json"
+# Static navigation only. The public bundle still rejects every other external URL.
+PUBLIC_REFERENCE_URLS = frozenset({
+    "https://www.noir-lang.org/docs/",
+    "https://barretenberg.aztec.network/docs/",
+    "https://github.com/ROCSI-eu/Telemetry-Attestation-Gateway/tree/main/experiments/bounded-speed-proof-v0",
+})
 VERIFIER = ROOT / "experiments/web-console-v0/authentic-evidence.json"
 LABELS = [
     "EXPERIMENTAL", "SYNTHETIC_ONLY", "A0_SYNTHETIC",
@@ -298,7 +304,20 @@ def public_html(source: str) -> str:
         "WebSocket(", "EventSource(", "localStorage", "sessionStorage",
         "navigator.sendBeacon", "setInterval(", "<form",
     )
-    if any(token in html for token in forbidden):
+    # Explicit documentation links are navigation only, never fetch targets.
+    # Strip only exact allowlisted href values for the existing fail-closed
+    # external URL guard; any other URL (including in scripts) remains rejected.
+    external_urls = re.findall(r'https?://[^\s"<>]+', html)
+    if (set(external_urls) != PUBLIC_REFERENCE_URLS
+            or len(external_urls) != len(PUBLIC_REFERENCE_URLS)):
+        raise ValueError("unapproved external reference in public HTML")
+    guarded_html = html
+    for url in PUBLIC_REFERENCE_URLS:
+        href = f'href="{url}"'
+        if guarded_html.count(href) != 1:
+            raise ValueError("external reference is not a single navigation link")
+        guarded_html = guarded_html.replace(href, 'href="#reference"', 1)
+    if any(token in guarded_html for token in forbidden):
         raise ValueError("public HTML retains restricted local/external feature")
     if html.count('<script>') != 1 or html.count('<style>') != 1:
         raise ValueError("unexpected HTML script/style surface")
