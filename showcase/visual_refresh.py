@@ -218,6 +218,8 @@ VISUAL_CSS = """
       .tech-animation .tech-highlight{opacity:.27}
       .tech-animation .tech-transfer,.tech-animation .tech-end-signal{opacity:0}
     }
+    /* TAG-MISSION-SCENARIOS-01: explanation of a recorded mock, not proof execution. */
+    .scenario-explanation{margin:12px 0 18px;padding:13px 16px;border-left:2px solid #bda072;background:#17242a;color:#d8e2df;font-size:.86rem;line-height:1.6;overflow-wrap:anywhere}
     .technical-evidence .layout{align-items:stretch}
     .technical-evidence .card{background:#10191c;border-color:#3b5052}
     .technical-evidence .card h2{color:#f4f0e6}
@@ -327,6 +329,31 @@ TECH_TOOLING = """  <section class="proof-tooling" aria-labelledby="proof-toolin
   </section>
 """
 
+
+SCENARIO_INTERPRETATION_JS = r"""
+// TAG-MISSION-SCENARIOS-01: explanatory text for the existing typed mock replay.
+// The independent offline verifier result and conceptual animations are untouched.
+const scenarioInterpretations={
+  altered_public_input:["Intrările publice modificate duc la INVALID în simulare; nu există publicare.","Altered public inputs produce INVALID in the mock; no publication occurs."],
+  below_limit_local_publication:["Condiția este îndeplinită; simularea înregistrează VALID și publicarea locală finalizată.","The claim is satisfied; the mock records VALID and finalized local publication."],
+  equality_publication_disabled:["La egalitate, condiția rămâne îndeplinită și rezultatul simulat este VALID; publicarea dezactivată nu schimbă starea criptografică.","At the limit, the claim remains satisfied and the mock records VALID; disabled publication does not change cryptographic status."],
+  malformed_source:["Sursa sintetică este respinsă înainte de evaluarea condiției sau generarea dovezii; NOT_CHECKED nu înseamnă INVALID.","The synthetic source is rejected before evaluating the claim or generating a proof; NOT_CHECKED is not INVALID."],
+  over_limit:["Condiția nu este îndeplinită; generarea dovezii nu este încercată și verificarea nu este efectuată. NOT_CHECKED nu înseamnă INVALID.","The claim is not satisfied; proof generation is not attempted and verification is not performed. NOT_CHECKED is not INVALID."],
+  publication_definitive_failure:["Rezultatul criptografic simulat rămâne VALID, însă substratul respinge definitiv publicarea.","The mock cryptographic status remains VALID, but the substrate definitively rejects publication."],
+  publication_timeout_retry_reconciliation:["Simularea înregistrează două încercări și reconcilierea finală a publicării locale; nu există registru public live.","The mock records two attempts and final reconciliation of local publication; no live public ledger is involved."],
+  publication_unavailable:["Rezultatul criptografic simulat este VALID, dar publicarea nu este înregistrată deoarece substratul este indisponibil.","The mock cryptographic status is VALID, but publication is not recorded because the substrate is unavailable."],
+  tampered_proof:["O dovadă modificată produce INVALID în simulare; publicarea nu este efectuată.","A tampered proof produces INVALID in the mock; publication is not performed."],
+  unsupported_public_version:["Versiunea intrărilor publice este respinsă înaintea verificării criptografice: NOT_CHECKED, nu INVALID.","The public-input version is rejected before cryptographic verification: NOT_CHECKED, not INVALID."]
+};
+function renderScenarioInterpretation(id,e){
+  const localized=Object.hasOwn(scenarioInterpretations,id)?scenarioInterpretations[id]:null;
+  const explanation=localized?localized[isRomanian?0:1]:(isRomanian?"Scenariu nerecunoscut.":"Unrecognized scenario.");
+  const reason=e.publication.error_code;
+  $("scenario-explanation").textContent=
+    (isRomanian?"Orchestrare simulată: ":"Recorded orchestration mock: ")+explanation+
+    (reason===null?"":(isRomanian?" Cod tipizat de publicare: ":" Typed publication code: ")+reason+".");
+}
+"""
 
 TECH_ANIMATION_JS = r"""
 // TAG-TECH-ANIMATION-01: finite, illustrative-only SVG/CSS. Never touches evidence.
@@ -538,5 +565,22 @@ def redesign_public_html(html: str) -> str:
         raise ValueError("public style shape changed")
     if html.count("</script>") != 1:
         raise ValueError("public script shape changed")
-    html = html.replace("</script>", TECH_ANIMATION_JS + "\n</script>", 1)
+    # Public-only context for the already existing selector; no new data source.
+    selector_anchor = '<p id="error" role="status" aria-live="polite"></p>'
+    if html.count(selector_anchor) != 1:
+        raise ValueError("scenario replay anchor changed")
+    html = html.replace(
+        selector_anchor,
+        selector_anchor + '\n      <p class="scenario-explanation" id="scenario-explanation" role="status" aria-live="polite"></p>',
+        1,
+    )
+    render_anchor = "function render(e) {"
+    if html.count(render_anchor) != 1:
+        raise ValueError("scenario render anchor changed")
+    html = html.replace(
+        render_anchor,
+        render_anchor + '\n  renderScenarioInterpretation($("scenario").value,e);',
+        1,
+    )
+    html = html.replace("</script>", TECH_ANIMATION_JS + SCENARIO_INTERPRETATION_JS + "\n</script>", 1)
     return html.replace("</style>", VISUAL_CSS + "  </style>", 1)
