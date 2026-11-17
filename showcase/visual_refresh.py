@@ -219,7 +219,17 @@ VISUAL_CSS = """
       .tech-animation .tech-transfer,.tech-animation .tech-end-signal{opacity:0}
     }
     /* TAG-MISSION-SCENARIOS-01: explanation of a recorded mock, not proof execution. */
-    .scenario-explanation{margin:12px 0 18px;padding:13px 16px;border-left:2px solid #bda072;background:#17242a;color:#d8e2df;font-size:.86rem;line-height:1.6;overflow-wrap:anywhere}
+    /* TAG-SCENARIOS-UX-01: public-only hierarchy; never changes typed evidence. */
+    .scenario-controller,.scenario-results{border-top:2px solid #d3b783}
+    .scenario-controller .controls{margin-bottom:13px}
+    .scenario-explanation{margin:12px 0 20px;padding:17px 19px;border-left:3px solid #dfc08c;background:#1b2b30;color:#eef1e9;font-size:clamp(.87rem,1vw,.96rem);line-height:1.65;overflow-wrap:anywhere}
+    .scenario-active{margin:-6px 0 17px;padding:0 0 13px;border-bottom:1px solid #384d4e;color:#e0c392;font-size:.75rem;font-weight:750;letter-spacing:.045em;line-height:1.5;overflow-wrap:anywhere}
+    .scenario-results dd[data-tone]{justify-self:end;padding:2px 7px;border-left:2px solid #657477;line-height:1.4;max-width:100%}
+    .scenario-results dd[data-tone="good"]{color:#a7e1cc;background:#183730;border-left-color:#74c7ae}
+    .scenario-results dd[data-tone="warn"]{color:#f0d0a4;background:#392a22;border-left-color:#e2b779}
+    .scenario-results dd[data-tone="neutral"]{color:#c5cecb;background:#202a2c;border-left-color:#657477}
+    @media(max-width:750px){.scenario-explanation{padding:15px 16px;font-size:.89rem}.scenario-active{font-size:.71rem}}
+
     .technical-evidence .layout{align-items:stretch}
     .technical-evidence .card{background:#10191c;border-color:#3b5052}
     .technical-evidence .card h2{color:#f4f0e6}
@@ -348,6 +358,18 @@ const scenarioInterpretations={
 function renderScenarioInterpretation(id,e){
   const localized=Object.hasOwn(scenarioInterpretations,id)?scenarioInterpretations[id]:null;
   const explanation=localized?localized[isRomanian?0:1]:(isRomanian?"Scenariu nerecunoscut.":"Unrecognized scenario.");
+  // Reflect only the already-selected mock; never infer truth, assurance, or verification.
+  $("scenario-active").textContent=(isRomanian?"SCENARIUL SELECTAT · ":"SELECTED SCENARIO · ")+label(id);
+  const tones=[
+    ["source",e.source,["NORMALIZED"],["REJECTED"]],
+    ["claim",e.claim,["SATISFIED"],["NOT_SATISFIED"]],
+    ["proof",e.proof_generation,["GENERATED"],[]],
+    ["verify-input",e.verification_input,["ACCEPTED"],["REJECTED"]],
+    ["publication",e.publication.state,["final"],["failed","NOT_RECORDED"]]
+  ];
+  for(const [field,value,positive,caution] of tones){
+    $(field).dataset.tone=positive.includes(value)?"good":caution.includes(value)?"warn":"neutral";
+  }
   const reason=e.publication.error_code;
   $("scenario-explanation").textContent=
     (isRomanian?"Orchestrare simulată: ":"Recorded orchestration mock: ")+explanation+
@@ -565,6 +587,34 @@ def redesign_public_html(html: str) -> str:
         raise ValueError("public style shape changed")
     if html.count("</script>") != 1:
         raise ValueError("public script shape changed")
+    # Only the public replay gets paired panels and screen-reader control linkage.
+    selector_tag = '<select id="scenario" disabled>'
+    results_tag = '<aside class="card" aria-labelledby="outcomes-title">'
+    results_title = '<h2 id="outcomes-title">Recorded typed outcomes</h2>'
+    controller_tag = '<section class="card" aria-labelledby="scenario-title">'
+    for marker in (selector_tag, results_tag, results_title, controller_tag):
+        if html.count(marker) != 1:
+            raise ValueError("scenario presentation anchor changed")
+    html = html.replace(
+        selector_tag,
+        '<select id="scenario" aria-controls="scenario-explanation scenario-results" disabled>',
+        1,
+    )
+    html = html.replace(
+        controller_tag,
+        '<section class="card scenario-controller" aria-labelledby="scenario-title">',
+        1,
+    )
+    html = html.replace(
+        results_tag,
+        '<aside class="card scenario-results" id="scenario-results" aria-labelledby="outcomes-title">',
+        1,
+    )
+    html = html.replace(
+        results_title,
+        results_title + '\n      <p class="scenario-active" id="scenario-active" aria-live="off"></p>',
+        1,
+    )
     # Public-only context for the already existing selector; no new data source.
     selector_anchor = '<p id="error" role="status" aria-live="polite"></p>'
     if html.count(selector_anchor) != 1:
