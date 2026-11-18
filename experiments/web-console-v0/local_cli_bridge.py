@@ -414,7 +414,8 @@ class Server(http.server.HTTPServer):
                  *, persistent: bool = False, work_root: Path | None = None):
         if persistent and (toolchain_root is not None or work_root is None):
             raise Rejected
-        super().__init__(("127.0.0.1", 0), Handler)
+        bind_host = "127.0.0.1"  # keep the loopback-only invariant explicit
+        super().__init__((bind_host, 0), Handler)
         self.token = token
         self.toolchain_root = toolchain_root
         self.persistent = persistent
