@@ -15,8 +15,12 @@ remains independent of serving immutable static assets.
 
 The visual refresh changes the **static public showcase only**, without changing
 the shared local console, CLI, verifier, scenario fixtures or browser scripts.
-The new editorial sequence is **Hero → The Principle → Mission Observability →
-Potential Applications → Technical Evidence → Research & Limitations**.
+The visitor-facing editorial sequence is **Hero → The Concept → How It Works →
+Potential Applications → The Research**, in RO and EN. The proof-stage illustration
+is kept alongside the synthetic mission scene; detailed tools, laboratory scenario
+replays and limitations are contained in expandable technical panels under Research.
+Mock orchestration, offline-verifier evidence and unproven integrated SITL→ZK remain
+explicitly distinct.
 Headlines are "Verifică o condiție. Păstrează restul privat." (RO) and
 "Verify the condition. Keep the rest private." (EN).
 
@@ -49,8 +53,9 @@ Build the same 14 files using python3 showcase/build.py --out-dir LOCAL_QA_PATH.
 Run python3 -m unittest discover -s showcase -p 'test_*.py' -v and
 python3 scripts/check_docs.py. In an isolated Chromium/Chrome session served
 over loopback, inspect RO and EN at 1440px, 375px and 320px. Confirm the exact
-hero headlines, section order and mobile navigation without overflow; verify
-scenario mock data and the distinct recorded offline verifier outcome. Only
+hero headlines, four-chapter visitor order, expandable technical panels and
+mobile navigation without overflow; verify scenario mock data and the distinct
+recorded offline verifier outcome. Only
 retest the changed public browser presentation: default auto-motion for both
 illustrations, automatic changes among pass/hold/return, offscreen suspension,
 reduced-motion fallback, and absence of animation playback buttons. The
