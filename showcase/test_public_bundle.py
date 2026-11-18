@@ -19,44 +19,51 @@ from build import (
 
 
 class StaticShowcaseTests(unittest.TestCase):
-    def test_introductory_layer_is_bilingual_and_technical_limits_remain_accessible(self) -> None:
+    def test_editorial_four_chapters_are_bilingual_and_technical_panels_secondary(self) -> None:
         from localization import SHARE
         with tempfile.TemporaryDirectory() as folder:
             target = Path(folder)
             build(target)
             ro = (target / "ro/index.html").read_text(encoding="utf-8")
             en = (target / "en/index.html").read_text(encoding="utf-8")
-            for page, heading, application, scope, title in (
-                (ro, "Verifică o condiție fără să divulgi toată telemetria",
-                 "Aplicații potențiale, nu implementări validate",
-                 "Domeniul complet și limitele experimentale", SHARE["ro"]["title"]),
-                (en, "Verify a condition without revealing all the telemetry",
-                 "Potential applications, not validated deployments",
-                 "Full experimental scope and limitations", SHARE["en"]["title"]),
+            for page, concept, how, applications, research, title in (
+                (ro, "Mai puține date expuse. O condiție verificabilă.",
+                 "De la o observație privată la o dovadă verificabilă.",
+                 "Unde ar putea conta această capacitate?",
+                 "Ce am demonstrat până acum?", SHARE["ro"]["title"]),
+                (en, "Less data exposed. A condition that can be verified.",
+                 "From a private observation to a verifiable proof.",
+                 "Where could this capability matter?",
+                 "What have we demonstrated so far?", SHARE["en"]["title"]),
             ):
-                self.assertIn(heading, page)
-                self.assertIn(application, page)
-                self.assertIn(scope, page)
-                self.assertIn("<title>"+title+"</title>", page)
+                for value in (concept, how, applications, research):
+                    self.assertIn(value, page)
+                self.assertIn("<title>" + title + "</title>", page)
                 ordered = ('id="hero-title"', 'id="primer-title"', 'id="mission-control"',
-                           'id="use-cases-title"', 'id="technical-evidence-title"',
-                           'id="scenario-title"', 'id="authentic-title"',
-                           'id="research-limitations-title"', 'id="technical-scope"')
+                           'id="editorial-process-title"', 'id="tech-animation"',
+                           'id="use-cases-title"', 'id="research-title"',
+                           'id="technical-evidence"', 'id="proof-tooling-title"',
+                           'id="laboratory-scenarios"', 'id="scenario-title"',
+                           'id="authentic-title"', 'id="research-limitations"',
+                           'id="technical-scope"')
                 self.assertEqual([page.index(marker) for marker in ordered],
                                  sorted(page.index(marker) for marker in ordered))
-                self.assertIn('<summary>'+scope+'</summary>', page)
+                self.assertEqual(page.count('class="research-detail"'), 3)
+                self.assertEqual(page.count('class="editorial-steps"'), 1)
                 self.assertIn('id="scope-proves"', page)
                 self.assertIn('id="scope-limits"', page)
-                self.assertIn('href="#authentic-title"', page)
-                self.assertIn('href="#scenario-title"', page)
-                self.assertIn('EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC', page)
-                self.assertIn('NOT VALIDATION OR PRODUCTION AUTHORIZATION', page)
                 self.assertIn('id="mission-pattern"', page)
                 self.assertIn("PRECOMPUTED_GENUINE_SYNTHETIC_VERIFICATION", page)
-            self.assertIn("nu atestă o misiune efectivă", ro)
-            self.assertIn("does not test a real measurement", en)
-            self.assertIn("nu se conectează la vehicule", ro)
-            self.assertIn("does not connect to or control any vehicle", en)
+                self.assertIn('EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC', page)
+                self.assertIn('NOT VALIDATION OR PRODUCTION AUTHORIZATION', page)
+            self.assertIn("O dovadă validă nu confirmă", ro)
+            self.assertIn("A valid proof does not", en)
+            self.assertIn("nu a fost încă demonstrat", ro)
+            self.assertIn("has not yet been demonstrated", en)
+            self.assertEqual(
+                re.search(r'<script>(.*?)</script>', ro, flags=re.S).group(1),
+                re.search(r'<script>(.*?)</script>', en, flags=re.S).group(1),
+            )
 
     def test_visual_final_remains_synthetic_bilingual_and_read_only(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
@@ -66,15 +73,15 @@ class StaticShowcaseTests(unittest.TestCase):
             en = (target / "en/index.html").read_text(encoding="utf-8")
             for page, words in (
                 (ro, ("TAG / OBSERVAȚIE SINTETICĂ", "DOAR OBSERVAȚIE",
-                      "Condiție prestabilită", "Nu este luată aici")),
+                      "Definirea condiției", "Verificare independentă")),
                 (en, ("TAG / SYNTHETIC OBSERVATION", "OBSERVATION ONLY",
-                      "Predefined condition", "Not made on this page")),
+                      "Define the rule", "Verify independently")),
             ):
                 self.assertIn('class="hero-scene"', page)
                 self.assertIn('class="hero-vehicle"', page)
-                self.assertIn('class="evidence-path"', page)
+                self.assertIn('class="editorial-steps"', page)
                 self.assertIn('aria-hidden="true"', page)
-                self.assertIn('role="group"', page)
+                self.assertIn('class="research-summary"', page)
                 self.assertIn('prefers-reduced-motion:reduce', page)
                 for item in words:
                     self.assertIn(item, page)
@@ -150,7 +157,7 @@ class StaticShowcaseTests(unittest.TestCase):
                 self.assertIn("5.2.0", section)
                 self.assertEqual(section.count("<li>"), 3)
                 self.assertIn("canonical CBOR" if page is en else "CBOR canonic", section)
-                self.assertTrue(page.index('id="technical-evidence-title"')
+                self.assertTrue(page.index('id="technical-evidence"')
                                 < page.index('id="proof-tooling-title"')
                                 < page.index('id="scenario-title"'))
                 for url in expected:
@@ -192,7 +199,7 @@ class StaticShowcaseTests(unittest.TestCase):
                 self.assertIn("NO-GO", checkpoint)
                 self.assertIn("600 cm/s", checkpoint)
                 self.assertIn("SITL", checkpoint)
-                self.assertLess(page.index('id="technical-evidence-title"'),
+                self.assertLess(page.index('id="technical-evidence"'),
                                 page.index('id="proof-evidence-checkpoint-title"'))
                 self.assertLess(page.index('id="proof-evidence-checkpoint-title"'),
                                 page.index('id="scenario-title"'))
@@ -248,9 +255,9 @@ class StaticShowcaseTests(unittest.TestCase):
                 self.assertIn('animation:tech-cycle-three 15s', page)
                 self.assertIn('animation:none!important', page)
                 self.assertIn(headline, page)
-                self.assertTrue(page.index('id="technical-evidence-title"')
+                self.assertTrue(page.index('id="mission-control"')
                                 < page.index('id="tech-animation"')
-                                < page.index('id="scenario-title"'))
+                                < page.index('id="use-cases-title"'))
                 self.assertEqual(
                     set(re.findall(r'fetch\("([^"]+)"', page)),
                     {"/evidence-results.json", "/authentic-evidence.json"},

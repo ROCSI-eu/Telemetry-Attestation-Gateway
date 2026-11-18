@@ -904,6 +904,37 @@ def public_cinematic_motion(html: str) -> str:
     html = html[:start] + MISSION_AUTO_JS + "\n" + html[end:]
     return html
 
+
+EDITORIAL_CSS = """
+    /* Editorial regrouping only: original visual system and motion remain intact. */
+    .editorial-chapter-intro{max-width:74ch;color:#ccd3d0;line-height:1.74;margin:0 0 32px;font-size:1rem}
+    .editorial-caveat{max-width:90ch;color:#c0c7c3;font-size:.86rem;line-height:1.75;margin:22px 0}
+    .editorial-process{padding:66px 0 28px;border-top:1px solid #425054;margin-top:56px}
+    .editorial-process h3,.research-secondary-title{font-size:clamp(1.8rem,3vw,3.1rem);line-height:1.15;letter-spacing:-.05em;margin:12px 0 30px}
+    .editorial-steps,.research-summary{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;padding:0;margin:0;border-top:1px solid #536063}
+    .editorial-steps li,.research-summary article{padding:26px 22px 22px 0;border-right:1px solid #465255;min-width:0}
+    .editorial-steps li:not(:first-child),.research-summary article:not(:first-child){padding-left:22px}
+    .editorial-steps li:last-child,.research-summary article:last-child{border-right:0}
+    .editorial-steps span,.research-summary span{display:block;color:#dfbd86;font-size:.69rem;font-weight:800;letter-spacing:.15em;margin-bottom:12px}
+    .editorial-steps strong{display:block;font-size:1.2rem;color:#eee9dd;margin-bottom:12px}
+    .editorial-steps p,.research-summary p{font-size:.9rem;color:#c0c9c6;line-height:1.75}
+    .editorial-proof-animation{margin:30px 0 0}
+    .editorial-proof-animation .tech-animation{margin:0}
+    .research-summary h3{font-size:1.28rem;line-height:1.25;color:#f0ebdf;margin:0 0 12px}
+    .editorial-next{font-size:.95rem;line-height:1.75;color:#e5d9c4;margin:30px 0 70px}
+    .research-details{border-top:1px solid #526165;margin-top:28px}
+    .research-detail{border-bottom:1px solid #526165;padding:0;scroll-margin-top:25px}
+    .research-detail>summary{cursor:pointer;list-style:none;position:relative;font-size:1.16rem;font-weight:720;padding:23px 45px 23px 0;color:#f1e7d5}
+    .research-detail>summary::-webkit-details-marker{display:none}
+    .research-detail>summary:after{content:'+';position:absolute;right:12px;top:20px;font-size:1.4rem;color:#e5bd7b}
+    .research-detail[open]>summary:after{content:'−'}
+    .research-detail>summary:focus-visible{outline:2px solid #e5bd7b;outline-offset:3px}
+    .research-detail-body{padding:12px 0 35px;min-width:0}
+    .research-detail .proof-tooling{margin:0}
+    .research-detail .scope-disclosure{margin:0}
+    @media(max-width:750px){.editorial-steps,.research-summary{grid-template-columns:1fr}.editorial-steps li,.editorial-steps li:not(:first-child),.research-summary article,.research-summary article:not(:first-child){padding:22px 0;border-right:0;border-bottom:1px solid #465255}.editorial-process{padding-top:45px}.editorial-next{margin-bottom:50px}}
+"""
+
 def redesign_public_html(html: str) -> str:
     """Reorder known public-only sections, fail closed on source changes."""
     original_header = re.search(r"<header>.*?</header>", html, flags=re.S)
@@ -916,18 +947,19 @@ def redesign_public_html(html: str) -> str:
     header = f"""<header class="site-header">
     <a class="brand" href="/" aria-label="TAG · ROCSI"><span class="brand-signal">TAG</span><span class="brand-detail">ROCSI / Telemetry Attestation Gateway</span></a>
     <nav class="section-nav" aria-label="Page sections">
-      <a href="#principle">The Principle</a>
-      <a href="#mission-control">Mission Observability</a>
-      <a href="#technical-evidence">Technical Evidence</a>
+      <a href="#principle">The Concept</a>
+      <a href="#mission-control">How It Works</a>
+      <a href="#use-cases">Applications</a>
+      <a href="#research">The Research</a>
     </nav>
     <div class="header-status"><div class="pill" id="console-mode">PUBLIC SHOWCASE · PRECOMPUTED ONLY</div></div>
   </header>
   <section class="hero" aria-labelledby="hero-title">
     <div class="hero-content">
-      <p class="hero-overline">EXPERIMENTAL / SYNTHETIC-ONLY RESEARCH</p>
+      <p class="hero-overline">EXPERIMENTAL RESEARCH · DATA PRIVACY</p>
       <h1 id="hero-title">Verify the condition. Keep the rest private.</h1>
-      <p class="sub">TAG explores verification without disclosing all telemetry. This public scene is synthetic and its separate verifier result was recorded offline; the browser neither connects to vehicles nor verifies proofs.</p>
-      <div class="hero-actions"><a href="#mission-control">Explore the scene</a><a href="#technical-evidence">Review the evidence</a></div>
+      <p class="sub">What if a system could prove a condition was met without revealing the data behind it? TAG explores this idea for telemetry through controlled experiments using synthetic data.</p>
+      <div class="hero-actions"><a href="#principle">Explore the concept</a><a href="#mission-control">See the demonstration</a></div>
     </div>
     <div class="hero-art" aria-hidden="true">
       <span class="hero-art-label">TAG / SYNTHETIC OBSERVATION</span>
@@ -954,34 +986,118 @@ def redesign_public_html(html: str) -> str:
     intro, applications = html[a:b], html[b:c]
     scope, mission, evidence = html[c:d], html[d:e], html[e:f]
 
-    intro = intro.replace('class="primer" aria', 'class="primer" id="principle" aria', 1)
-    intro = intro.replace("THE CONCEPT IN BRIEF", "01 / THE PRINCIPLE", 1)
-    applications = applications.replace(
-        '<h2 id="use-cases-title">',
-        '<p class="section-overline">03 / POTENTIAL APPLICATIONS</p>\n    <h2 id="use-cases-title">',
-        1,
-    )
+    # Four visitor chapters; technical details stay present in secondary panels.
+    if 'id="primer-title"' not in intro or 'id="use-cases-title"' not in applications:
+        raise ValueError("unexpected editorial source text")
+    intro = '''  <section class="primer" id="principle" aria-labelledby="primer-title">
+    <p class="primer-kicker">01 / THE CONCEPT</p>
+    <h2 id="primer-title">Less data exposed. A condition that can be verified.</h2>
+    <p>Verifying a rule can require sharing detailed information. TAG investigates a different approach: proving that one defined condition is satisfied while keeping the underlying value private.</p>
+    <p class="primer-example"><strong>A simple example:</strong> A vehicle must stay within a speed limit. A cryptographic proof could establish that a private speed value meets the public limit without disclosing the exact speed.</p>
+    <p>A valid proof does not, by itself, establish whether the original measurement was trustworthy.</p>
+  </section>
+'''
+    applications = '''  <section class="use-cases" id="use-cases" aria-labelledby="use-cases-title">
+    <p class="section-overline">03 / POTENTIAL APPLICATIONS</p>
+    <h2 id="use-cases-title">Where could this capability matter?</h2>
+    <p class="editorial-chapter-intro">Selective verification may help when a result needs to be demonstrated but sharing the entire dataset is undesirable.</p>
+    <div class="use-cases-grid">
+      <article><h3>Audit and verification</h3><p>An organization could demonstrate that a defined condition was met without sharing the entire dataset used to evaluate it.</p></article>
+      <article><h3>Autonomous systems</h3><p>Aerial, ground and maritime vehicles could provide research contexts for verifying conditions about operational data.</p></article>
+      <article><h3>Information exchange</h3><p>Future systems could exchange verifiable results while reducing the amount of sensitive information they share.</p></article>
+    </div>
+    <p class="editorial-caveat">These are possible applications, not validated operational deployments.</p>
+  </section>
+'''
+    figure_match = re.search(r'<figure class="tech-animation".*?</figure>', TECH_TOOLING, flags=re.S)
+    if figure_match is None or TECH_TOOLING.count('<figure class="tech-animation"') != 1:
+        raise ValueError("technical animation source changed")
+    figure = figure_match.group()
+    tooling_details = TECH_TOOLING.replace(figure, '', 1)
     mission = mission.replace(
         'aria-labelledby="mission-title">\n',
         'aria-labelledby="mission-title">\n'
-        '    <p class="section-overline">02 / OBSERVATIONAL RESEARCH</p>\n'
-        '    <h2 class="section-display">Mission Observability</h2>\n',
+        '    <p class="section-overline">02 / HOW IT WORKS</p>\n'
+        '    <h2 class="section-display">From a private observation to a verifiable proof.</h2>\n'
+        '    <p class="editorial-chapter-intro">Explore a synthetic mission and see how a precise rule could be checked without exposing the private observation.</p>\n',
         1,
     )
-    technical = (
-        '  <section class="technical-evidence" id="technical-evidence" aria-labelledby="technical-evidence-title">\n'
-        '    <p class="section-overline">04 / EVIDENCE BOUNDARIES</p>\n'
-        '    <h2 class="section-display" id="technical-evidence-title">Technical Evidence</h2>\n'
-        '    <p class="evidence-intro">The orchestration is simulated. The separate verifier outcome was recorded offline; the browser displays both without independently checking proofs.</p>\n    <div class="evidence-path" role="group" aria-label="Conceptual evidence path, not executed in the browser">\n      <div><span>01 / CLAIM</span><strong>Predefined condition</strong></div>\n      <div><span>02 / PROOF</span><strong>Synthetic research artifact</strong></div>\n      <div><span>03 / CHECK</span><strong>Recorded offline result</strong></div>\n      <div><span>04 / DECISION</span><strong>Not made on this page</strong></div>\n    </div>\n'
-        + TECH_TOOLING + evidence + '  </section>\n'
-    )
-    research = (
-        '  <section class="research-limits" id="research-limitations" aria-labelledby="research-limitations-title">\n'
-        '    <p class="section-overline">05 / EXPERIMENTAL BOUNDARY</p>\n'
-        '    <h2 class="section-display" id="research-limitations-title">Research &amp; Limitations</h2>\n'
-        + scope + '  </section>\n'
-    )
-    html = html[:a] + intro + mission + applications + technical + research + html[f:]
+    if 'From a private observation to a verifiable proof.' not in mission:
+        raise ValueError("mission heading replacement failed")
+    # Simplify the visitor-facing readout without touching source or animation JS.
+    mission_copy = {
+        "No live backend · independent of illustration": "Illustrative mission",
+        "Execution deliberately disabled": "Three synthetic routes",
+        "<dt>Execution</dt>": "<dt>Source</dt>",
+        "DISABLED · static showcase only": "Synthetic only",
+        "<dt>Proof generation</dt>": "<dt>Proof on this page</dt>",
+        "<dt>Cryptographic verification</dt>": "<dt>Verification on this page</dt>",
+        "These fields never represent running computation on this public site. The mock scenario panel and independently recorded offline-verifier result below remain separate from the illustration.":
+            "Choose a route to explore a predefined animation. Neither the route nor the vehicle represents measured telemetry.",
+        "EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION. No MAVLink commands, navigation control, mission edits, or source assurance. Animation never changes evidence status.":
+            "Illustration only. The animation is not a real mission or a verification result.",
+    }
+    for old, new in mission_copy.items():
+        if mission.count(old) != 1:
+            raise ValueError("public mission copy drift: " + old[:30])
+        mission = mission.replace(old, new, 1)
+    for ident, val in (("mission-backend-proof", "Not generated"),
+                       ("mission-backend-crypto", "Not performed")):
+        old = f'id="{ident}">NOT_OBSERVED</dd>'
+        if mission.count(old) != 1:
+            raise ValueError("public mission state drift: " + ident)
+        mission = mission.replace(old, f'id="{ident}">{val}</dd>', 1)
+    proof_explainer = '''    <div class="editorial-process" aria-labelledby="editorial-process-title">
+      <p class="section-overline">THE IDEA IN THREE STEPS</p>
+      <h3 id="editorial-process-title">How is a proof constructed?</h3>
+      <ol class="editorial-steps">
+        <li><span>01 / CONDITION</span><strong>Define the rule</strong><p>Compare a private speed value with a public limit.</p></li>
+        <li><span>02 / PROOF</span><strong>Generate the proof</strong><p>Use specialized cryptographic tools to prove the condition without disclosing the private value.</p></li>
+        <li><span>03 / CHECK</span><strong>Verify independently</strong><p>A verifier checks the proof using public inputs, without receiving the private speed.</p></li>
+      </ol>
+      <p class="editorial-caveat">This animation explains the concept. Proof generation and offline verification were performed separately, outside the browser.</p>
+    </div>
+'''
+    last = mission.rfind('  </section>')
+    if last < 0:
+        raise ValueError("mission section end missing")
+    mission = mission[:last] + proof_explainer + '    <div class="editorial-proof-animation">\n' + figure + '\n    </div>\n' + mission[last:]
+    if scope.count('  </details>') != 1:
+        raise ValueError("technical scope structure changed")
+    scope = scope.replace('  </details>',
+        '    <p class="editorial-caveat">No MAVLink commands, navigation control, mission edits, or source assurance are provided by this static site.</p>\n  </details>', 1)
+    research = '''  <section class="research-limits" id="research" aria-labelledby="research-title">
+    <p class="section-overline">04 / THE RESEARCH</p>
+    <h2 class="section-display" id="research-title">What have we demonstrated so far?</h2>
+    <p class="editorial-chapter-intro">TAG is experimental research. The independent results below are useful starting points, not a complete demonstration in a real-world system.</p>
+    <div class="research-summary">
+      <article><span>01 / CRYPTOGRAPHY</span><h3>Synthetic proof</h3><p>A separate experiment recorded generation of a proof and its acceptance by an offline verifier using the expected verification key.</p></article>
+      <article><span>02 / SIMULATION</span><h3>Simulator observations</h3><p>An isolated ArduPilot SITL session received and normalized two synthetic observations through a receive-only interface.</p></article>
+      <article><span>03 / OPEN QUESTION</span><h3>End-to-end integration</h3><p>The full path from SITL observations to an independently verified cryptographic proof has not yet been demonstrated.</p></article>
+    </div>
+    <p class="editorial-next">Next: integrate the stages, evaluate trust in the data source, and test the method's limits in controlled conditions.</p>
+    <h3 class="research-secondary-title">Explore the technical research</h3>
+    <p class="editorial-chapter-intro">Detailed methods, recorded scenarios and limitations are available below for readers who want to go deeper.</p>
+    <div class="research-details" aria-label="Technical research panels">
+      <details class="research-detail" id="technical-evidence"><summary>Methods and tools</summary>
+        <div class="research-detail-body">''' + tooling_details + '''</div>
+      </details>
+      <details class="research-detail" id="laboratory-scenarios"><summary>Laboratory scenarios and recorded outcomes</summary>
+        <div class="research-detail-body"><p class="editorial-caveat">These scenarios replay deterministic mocks, not cryptographic verification in the browser. The separately recorded offline-verifier outcome is labeled independently.</p>
+''' + evidence + '''</div>
+      </details>
+      <details class="research-detail" id="research-limitations"><summary>Limitations and assumptions</summary>
+        <div class="research-detail-body">''' + scope + '''</div>
+      </details>
+    </div>
+  </section>
+'''
+    html = html[:a] + intro + mission + applications + research + html[f:]
+    footer_old = "Public static technology showcase. Experimental synthetic-only, precomputed results. No visitor execution, vehicle connection, telemetry upload, analytics, tracking, external fonts or proof jobs. The browser does not independently verify proofs."
+    footer_new = "Experimental research into verifying telemetry conditions with limited disclosure. Public demonstrations use synthetic data and previously recorded results. This site does not control vehicles, verify cryptographic proofs or represent a production-validated solution."
+    if html.count(footer_old) != 1:
+        raise ValueError("public footer source changed")
+    html = html.replace(footer_old, footer_new, 1)
     if html.count("</style>") != 1:
         raise ValueError("public style shape changed")
     if html.count("</script>") != 1:
@@ -1033,4 +1149,4 @@ def redesign_public_html(html: str) -> str:
     )
     html = public_cinematic_motion(html)
     html = html.replace("</script>", TECH_ANIMATION_JS + SCENARIO_INTERPRETATION_JS + "\n</script>", 1)
-    return html.replace("</style>", VISUAL_CSS + "  </style>", 1)
+    return html.replace("</style>", VISUAL_CSS + EDITORIAL_CSS + "  </style>", 1)
