@@ -238,3 +238,53 @@ Use the one-session URL and token only in that machine's local browser; never in
 **Disk and rollback gate:** before launch, observe available space and memory on the dedicated runtime filesystem; refuse launch under disk/memory pressure or interference with another workload. The launcher currently has **no independently measured full-session peak disk bound, cgroup disk quota, or dedicated Linux service identity**. Do not fabricate a minimum-free-space threshold from checkout size or from unrelated historical proof measurements: these are **open host-readiness gates in #88**. Normal exit/CTRL-C/TERM must leave no `tag-synthetic-*` entry in the selected runtime parent and no listener/process for that session; rerun `--inspect-only` to confirm the local lease/entry state. After abnormal termination, STOP and investigate exact process and path ownership before *manual* cleanup; never auto-delete an uncertain leftover or remove pinned sources, binaries or CRS. Rolling back this local package means stopping the session and deleting only confirmed disposable session files; no installation or Production configuration was changed.
 
 **Disposition:** **GO** for the demonstrated short-lived, same-machine, pre-provisioned, synthetic non-cryptographic local package, conditioned on the same preflight and scope. **NO-GO** for shared-VM/Production deployment, persistent service, newly provisioned cryptography or SITL integration. Whole-session **sampled measurements** now exist for one synthetic non-crypto scenario; **hard-enforced aggregate CPU/RAM/process/disk budgets**, dedicated service identity, proof-path capacity evidence and any colocation authorization remain separately Open under [#88](https://github.com/ROCSI-eu/Telemetry-Attestation-Gateway/issues/88). This local package does not promote cryptographic evidence or change the 600 cm/s predicate.
+
+
+### TAG #88: opt-in aggregate bounds on Qube Dev1 (non-Production, Draft)
+
+The *separate* `run_tag88_bounded.py` entrypoint runs the existing local,
+synthetic short-circuit console inside a **collected transient systemd user
+service** in the dedicated `tag-qa88.slice`. No service is installed/enabled,
+and the existing `run_isolated_local.py` default remains unchanged. The
+bounded path requires an existing owner-private runtime parent and a working
+unprivileged user bus. It fails closed if another/stale TAG #88 slice exists,
+the service cannot start, or the inner process cannot attest the exact
+dedicated cgroup membership and hard values:
+
+- `MemoryMax=134217728` (128 MiB) across the service process tree;
+- `CPUQuota=50%`, `TasksMax=12`, `RuntimeMaxSec=15s`,
+  `KillMode=control-group`;
+- `bwrap --size 8388608 --tmpfs /tmp` **only** on this opt-in path, with
+  separate loopback-only network namespace and existing read-only source
+  binds. `TemporaryFileSystem` is intentionally not used by systemd.
+
+Use only an approved disposable Qube parent, outside the source checkout:
+
+```sh
+python3 experiments/web-console-v0/run_tag88_bounded.py \
+  --runtime-parent /path/to/existing/private/qa-parent --check-only
+python3 experiments/web-console-v0/run_tag88_bounded.py \
+  --runtime-parent /path/to/existing/private/qa-parent --seconds 8
+```
+
+The child lifetime is restricted to 1–10 seconds, leaving room for startup
+and teardown under the 15-second unit ceiling; a shorter measured run is
+**not** evidence that expiration at 15 seconds has been exercised. The
+operator token is printed only to the invoking terminal through
+`systemd-run --pipe`; do not persist it in QA logs. A fully verified, empty
+own slice is stopped after execution, while a nonempty or foreign slice is
+**never** stopped or deleted. After abnormal process death or an uncertain
+lease, halt and inspect before manual owner-only cleanup; do not retry
+blindly or touch any shared Desktop Commander or app.slice cgroup.
+
+The 8 MiB limit applies to the **inner sandbox /tmp only**. The outer
+owner-private session runtime is not covered by a disk quota, so this is
+**not** a whole-session disk cap. The research proof path is explicitly
+excluded from this low-memory profile and the bounded launcher accepts no
+offline toolchain selector. Qube's one-off synthetic preflight on
+2026-11-18 showed exact cgroup memory/CPU/task values, CPU throttling,
+private /tmp ENOSPC at 8 MiB, distinct loopback namespace and clean slice
+rollback. Those observations are non-Production research only, not proof
+capacity, dedicated service identity, production-readiness or authorization
+for shared-VM colocation. Runtime-limit termination and actual memory/task
+limit hits remain unverified.

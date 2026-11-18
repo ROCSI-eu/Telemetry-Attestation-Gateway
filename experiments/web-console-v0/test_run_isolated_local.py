@@ -360,5 +360,32 @@ class LocalSessionTests(unittest.TestCase):
         self.assertEqual(list(self.parent.iterdir()), [])
 
 
+    def test_tag88_tmpfs_envelope_is_opt_in_and_sanitized(self) -> None:
+        self.assertNotIn("TAG_BWRAP_TMPFS_BYTES", pkg.isolated_env(self.parent))
+        self.assertEqual(pkg.isolated_env(self.parent, bounded_tmpfs=True)[
+            "TAG_BWRAP_TMPFS_BYTES"], "8388608")
+        child = Mock()
+        child.pid = 40001
+        child.wait.return_value = 0
+        child.poll.return_value = 0
+        with patch.object(pkg.bridge, "trusted_bwrap", return_value="/usr/bin/bwrap"), \
+             patch.object(pkg.subprocess, "Popen", return_value=child) as spawn:
+            self.assertEqual(pkg.main(["--runtime-parent", str(self.parent),
+                                       "--seconds", "3", "--tag88-tmpfs-8m"]), 0)
+        env = spawn.call_args.kwargs["env"]
+        self.assertEqual(env["TAG_BWRAP_TMPFS_BYTES"], "8388608")
+        self.assertNotIn("OPENAI_API_KEY", env)
+        self.assertEqual(list(self.parent.iterdir()), [])
+
+    def test_tag88_refuses_crypto_toolchain_before_start(self) -> None:
+        with patch.object(pkg.subprocess, "Popen") as spawn, \
+             contextlib.redirect_stderr(io.StringIO()):
+            with self.assertRaises(SystemExit):
+                pkg.main(["--runtime-parent", str(self.parent),
+                          "--tag88-tmpfs-8m", "--offline-toolchain-root",
+                          str(self.parent)])
+            spawn.assert_not_called()
+
+
 if __name__ == "__main__":
     unittest.main()

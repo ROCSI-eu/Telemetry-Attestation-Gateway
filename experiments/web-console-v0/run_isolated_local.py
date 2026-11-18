@@ -144,10 +144,10 @@ def print_session_resource_observation(before: resource.struct_rusage) -> None:
               flush=True)
 
 
-def isolated_env(runtime: Path) -> dict[str, str]:
+def isolated_env(runtime: Path, *, bounded_tmpfs: bool = False) -> dict[str, str]:
     """Do not inherit user, provider, production or credential variables."""
     value = str(runtime)
-    return {
+    env = {
         "PATH": "/usr/bin:/bin",
         "HOME": value,
         "TMPDIR": value,
@@ -156,6 +156,9 @@ def isolated_env(runtime: Path) -> dict[str, str]:
         "PYTHONDONTWRITEBYTECODE": "1",
         "PYTHONNOUSERSITE": "1",
     }
+    if bounded_tmpfs:
+        env["TAG_BWRAP_TMPFS_BYTES"] = "8388608"
+    return env
 
 
 def limits() -> None:
@@ -186,7 +189,8 @@ def stop_owned(proc: subprocess.Popen[bytes]) -> None:
 
 def run(seconds: int, parent: Path, check_only: bool,
         report_resources: bool = False,
-        offline_toolchain_root: Path | None = None) -> int:
+        offline_toolchain_root: Path | None = None,
+        bounded_tmpfs: bool = False) -> int:
     private_parent(parent)
     bridge.trusted_bwrap()  # fail before any listener or process
     if offline_toolchain_root is not None:
@@ -225,7 +229,7 @@ def run(seconds: int, parent: Path, check_only: bool,
                 proc = subprocess.Popen(
                     cmd, stdin=subprocess.DEVNULL,
                     stdout=None, stderr=subprocess.DEVNULL,
-                    cwd=runtime, env=isolated_env(runtime),
+                    cwd=runtime, env=isolated_env(runtime, bounded_tmpfs=bounded_tmpfs),
                     start_new_session=True, preexec_fn=limits,
                 )
                 try:
@@ -266,11 +270,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--offline-toolchain-root", type=Path,
                         help="optional existing owner-private Noir/bb/CRS research toolchain; "
                              "validated before starting the local bridge")
+    parser.add_argument("--tag88-tmpfs-8m", action="store_true",
+                        help=argparse.SUPPRESS)
     args = parser.parse_args(argv)
     if not 1 <= args.seconds <= 300:
         parser.error("preview lifetime must be 1-300 seconds")
     if args.report_resources and (args.check_only or args.inspect_only):
         parser.error("resource observation requires a foreground local session")
+    if args.tag88_tmpfs_8m and args.offline_toolchain_root is not None:
+        parser.error("TAG #88 bounded mode excludes proof toolchains")
     if args.inspect_only and args.offline_toolchain_root is not None:
         parser.error("toolchain selection is not available during inspection")
     if args.inspect_only:
@@ -278,7 +286,8 @@ def main(argv: list[str] | None = None) -> int:
     try:
         return run(args.seconds, args.runtime_parent, args.check_only,
                    args.report_resources,
-                   offline_toolchain_root=args.offline_toolchain_root)
+                   offline_toolchain_root=args.offline_toolchain_root,
+                   bounded_tmpfs=args.tag88_tmpfs_8m)
     except (Unavailable, bridge.Rejected, OSError, ValueError,
             subprocess.TimeoutExpired, subprocess.SubprocessError):
         print("UNAVAILABLE · local isolation or lifecycle preflight failed", file=sys.stderr)
