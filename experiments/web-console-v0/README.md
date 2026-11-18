@@ -240,6 +240,53 @@ Use the one-session URL and token only in that machine's local browser; never in
 **Disposition:** **GO** for the demonstrated short-lived, same-machine, pre-provisioned, synthetic non-cryptographic local package, conditioned on the same preflight and scope. **NO-GO** for shared-VM/Production deployment, persistent service, newly provisioned cryptography or SITL integration. Whole-session **sampled measurements** now exist for one synthetic non-crypto scenario; **hard-enforced aggregate CPU/RAM/process/disk budgets**, dedicated service identity, proof-path capacity evidence and any colocation authorization remain separately Open under [#88](https://github.com/ROCSI-eu/Telemetry-Attestation-Gateway/issues/88). This local package does not promote cryptographic evidence or change the 600 cm/s predicate.
 
 
+
+### TAG #88 / PERSISTENT-RUNTIME-01 — Draft only (Qube, non-Production)
+
+The opt-in `local_cli_bridge.py --persistent` mode and
+`tag-qa88-persistent.service` are **proposed, not installed or enabled**.
+Existing one-shot commands and source fixtures are unchanged by default.
+The system-manager unit runs as UID/GID 1000 with no effective capabilities
+and `NoNewPrivileges=yes`. Startup rejects the wrong UID, cgroup,
+RAM/swap/CPU/process limits, tmpfs mount, byte/inode quotas or access modes
+**before opening the loopback listener**.
+
+The service's one private runtime tmpfs is `/run/tag-qa88` with
+`size=8388608,nr_inodes=128,mode=0700`. Each synthetic CLI request gets
+a disposable subdirectory of `/run/tag-qa88/work`, passed to the existing
+inner bubblewrap as a bind-mounted `/tmp`. This **shares one filesystem
+quota**: there is no second independently sized `--tmpfs` inside bwrap.
+Host sources remain read-only; no proofs, SITL, MAVLink, publication, external
+network exposure or retained CLI results are allowed. The persistent bridge
+exposes only `over_limit` and `malformed_source` (no proof toolchain).
+Its HTTP server is single-threaded, allowing at most one CLI request to run
+at a time. Requests are sequential, not streamed; each CLI run retains the
+existing 20-second deadline, bounded stdout and child cleanup. No service-wide
+`RuntimeMaxSec` is set; restart is bounded by systemd start-limit policy.
+
+For local operator use, the only host-visible control-plane exception is
+`/run/tag-qa88-control/operator.token`, an owner-only `0600` file on
+volatile host `/run` (not ext4), created exclusively and normally removed
+on service exit. The manager removes the runtime directory on stop. This small
+credential file is **outside** the 8 MiB runtime quota; therefore the quota
+applies to TAG's private **CLI runtime**, not to every possible byte written
+by the service. Neither this token nor its value belongs in CLI arguments,
+Git, journald, screenshots or shared logs. An operator may read the file
+privately from a local Qube terminal after separate service authorization;
+the token is never printed by the persistent service. Do not log it.
+
+**Readiness blockers:** Qube's system-manager mount must pass a distinct
+root-assisted QA (the previous `systemd --user` `226/NAMESPACE` failure
+does not prove system-manager support). QA must check the exact source commit
+used by `ExecStart`, rootless child and nested-bwrap compatibility under
+`NoNewPrivileges`, actual 8 MiB/128-inode `ENOSPC`, two consecutive
+short-circuit scenarios, operator token lifecycle, host ext4 write isolation
+and full systemd mount/cgroup cleanup. The unit points at a Qube research
+checkout that may not have this Draft HEAD; **do not start it** until a pinned
+checkout has been verified and explicit QA approval is granted. The `[Install]`
+section is intentionally absent. No Production VM, DNS, Cloudflare, SITL,
+cryptography or merging is authorized by this Draft.
+
 ### TAG #88: opt-in aggregate bounds on Qube Dev1 (non-Production)
 
 The *separate* `run_tag88_bounded.py` entrypoint runs the existing local,
