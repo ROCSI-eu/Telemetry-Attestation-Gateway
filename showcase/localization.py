@@ -204,6 +204,15 @@ RO_TEXT = {
     "TAG experimental implementation": "Implementarea experimentală TAG",
     "A cryptographically valid proof does not establish telemetry truth, trusted sensors or time, whole-flight coverage, safety or legal compliance. This public page shows recorded synthetic outcomes: the browser neither generates nor verifies a proof.":
         "O dovadă criptografică validă nu confirmă corectitudinea telemetriei, încrederea în senzori ori timp, acoperirea întregului zbor, siguranța sau conformitatea legală. Pagina publică afișează rezultate sintetice înregistrate: browserul nu generează și nu verifică dovezi.",
+    # TAG-MISSION-CONTROL-EVIDENCE-01: static bilingual evidence checkpoint.
+    "SITL and offline proof: distinct evidence":
+        "SITL și dovada offline: rezultate distincte",
+    "Local ArduPilot Copter 4.7.1 SITL (TAG #86): PASS for isolated, receive-only MAVLink2 intake of two GLOBAL_POSITION_INT observations and TAG normalization. This does not establish telemetry truth.":
+        "ArduPilot Copter 4.7.1 SITL local (TAG #86): PASS pentru recepția izolată, exclusiv pasivă, a două observații MAVLink2 GLOBAL_POSITION_INT și normalizarea TAG. Aceasta nu atestă corectitudinea telemetriei.",
+    "Independent synthetic ZK checkpoint (14 November 2026): historical Qube evidence records proof generation and offline verifier VALID with the pinned verification key. This proof was separate from the SITL observations.":
+        "Checkpoint ZK sintetic independent (14 noiembrie 2026): dovezile istorice Qube consemnează generarea unei dovezi și rezultatul VALID al verificatorului offline cu cheia de verificare fixată. Dovada este separată de observațiile SITL.",
+    "Combined SITL → 600 cm/s predicate → ZK: NO-GO / not demonstrated end to end. The speed predicate produced different outcomes across isolated SITL sessions; no SITL-derived ZK proof was generated or verified.":
+        "Flux combinat SITL → predicat 600 cm/s → ZK: NO-GO / nedemonstrat integral. Predicatul de viteză a dat rezultate diferite între sesiuni SITL izolate; nicio dovadă ZK derivată din SITL nu a fost generată sau verificată.",
     # TAG-TECH-ANIMATION-01: static labels; the shared script translates controls.
     "01 / NOIR": "01 / NOIR",
     "02 / BARRETENBERG": "02 / BARRETENBERG",
