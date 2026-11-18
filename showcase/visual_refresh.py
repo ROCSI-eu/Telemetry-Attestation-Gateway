@@ -176,51 +176,56 @@ VISUAL_CSS = """
     .proof-tooling-links a{color:#e7c58e;text-underline-offset:3px}
     .proof-tooling-boundary{border-left:2px solid #bda072;padding-left:15px;margin:0}
 
-    /* TAG-TECH-ANIMATION-01: browser-only conceptual illustration; not evidence. */
-    .tech-animation{margin:22px 0 28px;padding:clamp(14px,2.4vw,24px);border:1px solid #456066;background:radial-gradient(ellipse at 50% 15%,#1a343d,#0b161b 78%);min-width:0}
+
+    /* TAG-AUTO-CINEMATIC-01: synthetic education, never a live proof status. */
+    .tech-animation{margin:22px 0 28px;padding:clamp(14px,2.4vw,24px);border:1px solid #45656b;background:radial-gradient(ellipse at 49% 15%,#183743,#0b171d 78%);min-width:0;overflow:hidden;isolation:isolate}
+    .tech-scene-scroll{max-width:100%;min-width:0;overflow:hidden}
+    .tech-scene-scroll:focus-visible{outline:2px solid #e3c58e;outline-offset:3px}
     .tech-animation svg{display:block;width:100%;height:auto;overflow:visible}
-    .tech-animation .tech-panel{fill:#12272d;stroke:#42626b;stroke-width:2}
-    .tech-animation .tech-guide{fill:none;stroke:#809da2;stroke-width:3;stroke-dasharray:8 9;opacity:.68}
-    .tech-animation .tech-glyph{fill:none;stroke:#9cc8ca;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
-    .tech-animation .tech-public{fill:#dfc48b}
-    .tech-animation .tech-secret{fill:#19292c;stroke:#d5bd85;stroke-width:2}
-    .tech-animation .tech-highlight{opacity:0;stroke:#77b8c5;stroke-width:2}
-    .tech-animation .tech-end-signal{opacity:0}
-    .tech-animation[data-started="true"] .tech-highlight-one{animation:tech-define 12s ease-in-out both}
-    .tech-animation[data-started="true"] .tech-highlight-two{animation:tech-prove 12s ease-in-out both}
-    .tech-animation[data-started="true"] .tech-highlight-three{animation:tech-verify 12s ease-in-out both}
-    .tech-animation[data-started="true"] .tech-end-signal{animation:tech-end 12s linear both}
-    .tech-animation[data-started="true"] .tech-transfer-one{animation:tech-transfer-one 12s ease-in-out both}
-    .tech-animation[data-started="true"] .tech-transfer-two{animation:tech-transfer-two 12s ease-in-out both}
-    .tech-animation[data-motion="paused"] .tech-highlight,
-    .tech-animation[data-motion="paused"] .tech-end-signal,
-    .tech-animation[data-visibility="hidden"] .tech-highlight,
-    .tech-animation[data-visibility="hidden"] .tech-end-signal,
-    .tech-animation[data-motion="paused"] .tech-transfer,
-    .tech-animation[data-visibility="hidden"] .tech-transfer{animation-play-state:paused}
-    .tech-animation .tech-transfer{fill:#dfc48b;opacity:0}
-    @keyframes tech-transfer-one{0%,24%{opacity:0;transform:translateX(-10px)}30%{opacity:1}37%{opacity:0;transform:translateX(25px)}100%{opacity:0;transform:translateX(25px)}}
-    @keyframes tech-transfer-two{0%,59%{opacity:0;transform:translateX(-10px)}65%{opacity:1}72%{opacity:0;transform:translateX(25px)}100%{opacity:0;transform:translateX(25px)}}
-    @keyframes tech-define{0%,2%{opacity:0}9%,25%{opacity:.85}33%,100%{opacity:0}}
-    @keyframes tech-prove{0%,32%{opacity:0}40%,57%{opacity:.85}65%,100%{opacity:0}}
-    @keyframes tech-verify{0%,65%{opacity:0}73%,94%{opacity:.85}100%{opacity:.35}}
-    @keyframes tech-end{0%,99%{opacity:0}100%{opacity:.01}}
-    .tech-animation-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .tech-animation-top{display:flex;align-items:center;gap:12px;justify-content:space-between}
     .tech-animation-label{font-size:.68rem;font-weight:800;letter-spacing:.12em;color:#e2c58e;text-transform:uppercase}
-    .tech-animation-caption{margin:8px 0 14px;color:#b8c9ca;font-size:.82rem;line-height:1.5}
-    .tech-animation-actions{display:flex;gap:8px;flex-wrap:wrap}
-    .tech-animation-actions button{padding:10px 14px;font-size:.76rem;font-weight:700;min-height:42px}
-    .tech-animation-actions button:disabled{opacity:.55;cursor:not-allowed}
-    .tech-animation-status{font-size:.78rem;color:#c4d0cd;line-height:1.6;min-height:1.3em;margin:14px 0 0}
+    .tech-animation-caption{margin:8px 0 15px;color:#b8c9ca;font-size:.82rem;line-height:1.5}
+    .tech-animation-status{font-size:.78rem;color:#c4d0cd;line-height:1.6;min-height:1.3em;margin:13px 0 0}
+    .tech-panel{fill:url(#tech-chassis);stroke:#60848b;stroke-width:1.8}
+    .tech-panel-depth{fill:#07151d;stroke:#416872;stroke-width:1.1}
+    .tech-panel-sheen{fill:url(#tech-reflection);opacity:.65}
+    .tech-highlight{fill:url(#tech-panel-glow);stroke:#9ee5db;stroke-width:2;opacity:.10}
+    .tech-workspace{fill:url(#tech-workspace-glass);stroke:#8cc6c9;stroke-width:2}
+    .tech-glyph{fill:none;stroke:#b1e4df;stroke-width:3.6;stroke-linecap:round;stroke-linejoin:round}
+    .tech-guide{fill:none;stroke:#699ea4;stroke-width:2;stroke-dasharray:5 9;opacity:.6}
+    .tech-transfer{fill:#c4fff3;opacity:0;filter:url(#tech-soft-glow)}
+    .tech-status-led{fill:#e1c38a;opacity:.86}
+    .tech-scan{fill:url(#tech-scan-gradient);opacity:.23}
+    .tech-mini-text{fill:#a9d1cf;opacity:.65}
+    .tech-secret{fill:#203a40;stroke:#dfc58a;stroke-width:2}
+    .tech-public{fill:#dfc48b}
+    .tech-animation[data-started="true"] .tech-highlight-one{animation:tech-cycle-one 15s ease-in-out infinite}
+    .tech-animation[data-started="true"] .tech-highlight-two{animation:tech-cycle-two 15s ease-in-out infinite}
+    .tech-animation[data-started="true"] .tech-highlight-three{animation:tech-cycle-three 15s ease-in-out infinite}
+    .tech-animation[data-started="true"] .tech-transfer-one{animation:tech-packet-one 15s ease-in-out infinite}
+    .tech-animation[data-started="true"] .tech-transfer-two{animation:tech-packet-two 15s ease-in-out infinite}
+    .tech-animation[data-started="true"] .tech-scan{animation:tech-scan 15s linear infinite}
+    .tech-animation[data-started="true"] .tech-status-led{animation:tech-led 3.8s ease-in-out infinite}
+    .tech-animation[data-visibility="hidden"] .tech-highlight,
+    .tech-animation[data-visibility="hidden"] .tech-transfer,
+    .tech-animation[data-visibility="hidden"] .tech-scan,
+    .tech-animation[data-visibility="hidden"] .tech-status-led{animation-play-state:paused}
+    @keyframes tech-cycle-one{0%,10%{opacity:.09}14%,28%{opacity:.8}33%,100%{opacity:.09}}
+    @keyframes tech-cycle-two{0%,36%{opacity:.09}42%,57%{opacity:.8}62%,100%{opacity:.09}}
+    @keyframes tech-cycle-three{0%,65%{opacity:.09}70%,89%{opacity:.8}95%,100%{opacity:.09}}
+    @keyframes tech-packet-one{0%,26%{opacity:0;transform:translateX(-18px)}30%{opacity:1}39%{opacity:0;transform:translateX(34px)}100%{opacity:0}}
+    @keyframes tech-packet-two{0%,59%{opacity:0;transform:translateX(-16px)}65%{opacity:1}72%{opacity:0;transform:translateX(34px)}100%{opacity:0}}
+    @keyframes tech-scan{0%{transform:translateX(-250px);opacity:0}5%{opacity:.35}25%{opacity:0;transform:translateX(55px)}100%{opacity:0;transform:translateX(55px)}}
+    @keyframes tech-led{0%,100%{opacity:.52}50%{opacity:1}}
     @media(max-width:750px){
       .tech-animation{padding:13px;margin:20px 0 26px}
-      .tech-animation-actions{width:100%}
-      .tech-animation-actions button{flex:1;min-width:0}
+      .tech-scene-scroll{overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-width:thin;scrollbar-color:#719fa4 #112930}
+      .tech-scene-scroll svg{width:820px;max-width:none}
     }
     @media(prefers-reduced-motion:reduce){
-      .tech-animation .tech-highlight,.tech-animation .tech-end-signal,.tech-animation .tech-transfer{animation:none!important}
-      .tech-animation .tech-highlight{opacity:.27}
-      .tech-animation .tech-transfer,.tech-animation .tech-end-signal{opacity:0}
+      .tech-animation .tech-highlight,.tech-animation .tech-transfer,.tech-animation .tech-scan,.tech-animation .tech-status-led{animation:none!important}
+      .tech-animation .tech-highlight{opacity:.3}
+      .tech-animation .tech-transfer,.tech-animation .tech-scan{opacity:0}
     }
     /* TAG-MISSION-SCENARIOS-01: explanation of a recorded mock, not proof execution. */
     /* TAG-SCENARIOS-UX-01: public-only hierarchy; never changes typed evidence. */
@@ -301,6 +306,66 @@ VISUAL_CSS = """
     @keyframes hero-beacon{0%,100%{opacity:.15;transform:scale(.8)}45%{opacity:.65;transform:scale(1.2)}80%{opacity:.12;transform:scale(1.42)}}
     @media(prefers-reduced-motion:reduce){
       .hero-vehicle,.hero-floor-shadow,.hero-sweep,.hero-route-flow,.hero-rotor-disc,.hero-beacon-pulse{animation:none!important;will-change:auto}
+    }
+
+
+    /* TAG-MISSION-AUTO-VISUAL-01: predetermined paths, no telemetry. */
+    .mission-viewport{background:radial-gradient(ellipse at 54% 44%,#16434d,#081319 75%);box-shadow:inset 0 0 75px #01080c9e;isolation:isolate}
+    .mission-viewport:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,#06121786,transparent 21%,transparent 78%,#0612176e);z-index:1}
+    .mission-viewport .mission-grid{stroke:#6e98a0;opacity:.19}
+    .mission-path-underlay{stroke:#0b2936;stroke-width:15}
+    .mission-path{stroke:#80d4dc;stroke-width:2.3;opacity:.64}
+    .mission-route-energy{fill:none;stroke:#baffec;stroke-width:2.7;stroke-dasharray:8 24;stroke-linecap:round;opacity:.77;animation:mission-flow 12s linear infinite}
+    .mission-range-ring{fill:none;stroke:#77b5ba;stroke-width:1;opacity:.20}
+    .mission-radar-sector{fill:url(#mission-radar-wash);opacity:.43;transform-origin:430px 190px;animation:mission-radar-cinema 22s linear infinite}
+    .mission-waypoint-halo{fill:none;stroke:#a5f0dc;stroke-width:1.2;opacity:.45;transform-box:fill-box;transform-origin:center;animation:mission-waypoint-breathe 5s ease-in-out infinite}
+    .mission-waypoint-b{animation-delay:-1.8s}
+    .mission-craft{transform:translate(120px,290px);will-change:transform}
+    .mission-control[data-scene-started="true"][data-scene="pass"] .mission-craft{animation:mission-cinema-pass 18s ease-in-out infinite}
+    .mission-control[data-scene-started="true"][data-scene="hold"] .mission-craft{animation:mission-cinema-hold 14s ease-in-out infinite}
+    .mission-control[data-scene-started="true"][data-scene="return"] .mission-craft{animation:mission-cinema-return 20s ease-in-out infinite}
+    .mission-control[data-scene="return"] .mission-route-energy{animation-direction:reverse}
+    .mission-control[data-scene-started="true"] .mission-timeline-fill{animation:mission-progress 18s linear infinite}
+    .mission-control[data-scene="hold"] .mission-timeline-fill{animation-duration:14s}
+    .mission-control[data-scene="return"] .mission-timeline-fill{animation-duration:20s}
+    .mission-control[data-visibility="hidden"] .mission-route-energy,
+    .mission-control[data-visibility="hidden"] .mission-radar-sector,
+    .mission-control[data-visibility="hidden"] .mission-waypoint-halo,
+    .mission-control[data-visibility="hidden"] .mission-rotor-blades{animation-play-state:paused}
+    .mission-rotor-blades{transform-box:fill-box;transform-origin:center;animation:mission-rotor-spin .35s linear infinite;will-change:transform}
+    .mission-rotor:nth-of-type(2n) .mission-rotor-blades{animation-direction:reverse}
+    .mission-craft-hull{fill:url(#mission-hull-glass);stroke:#d8f3eb;stroke-width:1.3}
+    .mission-craft-arm{stroke:url(#mission-arm-metal);stroke-width:7;stroke-linecap:round}
+    .mission-craft-light{fill:#f0d39b}
+    .mission-craft-shadow{fill:#020b10;opacity:.42}
+    @keyframes mission-flow{to{stroke-dashoffset:-384}}
+    @keyframes mission-radar-cinema{to{transform:rotate(360deg)}}
+    @keyframes mission-rotor-spin{to{transform:rotate(360deg)}}
+    @keyframes mission-waypoint-breathe{0%,100%{opacity:.18;transform:scale(.9)}50%{opacity:.73;transform:scale(1.32)}}
+    @keyframes mission-cinema-pass{
+      0%,100%{transform:translate(120px,290px) rotate(-4deg)}
+      24%{transform:translate(272px,247px) rotate(1deg)}
+      48%{transform:translate(426px,192px) rotate(-2deg)}
+      74%{transform:translate(590px,139px) rotate(2deg)}
+      92%{transform:translate(714px,87px) rotate(-2deg)}
+    }
+    @keyframes mission-cinema-hold{
+      0%,100%{transform:translate(120px,290px) rotate(-3deg)}
+      43%{transform:translate(424px,194px) rotate(1deg)}
+      54%,77%{transform:translate(430px,188px) rotate(-1deg)}
+      66%,88%{transform:translate(430px,198px) rotate(1deg)}
+    }
+    @keyframes mission-cinema-return{
+      0%,100%{transform:translate(120px,290px) rotate(-3deg)}
+      45%{transform:translate(430px,194px) rotate(2deg)}
+      52%{transform:translate(430px,188px) rotate(-5deg)}
+      82%{transform:translate(252px,255px) rotate(-6deg)}
+    }
+    @media(max-width:750px){.mission-viewport svg{width:100%;max-width:100%;transform:none}}
+    @media(prefers-reduced-motion:reduce){
+      .mission-control .mission-craft{animation:none!important;transform:translate(430px,194px);will-change:auto}
+      .mission-control .mission-route-energy,.mission-control .mission-radar-sector,.mission-control .mission-waypoint-halo,.mission-control .mission-rotor-blades,.mission-control .mission-timeline-fill{animation:none!important;will-change:auto}
+      .mission-control .mission-route-energy{opacity:.25}
     }
 
     @media(prefers-reduced-motion:reduce){
@@ -597,85 +662,247 @@ function renderScenarioInterpretation(id,e){
 """
 
 TECH_ANIMATION_JS = r"""
-// TAG-TECH-ANIMATION-01: finite, illustrative-only SVG/CSS. Never touches evidence.
+// TAG-TECH-AUTO-01: continuous conceptual motion; never proof execution.
 const techAnimation=$("tech-animation");
-const techPause=$("tech-animation-pause");
-const techReplay=$("tech-animation-replay");
 const techStatus=$("tech-animation-status");
-const techEnd=techAnimation.querySelector(".tech-end-signal");
 const techCopy=document.documentElement.lang==="ro"?{
-  pause:"Oprește animația",resume:"Continuă animația",replay:"Reia explicația",
-  ready:"Ilustrație conceptuală · fără generare sau verificare în browser",
-  playing:"Ilustrație conceptuală în redare · nu este progres backend",
-  paused:"Ilustrație conceptuală în pauză · fără execuție backend",
-  complete:"Ilustrație conceptuală încheiată · fără dovadă verificată aici",
+  playing:"Ilustrație conceptuală automată · nu este progres backend",
   reduced:"Ilustrație statică · mișcare redusă; fără execuție backend"
 }:{
-  pause:"Pause illustration",resume:"Resume illustration",replay:"Replay explanation",
-  ready:"Conceptual illustration · no proving or verification in this browser",
-  playing:"Playing conceptual illustration · not backend progress",
-  paused:"Conceptual illustration paused · no backend execution",
-  complete:"Conceptual illustration complete · no proof verified here",
+  playing:"Automatic conceptual illustration · not backend progress",
   reduced:"Static illustration · reduced motion; no backend execution"
 };
 function syncTechAnimation(){
-  const reduce=motionPreference.matches;
   techAnimation.dataset.visibility=document.hidden||techAnimation.dataset.inview!=="true"?"hidden":"visible";
-  const started=techAnimation.dataset.started==="true";
-  const completed=techAnimation.dataset.complete==="true";
-  const paused=techAnimation.dataset.motion==="paused";
-  techReplay.disabled=reduce;
-  techPause.disabled=reduce||!started||completed;
-  techReplay.textContent=techCopy.replay;
-  techPause.textContent=paused?techCopy.resume:techCopy.pause;
-  techPause.setAttribute("aria-pressed",String(paused&&started&&!completed));
-  techStatus.textContent=reduce?techCopy.reduced:
-    completed?techCopy.complete:!started?techCopy.ready:paused?techCopy.paused:techCopy.playing;
+  techStatus.textContent=motionPreference.matches?techCopy.reduced:techCopy.playing;
 }
-function startTechAnimation(){
-  if(motionPreference.matches)return;
-  techAnimation.dataset.started="false";
-  techAnimation.dataset.complete="false";
-  void techAnimation.offsetWidth; // Finite CSS keyframes restart without timers.
-  techAnimation.dataset.motion="playing";
-  techAnimation.dataset.started="true";
-  syncTechAnimation();
-}
-techReplay.addEventListener("click",startTechAnimation);
-techPause.addEventListener("click",()=>{
-  if(motionPreference.matches||techAnimation.dataset.started!=="true"||techAnimation.dataset.complete==="true")return;
-  techAnimation.dataset.motion=techAnimation.dataset.motion==="paused"?"playing":"paused";
-  syncTechAnimation();
-});
-techEnd.addEventListener("animationend",event=>{
-  if(event.target!==techEnd||event.animationName!=="tech-end")return;
-  techAnimation.dataset.complete="true";
-  syncTechAnimation();
-});
 const techObserver=new IntersectionObserver(entries=>{
-  const visible=entries[0].isIntersecting;
-  techAnimation.dataset.inview=String(visible);
-  if(visible&&techAnimation.dataset.started==="false"&&!motionPreference.matches){
-    startTechAnimation();
-  }else{
-    syncTechAnimation();
-  }
-},{threshold:.2});
+  techAnimation.dataset.inview=String(entries[0].isIntersecting);
+  syncTechAnimation();
+},{threshold:.12});
 techObserver.observe(techAnimation);
 document.addEventListener("visibilitychange",syncTechAnimation);
-motionPreference.addEventListener("change",()=>{
-  if(motionPreference.matches){
-    techAnimation.dataset.started="false";
-    techAnimation.dataset.complete="false";
-    techAnimation.dataset.motion="paused";
-  }else if(techAnimation.dataset.inview==="true"){
-    startTechAnimation();
-  }
-  syncTechAnimation();
-});
+motionPreference.addEventListener("change",syncTechAnimation);
+techAnimation.dataset.started="true";
+techAnimation.dataset.inview="true";
 syncTechAnimation();
 """
 
+
+
+MISSION_AUTO_CRAFT = r'''<g class="mission-craft" aria-hidden="true">
+            <ellipse class="mission-craft-shadow" cx="3" cy="23" rx="60" ry="14"/>
+            <g class="mission-airframe" transform="rotate(-18)">
+              <path class="mission-craft-arm" d="M-20 -7L-50 -26M20 -7L50 -26M-18 9L-46 31M18 9L46 31"/>
+              <path d="M-52 -29L-16 -8M51 -29L16 -8M-46 33L-14 12M46 33L14 12" fill="none" stroke="#b7e1dc" stroke-width=".8" opacity=".65"/>
+              <g class="mission-rotor" transform="translate(-51 -27)">
+                <ellipse rx="23" ry="7.5" fill="#64b8c1" opacity=".19"/>
+                <g class="mission-rotor-blades"><ellipse rx="22" ry="3.2" fill="#a6e3df" opacity=".7"/><ellipse rx="23" ry="2.8" fill="#52939f" opacity=".54" transform="rotate(72)"/></g>
+                <circle r="5" fill="url(#mission-motor)" stroke="#c0e2de" stroke-width="1.2"/>
+              </g>
+              <g class="mission-rotor" transform="translate(51 -27)">
+                <ellipse rx="23" ry="7.5" fill="#64b8c1" opacity=".19"/>
+                <g class="mission-rotor-blades"><ellipse rx="22" ry="3.2" fill="#a6e3df" opacity=".7"/><ellipse rx="23" ry="2.8" fill="#52939f" opacity=".54" transform="rotate(72)"/></g>
+                <circle r="5" fill="url(#mission-motor)" stroke="#c0e2de" stroke-width="1.2"/>
+              </g>
+              <path d="M-24 -13L-5 -26L24 -13L29 7L8 24L-18 19L-29 5Z" fill="#081b26" stroke="#689ca8" stroke-width="2"/>
+              <path class="mission-craft-hull" d="M-23 -13L-5 -25L24 -13L28 6L7 22L-18 18L-28 4Z"/>
+              <path d="M-17 -8L-3 -20L16 -13L19 5L7 15L-14 12L-22 3Z" fill="url(#mission-canopy)" stroke="#cae7e4" stroke-width="1.3"/>
+              <path d="M-17 -8L-3 -20L15 -14" fill="none" stroke="#f4fbef" stroke-width="1.8" opacity=".8"/>
+              <path d="M-21 6L-15 15L6 19" stroke="#0d2a3a" stroke-width="2.6" fill="none"/>
+              <circle cx="-18" cy="-9" r="2.3" class="mission-craft-light"/>
+              <circle cx="20" cy="-10" r="2.2" fill="#97f4df"/>
+              <g transform="translate(1 18)"><rect x="-7" y="-1" rx="2" width="14" height="8" fill="#122d3a" stroke="#88b4bb"/><circle cy="4" r="3" fill="#041522" stroke="#8dbbc1"/><circle cx="-1" cy="3" r=".8" fill="#a8f2e8"/></g>
+              <g class="mission-rotor" transform="translate(-45 32)">
+                <ellipse rx="22" ry="7" fill="#64b8c1" opacity=".17"/>
+                <g class="mission-rotor-blades"><ellipse rx="21" ry="3.1" fill="#a6e3df" opacity=".73"/><ellipse rx="22" ry="2.6" fill="#52939f" opacity=".56" transform="rotate(72)"/></g>
+                <circle r="4.7" fill="url(#mission-motor)" stroke="#c0e2de" stroke-width="1.2"/>
+              </g>
+              <g class="mission-rotor" transform="translate(45 32)">
+                <ellipse rx="22" ry="7" fill="#64b8c1" opacity=".17"/>
+                <g class="mission-rotor-blades"><ellipse rx="21" ry="3.1" fill="#a6e3df" opacity=".73"/><ellipse rx="22" ry="2.6" fill="#52939f" opacity=".56" transform="rotate(72)"/></g>
+                <circle r="4.7" fill="url(#mission-motor)" stroke="#c0e2de" stroke-width="1.2"/>
+              </g>
+            </g>
+          </g>'''
+MISSION_AUTO_DEFS = r'''<linearGradient id="mission-arm-metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#a3d6d4"/><stop offset=".48" stop-color="#2b6070"/><stop offset="1" stop-color="#092536"/></linearGradient>
+            <linearGradient id="mission-hull-glass" x1="0" y1="0" x2=".9" y2="1"><stop stop-color="#f3f1de"/><stop offset=".23" stop-color="#8ebcbd"/><stop offset=".56" stop-color="#396978"/><stop offset="1" stop-color="#092737"/></linearGradient>
+            <linearGradient id="mission-canopy" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#dbf3e6"/><stop offset=".24" stop-color="#7bcbd0"/><stop offset=".6" stop-color="#245467"/><stop offset="1" stop-color="#091c2b"/></linearGradient>
+            <radialGradient id="mission-motor"><stop stop-color="#e7f6ef"/><stop offset=".4" stop-color="#7ebbc1"/><stop offset="1" stop-color="#133541"/></radialGradient>
+            <linearGradient id="mission-radar-wash" x1="0" y1="0" x2="1" y2=".8"><stop stop-color="#b9fff1" stop-opacity=".42"/><stop offset="1" stop-color="#64b9ca" stop-opacity="0"/></linearGradient>
+            '''
+MISSION_AUTO_BACKGROUND = r'''<g fill="none" stroke="#89aeb1" stroke-width=".8" opacity=".13">
+            <path d="M-20 314C180 251 245 348 435 267S679 227 880 264"/>
+            <path d="M-20 337C180 275 255 370 455 293S683 249 880 283"/>
+            <path d="M-20 354C185 300 257 390 455 318S688 273 890 314"/>
+          </g>
+          <g class="mission-radar-sector"><path d="M430 190L430 40A150 150 0 0 1 571 139Z" fill="url(#mission-radar-wash)"/></g>
+          <g class="mission-range-ring"><circle cx="430" cy="190" r="181"/><circle cx="430" cy="190" r="116"/></g>
+          '''
+MISSION_AUTO_WAYPOINTS = r'''<path class="mission-route-energy" d="M120 290 L275 249 L430 194 L585 142 L714 87"/>
+          <g class="mission-waypoint-halo"><circle cx="120" cy="290" r="15"/><circle cx="714" cy="87" r="15"/></g>
+          <circle class="mission-waypoint-halo mission-waypoint-b" cx="430" cy="194" r="15"/>
+          '''
+TECH_AUTO_SVG = r'''<svg id="tech-animation-svg" viewBox="0 0 900 240" focusable="false" aria-hidden="true">
+        <defs>
+          <linearGradient id="tech-chassis" x1="0" y1="0" x2="1" y2="1">
+            <stop stop-color="#23434d"/><stop offset=".3" stop-color="#142b35"/><stop offset="1" stop-color="#0a1a22"/>
+          </linearGradient>
+          <linearGradient id="tech-reflection" x1="0" y1="0" x2=".85" y2="1">
+            <stop stop-color="#e4ffef" stop-opacity=".2"/><stop offset=".36" stop-color="#8cdddf" stop-opacity=".07"/><stop offset="1" stop-color="#79ceda" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="tech-panel-glow" x1="0" y1="0" x2="1" y2="1">
+            <stop stop-color="#b6f6e8" stop-opacity=".38"/><stop offset=".5" stop-color="#71b7c4" stop-opacity=".07"/><stop offset="1" stop-color="#266573" stop-opacity=".15"/>
+          </linearGradient>
+          <linearGradient id="tech-workspace-glass" x1="0" y1="0" x2="1" y2="1">
+            <stop stop-color="#30616b"/><stop offset=".4" stop-color="#132f3b"/><stop offset="1" stop-color="#0b1b24"/>
+          </linearGradient>
+          <linearGradient id="tech-scan-gradient" x1="0" y1="0" x2="1" y2="0">
+            <stop stop-color="#8fffee" stop-opacity="0"/><stop offset=".5" stop-color="#dffff5" stop-opacity=".67"/><stop offset="1" stop-color="#8fffee" stop-opacity="0"/>
+          </linearGradient>
+          <filter id="tech-soft-glow" x="-200%" y="-200%" width="500%" height="500%"><feGaussianBlur stdDeviation="2"/></filter>
+        </defs>
+        <g>
+          <rect x="12" y="23" width="264" height="198" rx="5" class="tech-panel-depth"/>
+          <rect x="8" y="17" width="264" height="198" rx="5" class="tech-panel"/>
+          <rect x="12" y="21" width="256" height="190" rx="4" class="tech-panel-sheen"/>
+          <rect x="16" y="25" width="248" height="182" rx="4" class="tech-highlight tech-highlight-one"/>
+          <path d="M22 32h236" stroke="#bdfff1" opacity=".18"/>
+          <path d="M34 54h78m-78 6h41" stroke="#8db6b5" stroke-width="2" opacity=".42"/>
+          <g class="tech-glyph">
+            <path d="M75 88h121v66H75zM106 88V67h60v21"/>
+            <path d="M109 107l18 16-18 16M162 107l-18 16 18 16"/>
+          </g>
+          <path d="M75 154h121M75 88h121" stroke="#ecfff4" opacity=".3"/>
+          <circle cx="225" cy="72" r="15" class="tech-secret"/>
+          <path d="M220 70v-4a5 5 0 0 1 10 0v4m-12 0h14v10h-14z" stroke="#eacb97" stroke-width="2" fill="none"/>
+          <circle cx="40" cy="187" r="3" class="tech-status-led"/>
+        </g>
+        <g>
+          <rect x="321" y="23" width="264" height="198" rx="5" class="tech-panel-depth"/>
+          <rect x="317" y="17" width="264" height="198" rx="5" class="tech-panel"/>
+          <rect x="321" y="21" width="256" height="190" rx="4" class="tech-panel-sheen"/>
+          <rect x="325" y="25" width="248" height="182" rx="4" class="tech-highlight tech-highlight-two"/>
+          <path d="M331 32h236" stroke="#bdfff1" opacity=".18"/>
+          <path d="M344 54h72m-72 6h49" stroke="#8db6b5" stroke-width="2" opacity=".42"/>
+          <rect x="385" y="83" width="130" height="71" rx="3" class="tech-workspace"/>
+          <g class="tech-glyph"><path d="M413 105l21 17-21 17m32 0h29"/></g>
+          <path d="M392 92h114" stroke="#ecfff4" opacity=".3"/>
+          <path d="M450 154v14m-28 0h56" stroke="#7db9c1" stroke-width="5" stroke-linecap="round"/>
+          <circle cx="535" cy="72" r="13" class="tech-public"/>
+          <path d="M529 72h12m-6-6v12" stroke="#16303a" stroke-width="2.7"/>
+          <circle cx="348" cy="187" r="3" class="tech-status-led"/>
+        </g>
+        <g>
+          <rect x="630" y="23" width="264" height="198" rx="5" class="tech-panel-depth"/>
+          <rect x="626" y="17" width="264" height="198" rx="5" class="tech-panel"/>
+          <rect x="630" y="21" width="256" height="190" rx="4" class="tech-panel-sheen"/>
+          <rect x="634" y="25" width="248" height="182" rx="4" class="tech-highlight tech-highlight-three"/>
+          <path d="M640 32h236" stroke="#bdfff1" opacity=".18"/>
+          <path d="M654 54h77m-77 6h45" stroke="#8db6b5" stroke-width="2" opacity=".42"/>
+          <g class="tech-glyph">
+            <path d="M760 73l47 19v41c0 30-24 48-47 55-23-7-47-25-47-55V92z"/>
+            <path d="M737 128l16 16 33-33"/>
+          </g>
+          <circle cx="823" cy="72" r="13" class="tech-public"/>
+          <path d="m818 72 4 4 7-8" stroke="#16303a" stroke-width="2.5" fill="none"/>
+          <circle cx="659" cy="187" r="3" class="tech-status-led"/>
+        </g>
+        <path d="M277 118h34m-11-8 11 8-11 8M587 118h33m-11-8 11 8-11 8" class="tech-guide"/>
+        <circle cx="282" cy="118" r="8" class="tech-transfer tech-transfer-one"/>
+        <circle cx="591" cy="118" r="8" class="tech-transfer tech-transfer-two"/>
+        <rect class="tech-scan" x="16" y="32" width="160" height="169" rx="3"/>
+        <g fill="#d4e0dc" font-family="Arial,Helvetica,sans-serif" font-weight="700" text-anchor="middle" font-size="15">
+          <text x="140" y="199">01 / NOIR</text>
+          <text x="450" y="199">02 / BARRETENBERG</text>
+          <text x="760" y="199">03 / OFFLINE</text>
+        </g>
+      </svg>'''
+MISSION_AUTO_JS = r'''// Entirely predetermined illustrative geometry. PUBLIC-ONLY automatic playback.
+// No real telemetry, backend status, network, MAVLink, or evidence linkage.
+const mission=$("mission-control");
+const motionPreference=window.matchMedia("(prefers-reduced-motion: reduce)");
+const sceneCopy=document.documentElement.lang==="ro"?{
+  playing:"Ilustrație sintetică automată · fără misiune reală",
+  reduced:"Ilustrație statică · mișcare redusă"
+}:{
+  playing:"Automatic synthetic illustration · no live mission",
+  reduced:"Static illustration · reduced motion"
+};
+function syncMissionMotion(){
+  mission.dataset.visibility=document.hidden||mission.dataset.inview!=="true"?"hidden":"visible";
+  $("mission-scene-status").textContent=motionPreference.matches?sceneCopy.reduced:sceneCopy.playing;
+}
+function startMissionScene(){
+  const scene=$("mission-pattern").value;
+  if(!["pass","hold","return"].includes(scene))return;
+  mission.dataset.sceneStarted="false";
+  mission.dataset.scene=scene;
+  void mission.offsetWidth; // Restart only the selected decorative CSS track.
+  mission.dataset.sceneStarted="true";
+  syncMissionMotion();
+}
+$("mission-pattern").addEventListener("change",startMissionScene);
+const missionObserver=new IntersectionObserver(entries=>{
+  mission.dataset.inview=String(entries[0].isIntersecting);
+  syncMissionMotion();
+},{threshold:.12});
+missionObserver.observe(mission);
+document.addEventListener("visibilitychange",syncMissionMotion);
+motionPreference.addEventListener("change",syncMissionMotion);
+mission.dataset.inview="true"; // Immediate automatic start; observer pauses offscreen.
+startMissionScene();
+'''
+
+
+def public_cinematic_motion(html: str) -> str:
+    # Only the static public showcase is modified, never the source console.
+    replay = '<button id="mission-replay" type="button" aria-controls="mission-scene">Replay illustration</button>'
+    toggle = '<button id="mission-motion-toggle" type="button" aria-pressed="true" aria-controls="mission-scene" disabled>Resume illustration</button>'
+    tech_actions = '''<div class="tech-animation-actions">
+          <button type="button" id="tech-animation-replay" aria-controls="tech-animation-svg">Replay explanation</button>
+          <button type="button" id="tech-animation-pause" aria-controls="tech-animation-svg" aria-pressed="false" disabled>Pause illustration</button>
+        </div>'''
+    for marker in (replay, toggle, tech_actions):
+        if html.count(marker) != 1:
+            raise ValueError("unexpected public-only animation control")
+        html = html.replace(marker, "", 1)
+    old_mission_state = 'data-motion="paused" data-visibility="visible" data-scene="pass"'
+    if html.count(old_mission_state) != 1:
+        raise ValueError("mission playback state changed")
+    html = html.replace(old_mission_state, 'data-motion="playing" data-visibility="visible" data-scene="pass"', 1)
+    old_tech_state = 'data-started="false" data-complete="false" data-motion="paused" data-visibility="hidden"'
+    if html.count(old_tech_state) != 1:
+        raise ValueError("technical animation state changed")
+    html = html.replace(old_tech_state, 'data-started="true" data-visibility="visible"', 1)
+    match = re.search(r'<svg id="tech-animation-svg".*?</svg>', html, re.S)
+    if match is None or html.count('id="tech-animation-svg"') != 1:
+        raise ValueError("technical animation SVG changed")
+    html = html[:match.start()] + '<div class="tech-scene-scroll" tabindex="0">' + TECH_AUTO_SVG + '</div>' + html[match.end():]
+    mission_start = html.index('<svg viewBox="0 0 860 370"')
+    mission_end = html.index('</svg>', mission_start) + len('</svg>')
+    svg = html[mission_start:mission_end]
+    if svg.count("</defs>") != 1:
+        raise ValueError("mission illustration defs changed")
+    svg = svg.replace("</defs>", MISSION_AUTO_DEFS + "</defs>", 1)
+    old_background = '<rect width="860" height="370" fill="url(#mission-glow)"/>'
+    if svg.count(old_background) != 1:
+        raise ValueError("mission illustration background changed")
+    svg = svg.replace(old_background,old_background + MISSION_AUTO_BACKGROUND,1)
+    original_path = '<path class="mission-path" d="M120 290 L275 249 L430 194 L585 142 L714 87"/>'
+    if svg.count(original_path) != 1:
+        raise ValueError("mission path changed")
+    svg = svg.replace(original_path,original_path + MISSION_AUTO_WAYPOINTS,1)
+    svg, count = re.subn(r'<g class="mission-craft" aria-hidden="true">.*?</g>', MISSION_AUTO_CRAFT, svg, count=1, flags=re.S)
+    if count != 1:
+        raise ValueError("mission craft shape changed")
+    html = html[:mission_start] + svg + html[mission_end:]
+    start = html.index("// Entirely predetermined illustrative geometry.")
+    end = html.index("function render(e) {", start)
+    if end <= start or "mission-replay" not in html[start:end]:
+        raise ValueError("mission motion script changed")
+    html = html[:start] + MISSION_AUTO_JS + "\n" + html[end:]
+    return html
 
 def redesign_public_html(html: str) -> str:
     """Reorder known public-only sections, fail closed on source changes."""
@@ -804,5 +1031,6 @@ def redesign_public_html(html: str) -> str:
         render_anchor + '\n  renderScenarioInterpretation($("scenario").value,e);',
         1,
     )
+    html = public_cinematic_motion(html)
     html = html.replace("</script>", TECH_ANIMATION_JS + SCENARIO_INTERPRETATION_JS + "\n</script>", 1)
     return html.replace("</style>", VISUAL_CSS + "  </style>", 1)
