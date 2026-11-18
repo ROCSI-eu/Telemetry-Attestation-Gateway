@@ -27,7 +27,8 @@ class BoundedLocalTests(unittest.TestCase):
         self.assertEqual(cmd[0], "/usr/bin/systemd-run")
         for opt in ("--user", "--wait", "--pipe", "--collect",
                     "--slice=tag-qa88.slice", f"--unit={UNIT}",
-                    "MemoryMax=134217728", "CPUQuota=50%", "TasksMax=12",
+                    "MemoryMax=134217728", "MemorySwapMax=0",
+                    "CPUQuota=50%", "TasksMax=12",
                     "RuntimeMaxSec=15s", "KillMode=control-group"):
             self.assertIn(opt, cmd)
         self.assertNotIn("TemporaryFileSystem", " ".join(cmd))
@@ -44,7 +45,8 @@ class BoundedLocalTests(unittest.TestCase):
         cg = self.root / membership.lstrip("/")
         cg.mkdir(parents=True)
         for name, value in (("memory.max", "134217728"),
-                            ("pids.max", "12"), ("cpu.max", "50000 100000")):
+                            ("memory.swap.max", "0"), ("pids.max", "12"),
+                            ("cpu.max", "50000 100000")):
             (cg / name).write_text(value+"\n")
         with patch.object(pkg.os, "geteuid", return_value=uid):
             pkg.verify_inside(UNIT, root=self.root, membership=membership)
@@ -52,7 +54,8 @@ class BoundedLocalTests(unittest.TestCase):
                         membership+"-wrong", "/"):
                 with self.assertRaises(pkg.Unavailable):
                     pkg.verify_inside(UNIT, root=self.root, membership=bad)
-            for name, bad in (("memory.max", "max"), ("pids.max", "13"),
+            for name, bad in (("memory.max", "max"), ("memory.swap.max", "max"),
+                              ("memory.swap.max", "1"), ("pids.max", "13"),
                               ("cpu.max", "max 100000")):
                 file = cg / name
                 previous = file.read_text()
@@ -63,6 +66,10 @@ class BoundedLocalTests(unittest.TestCase):
                                           membership=membership)
                 finally:
                     file.write_text(previous)
+            swap_file = cg / "memory.swap.max"
+            swap_file.unlink()
+            with self.assertRaises(pkg.Unavailable):
+                pkg.verify_inside(UNIT, root=self.root, membership=membership)
 
     def test_missing_bwrap_size_fails_before_any_listener(self):
         for result in (SimpleNamespace(returncode=0, stdout="--tmpfs DEST"),

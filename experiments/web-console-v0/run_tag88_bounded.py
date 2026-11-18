@@ -26,6 +26,7 @@ HERE = Path(__file__).resolve().parent
 SLICE = "tag-qa88.slice"
 UNIT_PREFIX = "tag-qa88-bounded-"
 MEMORY_MAX = "134217728"
+MEMORY_SWAP_MAX = "0"
 TASKS_MAX = "12"
 CPU_MAX = "50000 100000"
 RUNTIME_SECONDS = 15
@@ -55,6 +56,7 @@ def verify_inside(unit: str, *, root: Path | None = None,
             raise Unavailable
         group = (root if root is not None else Path("/sys/fs/cgroup")) / actual.lstrip("/")
         if ((group / "memory.max").read_text().strip() != MEMORY_MAX
+                or (group / "memory.swap.max").read_text().strip() != MEMORY_SWAP_MAX
                 or (group / "pids.max").read_text().strip() != TASKS_MAX
                 or (group / "cpu.max").read_text().strip() != CPU_MAX):
             raise Unavailable
@@ -149,6 +151,7 @@ def build_command(unit: str, parent: Path, seconds: int, check_only: bool) -> li
         "/usr/bin/systemd-run", "--user", "--wait", "--pipe", "--collect",
         f"--unit={unit}", f"--slice={SLICE}",
         "-p", f"MemoryMax={MEMORY_MAX}",
+        "-p", f"MemorySwapMax={MEMORY_SWAP_MAX}",
         "-p", "CPUQuota=50%",
         "-p", f"TasksMax={TASKS_MAX}",
         "-p", f"RuntimeMaxSec={RUNTIME_SECONDS}s",

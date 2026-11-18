@@ -240,7 +240,7 @@ Use the one-session URL and token only in that machine's local browser; never in
 **Disposition:** **GO** for the demonstrated short-lived, same-machine, pre-provisioned, synthetic non-cryptographic local package, conditioned on the same preflight and scope. **NO-GO** for shared-VM/Production deployment, persistent service, newly provisioned cryptography or SITL integration. Whole-session **sampled measurements** now exist for one synthetic non-crypto scenario; **hard-enforced aggregate CPU/RAM/process/disk budgets**, dedicated service identity, proof-path capacity evidence and any colocation authorization remain separately Open under [#88](https://github.com/ROCSI-eu/Telemetry-Attestation-Gateway/issues/88). This local package does not promote cryptographic evidence or change the 600 cm/s predicate.
 
 
-### TAG #88: opt-in aggregate bounds on Qube Dev1 (non-Production, Draft)
+### TAG #88: opt-in aggregate bounds on Qube Dev1 (non-Production)
 
 The *separate* `run_tag88_bounded.py` entrypoint runs the existing local,
 synthetic short-circuit console inside a **collected transient systemd user
@@ -252,6 +252,8 @@ the service cannot start, or the inner process cannot attest the exact
 dedicated cgroup membership and hard values:
 
 - `MemoryMax=134217728` (128 MiB) across the service process tree;
+- `MemorySwapMax=0` (swap disabled for this unit, fail closed unless
+  `memory.swap.max` is exactly `0` before any listener);
 - `CPUQuota=50%`, `TasksMax=12`, `RuntimeMaxSec=15s`,
   `KillMode=control-group`;
 - `bwrap --size 8388608 --tmpfs /tmp` **only** on this opt-in path, with
@@ -279,12 +281,19 @@ blindly or touch any shared Desktop Commander or app.slice cgroup.
 
 The 8 MiB limit applies to the **inner sandbox /tmp only**. The outer
 owner-private session runtime is not covered by a disk quota, so this is
-**not** a whole-session disk cap. The research proof path is explicitly
+**not** a whole-session disk cap. The outer ext4 runtime has **no per-session
+quota**, remains a separate NO-GO storage gate, and was not filled for QA.
+The research proof path is explicitly
 excluded from this low-memory profile and the bounded launcher accepts no
 offline toolchain selector. Qube's one-off synthetic preflight on
 2026-11-18 showed exact cgroup memory/CPU/task values, CPU throttling,
 private /tmp ENOSPC at 8 MiB, distinct loopback namespace and clean slice
 rollback. Those observations are non-Production research only, not proof
 capacity, dedicated service identity, production-readiness or authorization
-for shared-VM colocation. Runtime-limit termination and actual memory/task
-limit hits remain unverified.
+for shared-VM colocation. Separate synthetic negative QA on 2026-11-18
+confirmed: systemd runtime timeout after ~17.3 s with a 2 s stop grace;
+128 MiB RAM pressure and an `oom-kill` with `MemorySwapMax=0` and no
+observed swap; and a gradual `TasksMax=12` denial (`pids.events:max=1`,
+peak `pids.current=12`). All dedicated units/slices were removed and
+Desktop Commander remained untouched. These are reused experimental QA
+checkpoints, not new runtime tests or Production-readiness evidence.
