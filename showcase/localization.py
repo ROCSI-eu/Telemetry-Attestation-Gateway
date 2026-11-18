@@ -328,6 +328,27 @@ RO_TEXT = {
     "03": "03",
     "TAG brings together research on privacy-preserving proofs and controlled observations from a vehicle simulator.": "TAG reunește cercetarea dovezilor care protejează datele și observațiile controlate dintr-un simulator de vehicule.",
     "TAG · Telemetry Attestation Gateway. Exploring verifiable conditions, selective disclosure and privacy-preserving telemetry.": "TAG · Telemetry Attestation Gateway. Cercetare despre condiții verificabile, divulgare selectivă și protecția datelor din telemetrie.",
+    # TAG-SPEED-EXPLAIN-01: visitor-first speed example; exact evidence codes unchanged.
+    "Can a vehicle prove it respects a speed limit without revealing its speed?": "Poate un vehicul demonstra respectarea unei limite fără să dezvăluie viteza?",
+    "TAG researches how a cryptographic proof could confirm that a private speed value meets a public limit, while keeping the exact value confidential.": "TAG cercetează cum o dovadă criptografică ar putea confirma că o valoare privată a vitezei respectă o limită publică, fără divulgarea valorii exacte.",
+    "A VEHICLE IN MOTION": "UN VEHICUL ÎN MIȘCARE",
+    "Three routes, one question about speed": "Trei trasee, aceeași întrebare despre viteză",
+    "Explore how the vehicle moves between A, B and C. The research question is whether a speed measurement meets a defined limit while its precise value stays private.": "Explorează deplasarea vehiculului între punctele A, B și C. Întrebarea cercetată este dacă viteza respectă o limită stabilită, păstrând valoarea exactă privată.",
+    "Choose a route": "Alege traseul",
+    "Travel from A to C · A–B–C": "Deplasare de la A la C · A–B–C",
+    "Stop at B · A–B": "Oprire la B · A–B",
+    "Return to A · A–B–A": "Întoarcere la A · A–B–A",
+    "Explore the routes": "Explorează traseele",
+    "THE SPEED-LIMIT EXAMPLE": "EXEMPLUL LIMITEI DE VITEZĂ",
+    "What could a proof confirm?": "Ce ar putea confirma o dovadă?",
+    "Imagine the vehicle has measured its speed. The aim is to check a rule without making the exact reading public.": "Imaginează-ți că vehiculul a măsurat viteza. Scopul este verificarea unei reguli fără publicarea valorii exacte.",
+    "Private information": "Informația privată",
+    "The exact speed value": "Valoarea exactă a vitezei",
+    "Public rule": "Regula publică",
+    "The maximum permitted speed": "Limita maximă admisă",
+    "Verifiable claim": "Afirmația verificabilă",
+    "The private value is within the public limit": "Viteza privată respectă limita publică",
+    "A zero-knowledge proof could support that claim without revealing the exact speed.": "O dovadă criptografică de tip ZKP ar putea confirma respectarea regulii fără să dezvăluie viteza exactă.",
     # Preserve machine-readable evidence codes and experimental markings.
     # The banner is visitor-facing; evidence JSON and local CLI retain immutable codes.
     "EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION":
@@ -352,6 +373,7 @@ RO_ARIA = {
     "Tool documentation and TAG implementation": "Documentația instrumentelor și implementarea TAG",
     "Technical research panels": "Panouri de cercetare tehnică",
     "Conceptual illustration of private input becoming a limited-disclosure proof": "Ilustrație conceptuală a transformării unei valori private într-o dovadă cu divulgare limitată",
+    "Speed-limit verification example": "Exemplu de verificare a unei limite de viteză",
 }
 
 SCENARIO_RO = {

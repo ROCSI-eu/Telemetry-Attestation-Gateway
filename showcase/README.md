@@ -37,6 +37,16 @@ The original TAG visual language uses system fonts, large type, dark industrial
 surfaces, original CSS geometry and restrained warm signal accents. It adopts
 general high-impact editorial design principles rather than reusing Anduril
 branding, photography, fonts, code, layouts or other third-party assets.
+The How It Works chapter now grounds the route visualization in the actual
+research question: whether a **private speed measurement** meets a **public
+speed limit** and how a future ZKP could confirm that proposition without
+disclosing the exact value. The right panel uses three readable, unnumbered
+value/limit/claim pairs instead of abstract numbered process labels; route
+selection changes only the route description and illustration. No route state,
+measured speed or proof verification is inferred or executed by the browser.
+The explicit integration limitations and evidence markers remain in technical
+research panels and immutable synthetic JSON outputs.
+
 The public-only transformation lives in showcase/visual_refresh.py and is
 applied after strict operator-surface removal in showcase/build.py; its
 source anchors deliberately fail closed if the console structure changes.
