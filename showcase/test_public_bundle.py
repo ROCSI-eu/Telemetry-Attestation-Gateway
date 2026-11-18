@@ -28,11 +28,11 @@ class StaticShowcaseTests(unittest.TestCase):
             en = (target / "en/index.html").read_text(encoding="utf-8")
             for page, concept, how, applications, research, title in (
                 (ro, "Mai puține date expuse. O condiție verificabilă.",
-                 "De la o observație privată la o dovadă verificabilă.",
+                 "Poate un vehicul demonstra respectarea unei limite fără să dezvăluie viteza?",
                  "Unde ar putea conta această capacitate?",
                  "Ce am demonstrat până acum?", SHARE["ro"]["title"]),
                 (en, "Less data exposed. A condition that can be verified.",
-                 "From a private observation to a verifiable proof.",
+                 "Can a vehicle prove it respects a speed limit without revealing its speed?",
                  "Where could this capability matter?",
                  "What have we demonstrated so far?", SHARE["en"]["title"]),
             ):
@@ -82,6 +82,43 @@ class StaticShowcaseTests(unittest.TestCase):
             self.assertIn('PRIVATE VALUE', en)
             self.assertIn("nu a fost încă demonstrat", ro)
             self.assertIn("has not yet been demonstrated", en)
+            self.assertEqual(
+                re.search(r'<script>(.*?)</script>', ro, flags=re.S).group(1),
+                re.search(r'<script>(.*?)</script>', en, flags=re.S).group(1),
+            )
+
+    def test_speed_limit_explainer_is_plain_language_bilingual_and_distinct_from_route(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            target = Path(folder)
+            build(target)
+            ro = (target / "ro/index.html").read_text(encoding="utf-8")
+            en = (target / "en/index.html").read_text(encoding="utf-8")
+            for page, phrases in (
+                (ro, ("EXEMPLUL LIMITEI DE VITEZĂ", "Ce ar putea confirma o dovadă?",
+                      "Valoarea exactă a vitezei", "Limita maximă admisă",
+                      "Viteza privată respectă limita publică", "O dovadă criptografică de tip ZKP",
+                      "Alege traseul", "Deplasare de la A la C · A–B–C")),
+                (en, ("THE SPEED-LIMIT EXAMPLE", "What could a proof confirm?",
+                      "The exact speed value", "The maximum permitted speed",
+                      "The private value is within the public limit", "A zero-knowledge proof",
+                      "Choose a route", "Travel from A to C · A–B–C")),
+            ):
+                for phrase in phrases:
+                    self.assertIn(phrase, page)
+                sidebar = re.search(r'<aside class="mission-side".*?</aside>', page, flags=re.S)
+                self.assertIsNotNone(sidebar)
+                self.assertIn('class="mission-speed-facts"', sidebar.group())
+                self.assertEqual(sidebar.group().count('class="mission-speed-fact"'), 3)
+                self.assertNotIn('class="mission-concept-steps"', page)
+                self.assertNotIn('<li><span>01</span>Private observation</li>', page)
+                self.assertIn('id="mission-pattern"', page)
+                self.assertIn('id="mission-scene-status"', page)
+                self.assertIn('const routeDescriptions=', page)
+                for marker in ('pass:', 'hold:', 'return:'):
+                    self.assertIn(marker, page)
+                self.assertIn('data-scene="pass"', page)
+                self.assertIn('NO-GO', page)
+                self.assertIn('PRECOMPUTED_GENUINE_SYNTHETIC_VERIFICATION', page)
             self.assertEqual(
                 re.search(r'<script>(.*?)</script>', ro, flags=re.S).group(1),
                 re.search(r'<script>(.*?)</script>', en, flags=re.S).group(1),

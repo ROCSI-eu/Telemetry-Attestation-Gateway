@@ -822,16 +822,18 @@ MISSION_AUTO_JS = r'''// Entirely predetermined illustrative geometry. PUBLIC-ON
 // No real telemetry, backend status, network, MAVLink, or evidence linkage.
 const mission=$("mission-control");
 const motionPreference=window.matchMedia("(prefers-reduced-motion: reduce)");
-const sceneCopy=document.documentElement.lang==="ro"?{
-  playing:"Scenariu de misiune · traseu selectat",
-  reduced:"Scenariu de misiune · traseu selectat"
+const routeDescriptions=document.documentElement.lang==="ro"?{
+  pass:"A–B–C: vehiculul parcurge trei repere ale traseului.",
+  hold:"A–B: vehiculul se oprește la reperul B.",
+  return:"A–B–A: vehiculul revine la punctul de pornire."
 }:{
-  playing:"Mission scenario · selected route",
-  reduced:"Mission scenario · selected route"
+  pass:"A–B–C: the vehicle travels through three route markers.",
+  hold:"A–B: the vehicle stops at marker B.",
+  return:"A–B–A: the vehicle returns to its starting point."
 };
 function syncMissionMotion(){
   mission.dataset.visibility=document.hidden||mission.dataset.inview!=="true"?"hidden":"visible";
-  $("mission-scene-status").textContent=motionPreference.matches?sceneCopy.reduced:sceneCopy.playing;
+  $("mission-scene-status").textContent=routeDescriptions[$("mission-pattern").value];
 }
 function startMissionScene(){
   const scene=$("mission-pattern").value;
@@ -1036,6 +1038,20 @@ document.addEventListener("visibilitychange",syncConceptScene);
 syncConceptScene();
 """
 
+MISSION_EXPLAIN_CSS = """
+    .mission-speed-example{display:flex;flex-direction:column;gap:0;min-width:0}
+    .mission-speed-example .mission-label{display:block;margin:0 0 13px;color:#e8bf84;font-weight:800;letter-spacing:.115em;font-size:.69rem}
+    .mission-speed-example h3{font-size:clamp(1.25rem,1.65vw,1.7rem);line-height:1.2;letter-spacing:-.025em;margin:0 0 17px;max-width:none}
+    .mission-speed-example>p:not(.mission-label){margin:0 0 18px;font-size:.88rem;line-height:1.65;color:#d2ddd9}
+    .mission-speed-facts{display:block;margin:5px 0 19px;padding:0;border-top:1px solid #486064}
+    .mission-speed-facts .mission-speed-fact{display:block;margin:0;padding:16px 0 14px;border-bottom:1px solid #43585b}
+    .mission-speed-facts .mission-speed-fact dt{display:block;margin:0 0 7px;font-size:.66rem;letter-spacing:.12em;color:#e6c08b;font-weight:800;text-transform:uppercase}
+    .mission-speed-facts .mission-speed-fact dd{display:block;margin:0;color:#f0e9da;font-size:.95rem;font-weight:640;line-height:1.4;text-align:left;max-width:none;overflow-wrap:normal}
+    .mission-speed-example>p.mission-speed-conclusion{color:#d7e2dd;margin:0;line-height:1.6;font-size:.87rem}
+    .mission-scene-status{font-size:.8rem;line-height:1.5;color:#c4d4cf;margin-top:12px}
+    @media(max-width:750px){.mission-speed-example{padding:22px}.mission-speed-facts .mission-speed-fact{padding:14px 0 12px}}
+"""
+
 EDITORIAL_CSS = """
     /* Editorial regrouping only: original visual system and motion remain intact. */
     .editorial-chapter-intro{max-width:74ch;color:#ccd3d0;line-height:1.74;margin:0 0 32px;font-size:1rem}
@@ -1155,11 +1171,11 @@ def redesign_public_html(html: str) -> str:
         'aria-labelledby="mission-title">\n',
         'aria-labelledby="mission-title">\n'
         '    <p class="section-overline">02 / HOW IT WORKS</p>\n'
-        '    <h2 class="section-display">From a private observation to a verifiable proof.</h2>\n'
-        '    <p class="editorial-chapter-intro">Explore a synthetic mission and see how a precise rule could be checked without exposing the private observation.</p>\n',
+        '    <h2 class="section-display">Can a vehicle prove it respects a speed limit without revealing its speed?</h2>\n'
+        '    <p class="editorial-chapter-intro">TAG researches how a cryptographic proof could confirm that a private speed value meets a public limit, while keeping the exact value confidential.</p>\n',
         1,
     )
-    if 'From a private observation to a verifiable proof.' not in mission:
+    if 'Can a vehicle prove it respects a speed limit without revealing its speed?' not in mission:
         raise ValueError("mission heading replacement failed")
     # Simplify the visitor-facing readout without touching source or animation JS.
     mission_copy = {
@@ -1187,24 +1203,49 @@ def redesign_public_html(html: str) -> str:
     side_match = re.search(r'<aside class="mission-side".*?</aside>', mission, flags=re.S)
     if side_match is None or mission.count('<aside class="mission-side"') != 1:
         raise ValueError("public mission sidebar drift")
-    mission = mission.replace(side_match.group(), '''<aside class="mission-side" aria-label="Three steps of selective verification">
-        <div class="mission-readout">
-          <div class="mission-label">THE IDEA</div>
-          <h3>From observation to evidence</h3>
-          <p>Three routes help explore how a private observation, a public condition and a verifiable result relate to one another.</p>
-          <ol class="mission-concept-steps">
-            <li><span>01</span>Private observation</li>
-            <li><span>02</span>Defined condition</li>
-            <li><span>03</span>Verifiable result</li>
-          </ol>
+    mission = mission.replace(side_match.group(), '''<aside class="mission-side" aria-label="Speed-limit verification example">
+        <div class="mission-readout mission-speed-example">
+          <p class="mission-label">THE SPEED-LIMIT EXAMPLE</p>
+          <h3>What could a proof confirm?</h3>
+          <p>Imagine the vehicle has measured its speed. The aim is to check a rule without making the exact reading public.</p>
+          <dl class="mission-speed-facts">
+            <div class="mission-speed-fact">
+              <dt>Private information</dt>
+              <dd>The exact speed value</dd>
+            </div>
+            <div class="mission-speed-fact">
+              <dt>Public rule</dt>
+              <dd>The maximum permitted speed</dd>
+            </div>
+            <div class="mission-speed-fact">
+              <dt>Verifiable claim</dt>
+              <dd>The private value is within the public limit</dd>
+            </div>
+          </dl>
+          <p class="mission-speed-conclusion">A zero-knowledge proof could support that claim without revealing the exact speed.</p>
         </div>
       </aside>''', 1)
     mission = re.sub(r'\n    <p class="mission-boundary">.*?</p>', "", mission, count=1, flags=re.S)
+    # Explain what the route visualizes; it is not itself the cryptographic result.
+    mission_top_copy = {
+        "Mission Control · synthetic visualization": "A VEHICLE IN MOTION",
+        "Observation only, never vehicle control": "Three routes, one question about speed",
+        "A predefined 2.5D vehicle and route illustrate the concept. Motion is not telemetry, a measured trajectory, a live mission, proof generation, or verification progress.":
+            "Explore how the vehicle moves between A, B and C. The research question is whether a speed measurement meets a defined limit while its precise value stays private.",
+        "Illustrative scene": "Choose a route",
+        "Observation pass · A–B–C": "Travel from A to C · A–B–C",
+        "Hold at waypoint · A–B": "Stop at B · A–B",
+        "Return route · A–B–A": "Return to A · A–B–A",
+        "Ready · prerecorded illustration only": "Explore the routes",
+    }
+    for old, new in mission_top_copy.items():
+        if mission.count(old) != 1:
+            raise ValueError("mission public copy drift: " + old[:32])
+        mission = mission.replace(old, new, 1)
     # Reframe route labels as concept presentation, not a runtime disclaimer.
     mission_labels = {
         "ILLUSTRATION ONLY · NO LIVE STREAM": "MISSION PATTERNS · SELECT A ROUTE",
         "SYNTHETIC ROUTE · NOT GEOGRAPHIC": "MISSION ROUTE · THREE PATTERNS",
-        "Ready · prerecorded illustration only": "Mission scenario · selected route",
     }
     for old, new in mission_labels.items():
         if mission.count(old) != 1:
@@ -1315,4 +1356,4 @@ def redesign_public_html(html: str) -> str:
     )
     html = public_cinematic_motion(html)
     html = html.replace("</script>", TECH_ANIMATION_JS + SCENARIO_INTERPRETATION_JS + CONCEPT_VISIBILITY_JS + "\n</script>", 1)
-    return html.replace("</style>", VISUAL_CSS + EDITORIAL_CSS + CONCEPT_CSS + "  </style>", 1)
+    return html.replace("</style>", VISUAL_CSS + EDITORIAL_CSS + CONCEPT_CSS + MISSION_EXPLAIN_CSS + "  </style>", 1)
