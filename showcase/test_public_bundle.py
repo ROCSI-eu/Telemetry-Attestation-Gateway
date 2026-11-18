@@ -54,8 +54,32 @@ class StaticShowcaseTests(unittest.TestCase):
                 self.assertIn('id="scope-limits"', page)
                 self.assertIn('id="mission-pattern"', page)
                 self.assertIn("PRECOMPUTED_GENUINE_SYNTHETIC_VERIFICATION", page)
-                self.assertIn('EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC', page)
-                self.assertIn('NOT VALIDATION OR PRODUCTION AUTHORIZATION', page)
+                self.assertIn('class="notice" role="note"', page)
+                self.assertIn('id="concept-cinema" data-visibility="visible"', page)
+                self.assertIn('class="concept-stage"', page)
+                self.assertIn('class="concept-private-wave"', page)
+                self.assertIn('class="concept-proof-ring"', page)
+                self.assertIn('@keyframes concept-packet', page)
+                self.assertIn('conceptObserver.observe(conceptScene)', page)
+                self.assertIn('.concept-cinema[data-visibility="hidden"]', page)
+                self.assertIn('.concept-cinema .concept-private-wave', page)
+                self.assertIn('@media(prefers-reduced-motion:reduce)', page)
+            self.assertIn(
+                '<div class="notice" role="note">EXPERIMENTAL · EXCLUSIV DATE SINTETICE · '
+                'NIVEL DE ASIGURARE A0 · NU REPREZINTĂ VALIDARE SAU AUTORIZARE PENTRU PRODUCȚIE</div>',
+                ro,
+            )
+            self.assertIn(
+                '<div class="notice" role="note">EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · '
+                'NOT VALIDATION OR PRODUCTION AUTHORIZATION</div>',
+                en,
+            )
+            self.assertIn('VALOARE PRIVATĂ', ro)
+            self.assertIn('NEDEZVĂLUITĂ', ro)
+            self.assertIn('INFORMAȚII PRIVATE', ro)
+            self.assertIn('PUBLIC CLAIM', en)
+            self.assertIn('CHECKABLE', en)
+            self.assertIn('Conceptual animation only.', en)
             self.assertIn("O dovadă validă nu confirmă", ro)
             self.assertIn("A valid proof does not", en)
             self.assertIn("nu a fost încă demonstrat", ro)
@@ -360,8 +384,13 @@ class StaticShowcaseTests(unittest.TestCase):
             self.assertIn("telemetrie sintetică → normalizare → dovadă → verificare independentă → publicare opțională", html)
             self.assertIn("TRASEU SINTETIC · FĂRĂ REFERINȚĂ GEOGRAFICĂ", html)
             self.assertIn("Fără comenzi MAVLink, controlul navigației", html)
+            # The banner is localized for visitors; immutable protocol labels
+            # remain exact in the exported evidence contracts.
+            scenario_labels = json.loads((target / "evidence-results.json").read_text())["labels"]
+            proof_labels = json.loads((target / "authentic-evidence.json").read_text())["labels"]
             for label in LABELS:
-                self.assertIn(label, html)
+                self.assertIn(label, scenario_labels)
+                self.assertIn(label, proof_labels)
             self.assertNotIn("operator-", html)
             for secret_surface in (
                 '"/execute"', '"/operator-capabilities"', "X-TAG-Local-Token",

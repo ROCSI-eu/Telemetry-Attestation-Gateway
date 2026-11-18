@@ -21,6 +21,13 @@ is kept alongside the synthetic mission scene; detailed tools, laboratory scenar
 replays and limitations are contained in expandable technical panels under Research.
 Mock orchestration, offline-verifier evidence and unproven integrated SITL→ZK remain
 explicitly distinct.
+The visitor-facing RO experimental notice is now translated, while the immutable
+machine-readable evidence labels remain in the static JSON. The concept chapter
+adds a self-contained cinematic SVG/CSS illustration of private input, a
+conceptual proof transfer and a minimal public result. It does not process
+telemetry or generate proofs; offscreen/hidden-tab and reduced-motion states
+pause or disable decorative motion. The existing mission and Noir/Barretenberg
+animations and their evidence boundaries remain unchanged.
 Headlines are "Verifică o condiție. Păstrează restul privat." (RO) and
 "Verify the condition. Keep the rest private." (EN).
 
