@@ -131,6 +131,41 @@ class StaticShowcaseTests(unittest.TestCase):
                 re.search(r"<script>(.*?)</script>", en, flags=re.S).group(1),
             )
 
+    def test_evidence_checkpoint_separates_sitl_and_offline_zk_in_both_locales(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            target = Path(folder)
+            build(target)
+            ro = (target / "index.html").read_text(encoding="utf-8")
+            en = (target / "en/index.html").read_text(encoding="utf-8")
+            for page, heading, sitl, proof, incomplete in (
+                (ro, "SITL și dovada offline: rezultate distincte", "normalizarea TAG", "rezultatul VALID",
+                 "nedemonstrat integral"),
+                (en, "SITL and offline proof: distinct evidence", "TAG normalization", "offline verifier VALID",
+                 "not demonstrated end to end"),
+            ):
+                section = re.search(
+                    r'<aside class="proof-evidence-checkpoint".*?</aside>', page,
+                    flags=re.S,
+                )
+                self.assertIsNotNone(section)
+                checkpoint = section.group()
+                self.assertIn(heading, checkpoint)
+                self.assertIn(sitl, checkpoint)
+                self.assertIn(proof, checkpoint)
+                self.assertIn(incomplete, checkpoint)
+                self.assertEqual(checkpoint.count("<p>"), 3)
+                self.assertIn("PASS", checkpoint)
+                self.assertIn("NO-GO", checkpoint)
+                self.assertIn("600 cm/s", checkpoint)
+                self.assertIn("SITL", checkpoint)
+                self.assertLess(page.index('id="technical-evidence-title"'),
+                                page.index('id="proof-evidence-checkpoint-title"'))
+                self.assertLess(page.index('id="proof-evidence-checkpoint-title"'),
+                                page.index('id="scenario-title"'))
+                self.assertNotIn("<script", checkpoint)
+            self.assertIn("A0_SYNTHETIC", ro)
+            self.assertIn("A0_SYNTHETIC", en)
+
     def test_unapproved_external_links_fail_closed(self) -> None:
         import visual_refresh
         source = CONSOLE.read_text(encoding="utf-8")

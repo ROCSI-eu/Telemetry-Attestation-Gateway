@@ -168,6 +168,9 @@ VISUAL_CSS = """
     .toolchain-diagram li:not(:last-child):after{content:"→";position:absolute;right:-17px;top:38%;z-index:1;color:#dfbf89;font-size:1.3rem}
     .toolchain-diagram strong{display:block;color:#edf0e8;font-size:1.1rem;margin:9px 0}
     .toolchain-diagram p{color:#c2d0ce;font-size:.85rem;line-height:1.62;margin:0}
+    .proof-evidence-checkpoint{border:1px solid #405357;background:#142125;padding:18px 20px;margin:8px 0 24px}
+    .proof-evidence-checkpoint h4{color:#e7c58e;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;margin:0 0 10px}
+    .proof-evidence-checkpoint p{color:#c2d0ce;font-size:.87rem;line-height:1.62;margin:8px 0}
     .proof-tooling-links{display:flex;gap:10px 22px;flex-wrap:wrap;font-size:.83rem;margin:0 0 22px}
     .proof-tooling-links a{color:#e7c58e;text-underline-offset:3px}
     .proof-tooling-boundary{border-left:2px solid #bda072;padding-left:15px;margin:0}
@@ -330,6 +333,12 @@ TECH_TOOLING = """  <section class="proof-tooling" aria-labelledby="proof-toolin
       <li><span>02 / PROVE</span><strong>Barretenberg</strong><p>With the private witness, the pinned bb backend generates a zero-knowledge proof of the constrained statement.</p></li>
       <li><span>03 / VERIFY</span><strong>Offline verifier</strong><p>A separately invoked verifier reconstructs public inputs from canonical CBOR and checks the proof with the expected verification key, without the private speed.</p></li>
     </ol>
+    <aside class="proof-evidence-checkpoint" aria-labelledby="proof-evidence-checkpoint-title">
+      <h4 id="proof-evidence-checkpoint-title">SITL and offline proof: distinct evidence</h4>
+      <p>Local ArduPilot Copter 4.7.1 SITL (TAG #86): PASS for isolated, receive-only MAVLink2 intake of two GLOBAL_POSITION_INT observations and TAG normalization. This does not establish telemetry truth.</p>
+      <p>Independent synthetic ZK checkpoint (14 November 2026): historical Qube evidence records proof generation and offline verifier VALID with the pinned verification key. This proof was separate from the SITL observations.</p>
+      <p>Combined SITL → 600 cm/s predicate → ZK: NO-GO / not demonstrated end to end. The speed predicate produced different outcomes across isolated SITL sessions; no SITL-derived ZK proof was generated or verified.</p>
+    </aside>
     <nav class="proof-tooling-links" aria-label="Tool documentation and TAG implementation">
       <a href="https://www.noir-lang.org/docs/">Noir documentation</a>
       <a href="https://barretenberg.aztec.network/docs/">Barretenberg documentation</a>
