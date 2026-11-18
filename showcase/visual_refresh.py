@@ -279,7 +279,7 @@ VISUAL_CSS = """
     .hero-art:before{opacity:.24;background:repeating-linear-gradient(0deg,transparent 0 72px,#6e9b9e35 73px),repeating-linear-gradient(90deg,transparent 0 72px,#6e9b9e35 73px)}
     .hero-art:after{background:linear-gradient(180deg,#071216cf 0,transparent 20%,transparent 79%,#061117ea 100%),linear-gradient(90deg,#0711168e,transparent 20%,transparent 82%,#0711168e);pointer-events:none}
     .hero-scene{overflow:hidden}
-    .hero-flight{transform-box:view-box;transform-origin:0 0;animation:hero-hover 10s ease-in-out infinite;will-change:transform}
+    .hero-vehicle{transform-box:view-box;transform-origin:0 0;animation:hero-hover 10s ease-in-out infinite;will-change:transform}
     .hero-floor-shadow{animation:hero-shadow-drift 10s ease-in-out infinite;transform-origin:402px 416px}
     .hero-sweep{transform-origin:385px 350px;animation:hero-radar-sweep 22s linear infinite}
     .hero-route-flow{animation:hero-route-drift 11s linear infinite}
@@ -300,7 +300,7 @@ VISUAL_CSS = """
     @keyframes hero-propeller{to{transform:rotate(360deg)}}
     @keyframes hero-beacon{0%,100%{opacity:.15;transform:scale(.8)}45%{opacity:.65;transform:scale(1.2)}80%{opacity:.12;transform:scale(1.42)}}
     @media(prefers-reduced-motion:reduce){
-      .hero-flight,.hero-floor-shadow,.hero-sweep,.hero-route-flow,.hero-rotor-disc,.hero-beacon-pulse{animation:none!important;will-change:auto}
+      .hero-vehicle,.hero-floor-shadow,.hero-sweep,.hero-route-flow,.hero-rotor-disc,.hero-beacon-pulse{animation:none!important;will-change:auto}
     }
 
     @media(prefers-reduced-motion:reduce){
@@ -408,7 +408,7 @@ HERO_SCENE_SVG = r'''<svg class="hero-scene" viewBox="0 0 760 700" preserveAspec
           <ellipse cx="402" cy="416" rx="147" ry="30" transform="rotate(-22 402 416)" fill="#02080e" opacity=".82" filter="url(#hero-soft-shadow)"/>
           <ellipse cx="399" cy="419" rx="99" ry="11" transform="rotate(-22 399 419)" fill="#020b10" opacity=".7"/>
         </g>
-        <g class="hero-flight" transform="translate(389 350)">
+        <g class="hero-vehicle" transform="translate(389 350)">
           <g transform="rotate(-20)">
             <ellipse cx="0" cy="8" rx="187" ry="127" fill="url(#hero-bloom)" opacity=".24"/>
             <!-- Forged, shaded rear arms and lift-motor pods: conceptual vehicle only. -->
