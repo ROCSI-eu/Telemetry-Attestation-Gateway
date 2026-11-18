@@ -24,7 +24,7 @@ class StaticShowcaseTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             target = Path(folder)
             build(target)
-            ro = (target / "index.html").read_text(encoding="utf-8")
+            ro = (target / "ro/index.html").read_text(encoding="utf-8")
             en = (target / "en/index.html").read_text(encoding="utf-8")
             for page, heading, application, scope, title in (
                 (ro, "Verifică o condiție fără să divulgi toată telemetria",
@@ -62,7 +62,7 @@ class StaticShowcaseTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             target = Path(folder)
             build(target)
-            ro = (target / "index.html").read_text(encoding="utf-8")
+            ro = (target / "ro/index.html").read_text(encoding="utf-8")
             en = (target / "en/index.html").read_text(encoding="utf-8")
             for page, words in (
                 (ro, ("TAG / OBSERVAȚIE SINTETICĂ", "DOAR OBSERVAȚIE",
@@ -89,7 +89,7 @@ class StaticShowcaseTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             target = Path(folder)
             build(target)
-            ro = (target / "index.html").read_text(encoding="utf-8")
+            ro = (target / "ro/index.html").read_text(encoding="utf-8")
             en = (target / "en/index.html").read_text(encoding="utf-8")
             expected = (
                 'https://www.noir-lang.org/docs/',
@@ -135,7 +135,7 @@ class StaticShowcaseTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             target = Path(folder)
             build(target)
-            ro = (target / "index.html").read_text(encoding="utf-8")
+            ro = (target / "ro/index.html").read_text(encoding="utf-8")
             en = (target / "en/index.html").read_text(encoding="utf-8")
             for page, heading, sitl, proof, incomplete in (
                 (ro, "SITL și dovada offline: rezultate distincte", "normalizarea TAG", "rezultatul VALID",
@@ -189,7 +189,7 @@ class StaticShowcaseTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             target = Path(folder)
             build(target)
-            ro = (target / "index.html").read_text(encoding="utf-8")
+            ro = (target / "ro/index.html").read_text(encoding="utf-8")
             en = (target / "en/index.html").read_text(encoding="utf-8")
             for page, headline, action in (
                 (ro, "ANIMAȚIE CONCEPTUALĂ", "Reia explicația"),
@@ -235,7 +235,7 @@ class StaticShowcaseTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             target = Path(folder)
             build(target)
-            ro = (target / "index.html").read_text(encoding="utf-8")
+            ro = (target / "ro/index.html").read_text(encoding="utf-8")
             en = (target / "en/index.html").read_text(encoding="utf-8")
             cases = set(json.loads(SCENARIOS.read_text(encoding="utf-8"))["cases"])
             for page in (ro, en):
@@ -268,7 +268,7 @@ class StaticShowcaseTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             target = Path(folder)
             build(target)
-            ro = (target / "index.html").read_text(encoding="utf-8")
+            ro = (target / "ro/index.html").read_text(encoding="utf-8")
             en = (target / "en/index.html").read_text(encoding="utf-8")
             for page in (ro, en):
                 self.assertEqual(page.count('id="scenario"'), 1)
@@ -302,12 +302,12 @@ class StaticShowcaseTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             target = Path(folder)
             self.assertEqual(set(build(target)), {
-                "index.html", "en/index.html", "404.html", "en/404.html",
+                "ro/index.html", "en/index.html", "404.html", "en/404.html",
                 "evidence-results.json", "authentic-evidence.json", "_headers", "_redirects",
                 "robots.txt", "assets/favicon.svg", "assets/favicon.ico", "assets/apple-touch-icon.png",
                 "og/ro.png", "og/en.png",
             })
-            html = (target / "index.html").read_text(encoding="utf-8")
+            html = (target / "ro/index.html").read_text(encoding="utf-8")
             self.assertIn('lang="ro"', html)
             self.assertIn("Centru de comandă și control", html)
             self.assertIn("DEMONSTRAȚIE PUBLICĂ · DOAR REZULTATE PRECALCULATE", html)
@@ -336,18 +336,19 @@ class StaticShowcaseTests(unittest.TestCase):
             self.assertIn('<meta property="og:locale" content="ro_RO">', html)
             self.assertIn('<meta name="twitter:card" content="summary_large_image">', html)
 
-    def test_romanian_alias_uses_single_permanent_pages_redirect(self) -> None:
+    def test_root_redirects_to_romanian_canonical_page(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             target = Path(folder)
             build(target)
             self.assertEqual(
                 (target / "_redirects").read_text(encoding="utf-8"),
-                "/ro/ / 301\n",
+                "/ /ro/ 301\n",
             )
-            self.assertFalse((target / "ro").exists())
-            html = (target / "index.html").read_text(encoding="utf-8")
-            self.assertIn('<link rel="canonical" href="https://tag.rocsi.eu/">', html)
-            self.assertIn('<link rel="alternate" hreflang="ro" href="https://tag.rocsi.eu/">', html)
+            self.assertTrue((target / "ro/index.html").is_file())
+            self.assertFalse((target / "index.html").exists())
+            html = (target / "ro/index.html").read_text(encoding="utf-8")
+            self.assertIn('<link rel="canonical" href="https://tag.rocsi.eu/ro/">', html)
+            self.assertIn('<link rel="alternate" hreflang="ro" href="https://tag.rocsi.eu/ro/">', html)
             self.assertIn('<meta property="og:image" content="https://tag.rocsi.eu/og/ro.png">', html)
 
     def test_cloudflare_pages_404_is_static_and_has_no_execution_surface(self) -> None:
@@ -364,11 +365,11 @@ class StaticShowcaseTests(unittest.TestCase):
                 self.assertIn(label, page)
             self.assertIn('lang="ro"', page)
             self.assertIn("Pagina nu a fost găsită", page)
-            self.assertEqual(re.findall(r'href="([^"]+)"', page), ["/", "/en/"])
+            self.assertEqual(re.findall(r'href="([^"]+)"', page), ["/ro/", "/en/"])
             en_page = (target / "en/404.html").read_text()
             self.assertIn('lang="en"', en_page)
             self.assertIn("Page not found", en_page)
-            self.assertEqual(re.findall(r'href="([^"]+)"', en_page), ["/en/", "/"])
+            self.assertEqual(re.findall(r'href="([^"]+)"', en_page), ["/en/", "/ro/"])
             for forbidden in (
                 "<script", "<style", "<form", "<iframe", "<img",
                 "http://", "https://", "/execute", "operator-",
@@ -381,7 +382,7 @@ class StaticShowcaseTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             target = Path(folder)
             build(target)
-            ro = (target / "index.html").read_text(encoding="utf-8")
+            ro = (target / "ro/index.html").read_text(encoding="utf-8")
             en = (target / "en/index.html").read_text(encoding="utf-8")
             self.assertIn('<html lang="ro">', ro)
             self.assertIn('<html lang="en">', en)
@@ -389,7 +390,7 @@ class StaticShowcaseTests(unittest.TestCase):
             self.assertIn('<h1 id="hero-title">Verify the condition. Keep the rest private.</h1>', en)
             self.assertIn("Continuă animația</button>", ro)
             self.assertIn("Resume illustration</button>", en)
-            self.assertIn('href="/" hreflang="ro" lang="ro" aria-current="page"', ro)
+            self.assertIn('href="/ro/" hreflang="ro" lang="ro" aria-current="page"', ro)
             self.assertIn('href="/en/" hreflang="en" lang="en" aria-current="page"', en)
             for language, page, locale in (
                 ("ro", ro, "ro_RO"), ("en", en, "en_US")
@@ -404,7 +405,7 @@ class StaticShowcaseTests(unittest.TestCase):
                 self.assertIn('href="/assets/apple-touch-icon.png"', page)
                 self.assertIn(SHARE[language]["title"], page)
                 self.assertIn(SHARE[language]["description"], page)
-                self.assertIn(f'<link rel="canonical" href="{ORIGIN}{"/" if language=="ro" else "/en/"}">', page)
+                self.assertIn(f'<link rel="canonical" href="{ORIGIN}{"/ro/" if language=="ro" else "/en/"}">', page)
                 self.assertNotIn("operator-panel", page)
                 self.assertEqual(
                     set(re.findall(r'fetch\("([^"]+)"', page)),
@@ -507,7 +508,7 @@ class StaticShowcaseTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             build(Path(folder))
             target = Path(folder)
-            html = (target / "index.html").read_text(encoding="utf-8")
+            html = (target / "ro/index.html").read_text(encoding="utf-8")
             headers = (target / "_headers").read_text(encoding="utf-8")
             css = re.search(r"<style>(.*?)</style>", html, flags=re.S).group(1)
             js = re.search(r"<script>(.*?)</script>", html, flags=re.S).group(1)

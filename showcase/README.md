@@ -64,7 +64,7 @@ python3 -m unittest discover -s showcase -p 'test_*.py' -v
 Use a local static HTTP server in an authorized isolated QA environment to
 inspect the generated **14 files** (13 existing assets plus one Pages redirect configuration). The allowlisted package is:
 
-- \`index.html\`: Romanian-default public page (**Centru de comandă și control**);
+- \`ro/index.html\`: Romanian-default public page (**Centru de comandă și control**);
   \`en/index.html\`: English page (**Mission Control**). Both use the same
   sanitized HTML/CSS/JS, without the operator card, authentication or execution.
 - \`404.html\` and \`en/404.html\`: localized inert not-found pages with
@@ -79,8 +79,8 @@ inspect the generated **14 files** (13 existing assets plus one Pages redirect c
   offline-verifier result; the browser does not verify it or authenticate the JSON.
 - \`_headers\`: static-host security headers including exact inline-content CSP hashes,
   same-origin-only JSON fetches, denied frames/camera/geolocation, no tracking.
-- \`_redirects\`: Cloudflare Pages rule \`/ro/ / 301\` permanently redirects
-  the optional Romanian alias to canonical \`/\` without duplicating its HTML.
+- \`_redirects\`: Cloudflare Pages rule \`/ /ro/ 301\` permanently redirects
+  the bare domain to canonical \`/ro/\` without duplicating Romanian HTML.
 - \`robots.txt\`: allows social crawlers to retrieve the page's **static**
   Open Graph/Twitter metadata and share image. **No indexing** remains enforced by
   HTML \`robots=noindex,nofollow\` and \`X-Robots-Tag: noindex\` response header.
@@ -120,9 +120,10 @@ is needed under any of these options.
 
 ## Localization and social preview
 
-- \`/\` uses **Romanian** (\`<html lang="ro">\`); \`/en/\` uses English
-  (\`lang="en"\`). Native RO/EN links allow an explicit change of language.
-  No cookies, session storage, browser-language detection or redirect logic.
+- \`/\` permanently redirects to \`/ro/\`; \`/ro/\` serves Romanian
+  (\`<html lang="ro">\`), and \`/en/\` serves English (\`lang="en"\`).
+  Native RO/EN links switch languages without cookies, session storage,
+  browser-language detection or client-side redirects.
 - Each path has its own fully rendered HTML title, meta description, Open Graph
   locale/title/description/image, Twitter card and image-alt text, plus
   \`canonical\` and \`hreflang\` alternates. WhatsApp and other crawlers can
