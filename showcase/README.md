@@ -21,13 +21,15 @@ is kept alongside the synthetic mission scene; detailed tools, laboratory scenar
 replays and limitations are contained in expandable technical panels under Research.
 Mock orchestration, offline-verifier evidence and unproven integrated SITL→ZK remain
 explicitly distinct.
-The visitor-facing RO experimental notice is now translated, while the immutable
-machine-readable evidence labels remain in the static JSON. The concept chapter
-adds a self-contained cinematic SVG/CSS illustration of private input, a
-conceptual proof transfer and a minimal public result. It does not process
-telemetry or generate proofs; offscreen/hidden-tab and reduced-motion states
-pause or disable decorative motion. The existing mission and Noir/Barretenberg
-animations and their evidence boundaries remain unchanged.
+The visitor-facing chapters are a concise research presentation, not a
+development status dashboard. The public GitHub-style experimental banner is
+removed; the original boundary labels remain in the immutable evidence JSON
+and the dedicated technical research detail. The cinematic concept scene is
+aligned alongside the introduction on desktop (two explicit columns) and stacked
+above the copy on mobile. Presentation-only labels replace repetitive defensive
+captions. The animations remain illustrations of the concept; their motion,
+offscreen suspension, accessibility preferences, precomputed results and
+independent evidence boundaries remain unaffected.
 Headlines are "Verifică o condiție. Păstrează restul privat." (RO) and
 "Verify the condition. Keep the rest private." (EN).
 

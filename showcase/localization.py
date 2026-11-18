@@ -304,6 +304,30 @@ RO_TEXT = {
     "CHECKABLE": "VERIFICABILĂ",
     "Conceptual animation only. No private measurement or proof is processed here.":
         "Doar animație conceptuală. Aici nu sunt procesate măsurători private sau dovezi.",
+    "MISSION PATTERNS · SELECT A ROUTE": "MODELE DE MISIUNE · ALEGE UN TRASEU",
+    "MISSION ROUTE · THREE PATTERNS": "TRASEU DE MISIUNE · TREI MODELE",
+    "Mission scenario · selected route": "Scenariu de misiune · traseu selectat",
+    # TAG-PRESENTATION-POLISH-01: visitor-facing copy, not immutable evidence labels.
+    "PRIVACY-PRESERVING TELEMETRY": "TELEMETRIE CU PROTECȚIA DATELOR",
+    "RESEARCH · DATA PRIVACY": "CERCETARE · CONFIDENȚIALITATEA DATELOR",
+    "TAG / TELEMETRY RESEARCH": "TAG / CERCETAREA TELEMETRIEI",
+    "PRIVATE DATA · VERIFIABLE CONDITIONS": "DATE PRIVATE · CONDIȚII VERIFICABILE",
+    "What if systems could demonstrate a condition without revealing the data behind it? TAG investigates this direction for telemetry through cryptographic research.": "Cum ar fi dacă un sistem ar putea demonstra respectarea unei condiții fără să dezvăluie datele din spatele ei? TAG cercetează această direcție pentru telemetrie prin metode criptografice.",
+    "SELECTIVE VERIFICATION": "VERIFICARE SELECTIVĂ",
+    "PROOF WORKFLOW": "PROCESUL DOVEZII",
+    "From a private condition to an independently verifiable result.": "De la o condiție privată la un rezultat verificabil independent.",
+    "Rule defined · proof prepared · result checked": "Condiție definită · dovadă pregătită · rezultat verificat",
+    "THE IDEA": "PRINCIPIUL",
+    "From observation to evidence": "De la observație la dovadă",
+    "Three routes help explore how a private observation, a public condition and a verifiable result relate to one another.": "Trei trasee exemplifică legătura dintre o observație privată, o condiție publică și un rezultat verificabil.",
+    "Private observation": "Observație privată",
+    "Defined condition": "Condiție definită",
+    "Verifiable result": "Rezultat verificabil",
+    "01": "01",
+    "02": "02",
+    "03": "03",
+    "TAG brings together research on privacy-preserving proofs and controlled observations from a vehicle simulator.": "TAG reunește cercetarea dovezilor care protejează datele și observațiile controlate dintr-un simulator de vehicule.",
+    "TAG · Telemetry Attestation Gateway. Exploring verifiable conditions, selective disclosure and privacy-preserving telemetry.": "TAG · Telemetry Attestation Gateway. Cercetare despre condiții verificabile, divulgare selectivă și protecția datelor din telemetrie.",
     # Preserve machine-readable evidence codes and experimental markings.
     # The banner is visitor-facing; evidence JSON and local CLI retain immutable codes.
     "EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION":

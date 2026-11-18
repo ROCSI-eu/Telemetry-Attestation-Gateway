@@ -559,13 +559,13 @@ TECH_TOOLING = """  <section class="proof-tooling" aria-labelledby="proof-toolin
     <p class="proof-tooling-intro">The synthetic bounded-speed experiment uses a pinned research toolchain: Noir/Nargo 1.0.0-beta.26 and Barretenberg bb 5.2.0. This is not a production technology selection.</p>
     <figure class="tech-animation" id="tech-animation" data-started="false" data-complete="false" data-motion="paused" data-visibility="hidden">
       <div class="tech-animation-top">
-        <span class="tech-animation-label">CONCEPTUAL ANIMATION / NOT A PROOF RUN</span>
+        <span class="tech-animation-label">PROOF WORKFLOW</span>
         <div class="tech-animation-actions">
           <button type="button" id="tech-animation-replay" aria-controls="tech-animation-svg">Replay explanation</button>
           <button type="button" id="tech-animation-pause" aria-controls="tech-animation-svg" aria-pressed="false" disabled>Pause illustration</button>
         </div>
       </div>
-      <p class="tech-animation-caption">Three illustrative stages, not measured computation or a live verifier.</p>
+      <p class="tech-animation-caption">From a private condition to an independently verifiable result.</p>
       <svg id="tech-animation-svg" viewBox="0 0 900 240" focusable="false" aria-hidden="true">
         <defs>
           <linearGradient id="tech-panel-glow" x1="0" y1="0" x2="1" y2="1">
@@ -601,7 +601,7 @@ TECH_TOOLING = """  <section class="proof-tooling" aria-labelledby="proof-toolin
         </g>
         <rect x="0" y="0" width="1" height="1" class="tech-end-signal"/>
       </svg>
-      <figcaption class="tech-animation-status" id="tech-animation-status" role="status" aria-live="polite">Conceptual illustration · no proving or verification in this browser</figcaption>
+      <figcaption class="tech-animation-status" id="tech-animation-status" role="status" aria-live="polite">Rule defined · proof prepared · result checked</figcaption>
     </figure>
     <ol class="toolchain-diagram" aria-label="Experimental proof flow, executed offline">
       <li><span>01 / DEFINE</span><strong>Noir</strong><p>Noir expresses a constraint comparing a private speed value with a public limit; Nargo compiles the circuit.</p></li>
@@ -666,11 +666,11 @@ TECH_ANIMATION_JS = r"""
 const techAnimation=$("tech-animation");
 const techStatus=$("tech-animation-status");
 const techCopy=document.documentElement.lang==="ro"?{
-  playing:"Ilustrație conceptuală automată · nu este progres backend",
-  reduced:"Ilustrație statică · mișcare redusă; fără execuție backend"
+  playing:"Condiție · dovadă · verificare",
+  reduced:"Condiție · dovadă · verificare"
 }:{
-  playing:"Automatic conceptual illustration · not backend progress",
-  reduced:"Static illustration · reduced motion; no backend execution"
+  playing:"Condition · proof · verification",
+  reduced:"Condition · proof · verification"
 };
 function syncTechAnimation(){
   techAnimation.dataset.visibility=document.hidden||techAnimation.dataset.inview!=="true"?"hidden":"visible";
@@ -823,11 +823,11 @@ MISSION_AUTO_JS = r'''// Entirely predetermined illustrative geometry. PUBLIC-ON
 const mission=$("mission-control");
 const motionPreference=window.matchMedia("(prefers-reduced-motion: reduce)");
 const sceneCopy=document.documentElement.lang==="ro"?{
-  playing:"Ilustrație sintetică automată · fără misiune reală",
-  reduced:"Ilustrație statică · mișcare redusă"
+  playing:"Scenariu de misiune · traseu selectat",
+  reduced:"Scenariu de misiune · traseu selectat"
 }:{
-  playing:"Automatic synthetic illustration · no live mission",
-  reduced:"Static illustration · reduced motion"
+  playing:"Mission scenario · selected route",
+  reduced:"Mission scenario · selected route"
 };
 function syncMissionMotion(){
   mission.dataset.visibility=document.hidden||mission.dataset.inview!=="true"?"hidden":"visible";
@@ -906,7 +906,7 @@ def public_cinematic_motion(html: str) -> str:
 
 
 CONCEPT_VISUAL = """    <figure class="concept-cinema" id="concept-cinema" data-visibility="visible" aria-label="Conceptual illustration of private input becoming a limited-disclosure proof">
-      <div class="concept-cinema-top"><span>PRIVATE INFORMATION</span><span class="concept-live-dot">ILLUSTRATION ONLY</span></div>
+      <div class="concept-cinema-top"><span>PRIVATE INFORMATION</span><span class="concept-live-dot">SELECTIVE VERIFICATION</span></div>
       <svg class="concept-stage" viewBox="0 0 620 620" focusable="false" aria-hidden="true">
         <defs>
           <radialGradient id="cc-atmosphere"><stop stop-color="#2b6267" stop-opacity=".61"/><stop offset=".52" stop-color="#142d35" stop-opacity=".23"/><stop offset="1" stop-color="#070d11" stop-opacity="0"/></radialGradient>
@@ -978,28 +978,29 @@ CONCEPT_VISUAL = """    <figure class="concept-cinema" id="concept-cinema" data-
         </g>
       </svg>
       <div class="concept-cinema-bottom"><span>PRIVATE VALUE <b>NOT EXPOSED</b></span><span>PUBLIC CLAIM <b>CHECKABLE</b></span></div>
-      <figcaption>Conceptual animation only. No private measurement or proof is processed here.</figcaption>
     </figure>
 """
 
 CONCEPT_CSS = """
     /* Public-only cinematic privacy scene; dark industrial visual language is unchanged. */
-    .primer{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:0 clamp(30px,5vw,80px);align-items:start}
-    .primer .primer-kicker{grid-column:1;grid-row:1;align-self:start;padding-top:10px;margin:0 0 18px}
-    .primer .concept-cinema{grid-column:1;grid-row:2 / span 5;min-width:0;align-self:stretch}
-    .primer h2{grid-column:2;grid-row:1}
-    .primer>p:not(.primer-kicker){grid-column:2}
-    .concept-cinema{position:relative;isolation:isolate;overflow:hidden;margin:0;min-height:clamp(390px,40vw,565px);border:1px solid #355058;background:radial-gradient(ellipse at 50% 34%,#18313a 0%,#0b171d 56%,#080e12 100%);box-shadow:inset 0 0 70px #050b1099}
+    .primer{display:grid;grid-template-columns:minmax(0,.98fr) minmax(0,1.02fr);column-gap:clamp(32px,4.1vw,72px);align-items:start}
+    .primer .primer-visual,.primer .primer-copy{display:flex;flex-direction:column;align-items:stretch;min-width:0;gap:0}
+    .primer .primer-visual{grid-column:1;grid-row:1}
+    .primer .primer-copy{grid-column:2;grid-row:1}
+    .primer .primer-visual .primer-kicker{grid-column:auto;grid-row:auto;margin:0 0 24px;padding:4px 0 0;line-height:1.4}
+    .primer .primer-visual .concept-cinema{grid-column:auto;grid-row:auto;align-self:stretch;width:100%;min-width:0}
+    .primer .primer-copy h2{grid-column:auto;grid-row:auto;margin:0 0 30px}
+    .primer .primer-copy p{grid-column:auto;grid-row:auto;margin:8px 0 12px}
+    .concept-cinema{position:relative;isolation:isolate;overflow:hidden;margin:0;min-height:0;border:1px solid #355058;background:radial-gradient(ellipse at 50% 34%,#18313a 0%,#0b171d 56%,#080e12 100%);box-shadow:inset 0 0 70px #050b1099}
     .concept-cinema:before{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 39px,#88b8b908 40px),repeating-linear-gradient(90deg,transparent 0 39px,#88b8b908 40px);z-index:0}
     .concept-cinema:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,#0a121ad9,transparent 19%,transparent 78%,#081218e8);z-index:1}
     .concept-stage{position:relative;z-index:1;display:block;width:100%;height:auto;min-height:340px;filter:drop-shadow(0 20px 28px #02090bd0)}
     .concept-cinema-top,.concept-cinema-bottom{position:absolute;z-index:2;left:22px;right:22px;display:flex;justify-content:space-between;gap:16px;align-items:center;font-size:.6rem;line-height:1.5;font-weight:800;letter-spacing:.105em;color:#b9d2cd}
-    .concept-cinema-top{top:20px}.concept-cinema-bottom{bottom:58px;align-items:flex-start}
+    .concept-cinema-top{top:20px}    .concept-cinema-bottom{bottom:24px;align-items:flex-start}
     .concept-cinema-bottom span{max-width:45%;display:flex;flex-direction:column;gap:4px}
     .concept-cinema-bottom span:last-child{text-align:right}
     .concept-cinema-bottom b{color:#eac997;font-size:.69rem}
     .concept-live-dot{color:#e3c38c}.concept-live-dot:before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:#e6c589;box-shadow:0 0 12px #e6c589a1;margin-right:8px}
-    .concept-cinema figcaption{position:absolute;z-index:2;bottom:17px;left:22px;right:22px;border-top:1px solid #426064;padding-top:9px;color:#aabfbd;font-size:.65rem;line-height:1.4}
     .concept-private-wave{animation:concept-wave 7.2s ease-in-out infinite alternate}
     .concept-scan{animation:concept-scan 5.5s ease-in-out infinite}
     .concept-privacy-shield{transform-origin:310px 258px;animation:concept-shield 5.5s ease-in-out infinite}
@@ -1015,8 +1016,8 @@ CONCEPT_CSS = """
     @keyframes concept-packet{0%,8%{opacity:0;transform:translateY(0)}18%{opacity:.95}64%{opacity:1;transform:translateY(70px)}75%,100%{opacity:0;transform:translateY(70px)}}
     .concept-cinema[data-visibility="hidden"] .concept-private-wave,.concept-cinema[data-visibility="hidden"] .concept-scan,.concept-cinema[data-visibility="hidden"] .concept-privacy-shield,.concept-cinema[data-visibility="hidden"] .concept-result,.concept-cinema[data-visibility="hidden"] .concept-proof-ring,.concept-cinema[data-visibility="hidden"] .concept-pulse{animation-play-state:paused!important}
     @media(prefers-reduced-motion:reduce){.concept-cinema .concept-private-wave,.concept-cinema .concept-scan,.concept-cinema .concept-privacy-shield,.concept-cinema .concept-result,.concept-cinema .concept-proof-ring,.concept-cinema .concept-pulse{animation:none!important}.concept-cinema .concept-result{opacity:1}.concept-cinema .concept-pulse{opacity:0}}
-    @media(max-width:750px){.primer{display:flex;flex-direction:column;gap:0}.primer .primer-kicker{order:0}.primer .concept-cinema{order:1;align-self:stretch;width:100%;margin:0 0 34px;min-height:0}.primer h2{order:2}.primer>p:not(.primer-kicker){order:3}.concept-stage{min-height:0}}
-    @media(max-width:420px){.concept-cinema-top,.concept-cinema-bottom{left:13px;right:13px;font-size:.51rem}.concept-cinema figcaption{left:13px;right:13px;font-size:.61rem}.concept-cinema-bottom{bottom:54px}}
+    @media(max-width:750px){.primer{display:flex;flex-direction:column;gap:0}.primer .primer-visual{width:100%;order:0}.primer .primer-copy{width:100%;order:1}.primer .primer-visual .primer-kicker{margin-bottom:22px}.primer .primer-visual .concept-cinema{margin:0 0 34px}.concept-stage{min-height:0}}
+    @media(max-width:420px){.concept-cinema-top,.concept-cinema-bottom{left:13px;right:13px;font-size:.51rem}.concept-cinema-bottom{bottom:14px}}
 """
 
 CONCEPT_VISIBILITY_JS = r"""
@@ -1082,20 +1083,20 @@ def redesign_public_html(html: str) -> str:
       <a href="#use-cases">Applications</a>
       <a href="#research">The Research</a>
     </nav>
-    <div class="header-status"><div class="pill" id="console-mode">PUBLIC SHOWCASE · PRECOMPUTED ONLY</div></div>
+    <div class="header-status"><div class="pill" id="console-mode">PRIVACY-PRESERVING TELEMETRY</div></div>
   </header>
   <section class="hero" aria-labelledby="hero-title">
     <div class="hero-content">
-      <p class="hero-overline">EXPERIMENTAL RESEARCH · DATA PRIVACY</p>
+      <p class="hero-overline">RESEARCH · DATA PRIVACY</p>
       <h1 id="hero-title">Verify the condition. Keep the rest private.</h1>
-      <p class="sub">What if a system could prove a condition was met without revealing the data behind it? TAG explores this idea for telemetry through controlled experiments using synthetic data.</p>
+      <p class="sub">What if systems could demonstrate a condition without revealing the data behind it? TAG investigates this direction for telemetry through cryptographic research.</p>
       <div class="hero-actions"><a href="#principle">Explore the concept</a><a href="#mission-control">See the demonstration</a></div>
     </div>
     <div class="hero-art" aria-hidden="true">
-      <span class="hero-art-label">TAG / SYNTHETIC OBSERVATION</span>
+      <span class="hero-art-label">TAG / TELEMETRY RESEARCH</span>
       <span class="hero-art-index">A–B–C / 01</span>
 {HERO_SCENE_SVG}
-      <span class="hero-art-caption">A0 / SYNTHETIC · OBSERVATION ONLY</span>
+      <span class="hero-art-caption">PRIVATE DATA · VERIFIABLE CONDITIONS</span>
     </div>
   </section>"""
     html = html.replace(original_header.group(), header, 1)
@@ -1120,17 +1121,20 @@ def redesign_public_html(html: str) -> str:
     if 'id="primer-title"' not in intro or 'id="use-cases-title"' not in applications:
         raise ValueError("unexpected editorial source text")
     intro = '''  <section class="primer" id="principle" aria-labelledby="primer-title">
-    <p class="primer-kicker">01 / THE CONCEPT</p>
+    <div class="primer-visual">
+      <p class="primer-kicker">01 / THE CONCEPT</p>
+    </div>
+    <div class="primer-copy">
     <h2 id="primer-title">Less data exposed. A condition that can be verified.</h2>
     <p>Verifying a rule can require sharing detailed information. TAG investigates a different approach: proving that one defined condition is satisfied while keeping the underlying value private.</p>
     <p class="primer-example"><strong>A simple example:</strong> A vehicle must stay within a speed limit. A cryptographic proof could establish that a private speed value meets the public limit without disclosing the exact speed.</p>
-    <p>A valid proof does not, by itself, establish whether the original measurement was trustworthy.</p>
+    </div>
   </section>
 '''
-    opener = '<p class="primer-kicker">01 / THE CONCEPT</p>'
+    opener = '      <p class="primer-kicker">01 / THE CONCEPT</p>\n    </div>'
     if intro.count(opener) != 1:
         raise ValueError("concept illustration insertion anchor changed")
-    intro = intro.replace(opener, opener + chr(10) + CONCEPT_VISUAL, 1)
+    intro = intro.replace(opener, '      <p class="primer-kicker">01 / THE CONCEPT</p>\n' + CONCEPT_VISUAL + '    </div>', 1)
     applications = '''  <section class="use-cases" id="use-cases" aria-labelledby="use-cases-title">
     <p class="section-overline">03 / POTENTIAL APPLICATIONS</p>
     <h2 id="use-cases-title">Where could this capability matter?</h2>
@@ -1140,7 +1144,6 @@ def redesign_public_html(html: str) -> str:
       <article><h3>Autonomous systems</h3><p>Aerial, ground and maritime vehicles could provide research contexts for verifying conditions about operational data.</p></article>
       <article><h3>Information exchange</h3><p>Future systems could exchange verifiable results while reducing the amount of sensitive information they share.</p></article>
     </div>
-    <p class="editorial-caveat">These are possible applications, not validated operational deployments.</p>
   </section>
 '''
     figure_match = re.search(r'<figure class="tech-animation".*?</figure>', TECH_TOOLING, flags=re.S)
@@ -1169,7 +1172,7 @@ def redesign_public_html(html: str) -> str:
         "These fields never represent running computation on this public site. The mock scenario panel and independently recorded offline-verifier result below remain separate from the illustration.":
             "Choose a route to explore a predefined animation. Neither the route nor the vehicle represents measured telemetry.",
         "EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION. No MAVLink commands, navigation control, mission edits, or source assurance. Animation never changes evidence status.":
-            "Illustration only. The animation is not a real mission or a verification result.",
+            "Route selection shows three patterns for the same verification concept.",
     }
     for old, new in mission_copy.items():
         if mission.count(old) != 1:
@@ -1181,6 +1184,32 @@ def redesign_public_html(html: str) -> str:
         if mission.count(old) != 1:
             raise ValueError("public mission state drift: " + ident)
         mission = mission.replace(old, f'id="{ident}">{val}</dd>', 1)
+    side_match = re.search(r'<aside class="mission-side".*?</aside>', mission, flags=re.S)
+    if side_match is None or mission.count('<aside class="mission-side"') != 1:
+        raise ValueError("public mission sidebar drift")
+    mission = mission.replace(side_match.group(), '''<aside class="mission-side" aria-label="Three steps of selective verification">
+        <div class="mission-readout">
+          <div class="mission-label">THE IDEA</div>
+          <h3>From observation to evidence</h3>
+          <p>Three routes help explore how a private observation, a public condition and a verifiable result relate to one another.</p>
+          <ol class="mission-concept-steps">
+            <li><span>01</span>Private observation</li>
+            <li><span>02</span>Defined condition</li>
+            <li><span>03</span>Verifiable result</li>
+          </ol>
+        </div>
+      </aside>''', 1)
+    mission = re.sub(r'\n    <p class="mission-boundary">.*?</p>', "", mission, count=1, flags=re.S)
+    # Reframe route labels as concept presentation, not a runtime disclaimer.
+    mission_labels = {
+        "ILLUSTRATION ONLY · NO LIVE STREAM": "MISSION PATTERNS · SELECT A ROUTE",
+        "SYNTHETIC ROUTE · NOT GEOGRAPHIC": "MISSION ROUTE · THREE PATTERNS",
+        "Ready · prerecorded illustration only": "Mission scenario · selected route",
+    }
+    for old, new in mission_labels.items():
+        if mission.count(old) != 1:
+            raise ValueError("mission route label drift: "+old)
+        mission = mission.replace(old, new, 1)
     proof_explainer = '''    <div class="editorial-process" aria-labelledby="editorial-process-title">
       <p class="section-overline">THE IDEA IN THREE STEPS</p>
       <h3 id="editorial-process-title">How is a proof constructed?</h3>
@@ -1189,7 +1218,6 @@ def redesign_public_html(html: str) -> str:
         <li><span>02 / PROOF</span><strong>Generate the proof</strong><p>Use specialized cryptographic tools to prove the condition without disclosing the private value.</p></li>
         <li><span>03 / CHECK</span><strong>Verify independently</strong><p>A verifier checks the proof using public inputs, without receiving the private speed.</p></li>
       </ol>
-      <p class="editorial-caveat">This animation explains the concept. Proof generation and offline verification were performed separately, outside the browser.</p>
     </div>
 '''
     last = mission.rfind('  </section>')
@@ -1203,7 +1231,7 @@ def redesign_public_html(html: str) -> str:
     research = '''  <section class="research-limits" id="research" aria-labelledby="research-title">
     <p class="section-overline">04 / THE RESEARCH</p>
     <h2 class="section-display" id="research-title">What have we demonstrated so far?</h2>
-    <p class="editorial-chapter-intro">TAG is experimental research. The independent results below are useful starting points, not a complete demonstration in a real-world system.</p>
+    <p class="editorial-chapter-intro">TAG brings together research on privacy-preserving proofs and controlled observations from a vehicle simulator.</p>
     <div class="research-summary">
       <article><span>01 / CRYPTOGRAPHY</span><h3>Synthetic proof</h3><p>A separate experiment recorded generation of a proof and its acceptance by an offline verifier using the expected verification key.</p></article>
       <article><span>02 / SIMULATION</span><h3>Simulator observations</h3><p>An isolated ArduPilot SITL session received and normalized two synthetic observations through a receive-only interface.</p></article>
@@ -1228,10 +1256,14 @@ def redesign_public_html(html: str) -> str:
 '''
     html = html[:a] + intro + mission + applications + research + html[f:]
     footer_old = "Public static technology showcase. Experimental synthetic-only, precomputed results. No visitor execution, vehicle connection, telemetry upload, analytics, tracking, external fonts or proof jobs. The browser does not independently verify proofs."
-    footer_new = "Experimental research into verifying telemetry conditions with limited disclosure. Public demonstrations use synthetic data and previously recorded results. This site does not control vehicles, verify cryptographic proofs or represent a production-validated solution."
+    footer_new = "TAG · Telemetry Attestation Gateway. Exploring verifiable conditions, selective disclosure and privacy-preserving telemetry."
     if html.count(footer_old) != 1:
         raise ValueError("public footer source changed")
     html = html.replace(footer_old, footer_new, 1)
+    public_notice = '<div class="notice" role="note">EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION</div>\n'
+    if html.count(public_notice) != 1:
+        raise ValueError("public notice source changed")
+    html = html.replace(public_notice, "", 1)
     if html.count("</style>") != 1:
         raise ValueError("public style shape changed")
     if html.count("</script>") != 1:
