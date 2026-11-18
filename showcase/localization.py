@@ -412,7 +412,7 @@ def social_metadata(html: str, language: str) -> str:
     if language not in SHARE:
         raise ValueError("unsupported social locale")
     meta = SHARE[language]
-    url = ORIGIN + ("/" if language == "ro" else "/en/")
+    url = ORIGIN + ("/ro/" if language == "ro" else "/en/")
     image_url = ORIGIN + ("/og/ro.png" if language == "ro" else "/og/en.png")
     oglocale = "ro_RO" if language == "ro" else "en_US"
     altlocale = "en_US" if language == "ro" else "ro_RO"
@@ -420,9 +420,9 @@ def social_metadata(html: str, language: str) -> str:
         return escape(s, quote=True)
     additions = f'''
   <link rel="canonical" href="{url}">
-  <link rel="alternate" hreflang="ro" href="{ORIGIN}/">
+  <link rel="alternate" hreflang="ro" href="{ORIGIN}/ro/">
   <link rel="alternate" hreflang="en" href="{ORIGIN}/en/">
-  <link rel="alternate" hreflang="x-default" href="{ORIGIN}/">
+  <link rel="alternate" hreflang="x-default" href="{ORIGIN}/ro/">
   <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
   <link rel="alternate icon" type="image/x-icon" href="/assets/favicon.ico">
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
@@ -452,7 +452,7 @@ def social_metadata(html: str, language: str) -> str:
     html = html.replace("</head>", additions + "</head>", 1)
     switch = (
         '<nav class="language-switch" aria-label="Limbă / Language">'
-        f'<a href="/" hreflang="ro" lang="ro" aria-current="{"page" if language=="ro" else "false"}">RO</a>'
+        f'<a href="/ro/" hreflang="ro" lang="ro" aria-current="{"page" if language=="ro" else "false"}">RO</a>'
         f'<a href="/en/" hreflang="en" lang="en" aria-current="{"page" if language=="en" else "false"}">EN</a>'
         "</nav>"
     )
@@ -487,7 +487,7 @@ def localize_404(language: str) -> str:
     <h1>404 · Pagina nu a fost găsită</h1>
     <p>Acest demonstrator static experimental nu are pagini sau servicii live la această adresă.</p>
     <p>EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION</p>
-    <p><a href="/">Înapoi la Centrul de comandă și control</a> · <a href="/en/">English</a></p>
+    <p><a href="/ro/">Înapoi la Centrul de comandă și control</a> · <a href="/en/">English</a></p>
   </main>
 </body>
 </html>
@@ -506,7 +506,7 @@ def localize_404(language: str) -> str:
     <h1>404 · Page not found</h1>
     <p>This experimental static showcase has no page or live service at this path.</p>
     <p>EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION</p>
-    <p><a href="/en/">Return to Mission Control</a> · <a href="/">Română</a></p>
+    <p><a href="/en/">Return to Mission Control</a> · <a href="/ro/">Română</a></p>
   </main>
 </body>
 </html>
