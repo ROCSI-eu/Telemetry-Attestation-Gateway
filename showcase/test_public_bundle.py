@@ -225,26 +225,29 @@ class StaticShowcaseTests(unittest.TestCase):
             build(target)
             ro = (target / "ro/index.html").read_text(encoding="utf-8")
             en = (target / "en/index.html").read_text(encoding="utf-8")
-            for page, headline, action in (
-                (ro, "ANIMAȚIE CONCEPTUALĂ", "Reia explicația"),
-                (en, "CONCEPTUAL ANIMATION", "Replay explanation"),
+            for page, headline in (
+                (ro, "ANIMAȚIE CONCEPTUALĂ"),
+                (en, "CONCEPTUAL ANIMATION"),
             ):
                 self.assertEqual(page.count('id="tech-animation"'), 1)
                 self.assertIn('id="tech-animation-svg"', page)
+                self.assertIn('class="tech-scene-scroll" tabindex="0"', page)
                 self.assertIn('aria-hidden="true"', page)
-                self.assertIn('id="tech-animation-pause"', page)
-                self.assertIn('id="tech-animation-replay"', page)
-                self.assertIn('data-motion="paused"', page)
-                self.assertIn('data-started="false"', page)
-                self.assertIn('class="tech-end-signal"', page)
+                self.assertIn('data-started="true" data-visibility="visible"', page)
+                for removed in ('id="tech-animation-pause"', 'id="tech-animation-replay"',
+                                'id="mission-replay"', 'id="mission-motion-toggle"'):
+                    self.assertNotIn(removed, page)
+                self.assertIn('class="tech-panel-depth"', page)
+                self.assertIn('class="tech-highlight tech-highlight-one"', page)
+                self.assertIn('class="tech-highlight tech-highlight-two"', page)
+                self.assertIn('class="tech-highlight tech-highlight-three"', page)
                 self.assertIn('class="tech-transfer tech-transfer-one"', page)
                 self.assertIn('class="tech-transfer tech-transfer-two"', page)
-                self.assertIn('animation:tech-define 12s', page)
-                self.assertIn('animation:tech-prove 12s', page)
-                self.assertIn('animation:tech-verify 12s', page)
-                self.assertIn('tech-animation .tech-transfer{animation:none!important}', page)
+                self.assertIn('animation:tech-cycle-one 15s', page)
+                self.assertIn('animation:tech-cycle-two 15s', page)
+                self.assertIn('animation:tech-cycle-three 15s', page)
+                self.assertIn('animation:none!important', page)
                 self.assertIn(headline, page)
-                self.assertIn(action, page)
                 self.assertTrue(page.index('id="technical-evidence-title"')
                                 < page.index('id="tech-animation"')
                                 < page.index('id="scenario-title"'))
@@ -258,8 +261,10 @@ class StaticShowcaseTests(unittest.TestCase):
             script = re.search(r'<script>(.*?)</script>', en, flags=re.S).group(1)
             self.assertIn('const techObserver=new IntersectionObserver', script)
             self.assertIn('document.addEventListener("visibilitychange",syncTechAnimation)', script)
-            self.assertIn('motionPreference.addEventListener("change",()=>{', script)
-            self.assertIn('techEnd.addEventListener("animationend",event=>{', script)
+            self.assertIn('motionPreference.addEventListener("change",syncTechAnimation)', script)
+            self.assertIn('techAnimation.dataset.started="true"', script)
+            self.assertNotIn('techReplay', script)
+            self.assertNotIn('techPause', script)
             self.assertNotIn('setInterval(', script)
             self.assertNotIn('setTimeout(', script)
             self.assertEqual(script,
@@ -422,8 +427,10 @@ class StaticShowcaseTests(unittest.TestCase):
             self.assertIn('<html lang="en">', en)
             self.assertIn('<h1 id="hero-title">Verifică o condiție. Păstrează restul privat.</h1>', ro)
             self.assertIn('<h1 id="hero-title">Verify the condition. Keep the rest private.</h1>', en)
-            self.assertIn("Continuă animația</button>", ro)
-            self.assertIn("Resume illustration</button>", en)
+            self.assertIn('id="mission-pattern"', ro)
+            self.assertIn('id="mission-pattern"', en)
+            self.assertNotIn('id="mission-motion-toggle"', ro)
+            self.assertNotIn('id="mission-replay"', en)
             self.assertIn('href="/ro/" hreflang="ro" lang="ro" aria-current="page"', ro)
             self.assertIn('href="/en/" hreflang="en" lang="en" aria-current="page"', en)
             for language, page, locale in (
@@ -528,14 +535,33 @@ class StaticShowcaseTests(unittest.TestCase):
 
     def test_motion_accessibility_and_no_backend_animation_coupling(self) -> None:
         html = public_html(CONSOLE.read_text(encoding="utf-8"))
-        self.assertIn('id="mission-motion-toggle" type="button" aria-pressed="true"', html)
-        self.assertIn("document.addEventListener(\"visibilitychange\",syncMissionMotion)", html)
-        self.assertIn('motionPreference.addEventListener("change",()=>{', html)
-        self.assertIn('@media(prefers-reduced-motion:reduce){.mission-craft{animation:none!important', html)
-        self.assertIn('.mission-control[data-scene-started="true"][data-motion="paused"] .mission-craft', html)
-        self.assertIn("toggle.disabled=reduce || !active;", html)
+        source = CONSOLE.read_text(encoding="utf-8")
+        # Local experiment retains manual controls; public HTML intentionally omits them.
+        self.assertIn('id="mission-motion-toggle"', source)
+        self.assertIn('id="mission-replay"', source)
+        self.assertNotIn('id="mission-motion-toggle"', html)
+        self.assertNotIn('id="mission-replay"', html)
+        self.assertIn('id="mission-pattern"', html)
+        self.assertIn('data-motion="playing" data-visibility="visible" data-scene="pass"', html)
+        self.assertIn('const missionObserver=new IntersectionObserver', html)
+        self.assertIn('document.addEventListener("visibilitychange",syncMissionMotion)', html)
+        self.assertIn('motionPreference.addEventListener("change",syncMissionMotion)', html)
+        self.assertIn('startMissionScene();', html)
+        self.assertIn('mission.dataset.scene=scene', html)
+        self.assertIn('mission.dataset.sceneStarted="true"', html)
+        for name in ('pass', 'hold', 'return'):
+            self.assertIn(f'data-scene="{name}"] .mission-craft', html)
+        for animation in ('mission-cinema-pass', 'mission-cinema-hold',
+                          'mission-cinema-return', 'mission-rotor-spin'):
+            self.assertIn('@keyframes '+animation, html)
+        self.assertIn('.mission-control .mission-craft{animation:none!important', html)
+        self.assertIn('class="mission-rotor-blades"', html)
+        self.assertIn('class="mission-radar-sector"', html)
+        self.assertIn('class="mission-route-energy"', html)
+        self.assertIn('SYNTHETIC_ONLY', html)
         motion = html.split("// Entirely predetermined illustrative geometry.", 1)[1].split("function render(e)", 1)[0]
-        for forbidden in ("fetch(", "execute(", "setInterval(", "WebSocket(", "renderOperator("):
+        for forbidden in ("fetch(", "execute(", "setInterval(", "WebSocket(", "renderOperator(",
+                          "mission-replay", "mission-motion-toggle"):
             self.assertNotIn(forbidden, motion)
 
     def test_strict_csp_hashes_match_inline_code(self) -> None:

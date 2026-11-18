@@ -378,8 +378,6 @@ def inject_locale_js(english: str) -> str:
         raise ValueError("unexpected typed value rendering")
     english = english.replace(old, new)
     pairs = {
-        'toggle.textContent=reduce?"Illustration stationary · reduced motion":\n    paused?"Resume illustration":"Pause illustration";':
-            'toggle.textContent=reduce?copy.reduce:\n    paused?copy.resume:copy.pause;',
         '$(\"error\").textContent=\"Precomputed scenario file unavailable. Check the same-origin static assets; no live fallback exists.\";':
             '$(\"error\").textContent=copy.unavailable;',
         '$(\"authentic-error\").textContent=\"Loading precomputed offline result; no verification is performed in this browser.\";':

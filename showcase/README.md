@@ -27,11 +27,15 @@ branding, photography, fonts, code, layouts or other third-party assets.
 The public-only transformation lives in showcase/visual_refresh.py and is
 applied after strict operator-surface removal in showcase/build.py; its
 source anchors deliberately fail closed if the console structure changes.
-Only HTML section order, text and CSS change. The static site remains noindex,
-bilingual, CSP-hash protected and free of analytics, external resources, real
-vehicle controls or browser cryptography. All three existing synthetic
-animation patterns, Pause/Resume, reduced-motion support and separate
-precomputed evidence types retain their original logic.
+The static site remains noindex, bilingual, CSP-hash protected and free
+of analytics, external resources, real vehicle controls or browser cryptography.
+The public-only presentation now adds deterministic SVG/CSS motion: both
+mission and Noir/Barretenberg illustrations play automatically when visible,
+without manual Start/Stop/Replay controls. The existing three synthetic mission
+patterns remain selectable and restart automatically on change. Offscreen or
+hidden-tab motion pauses; prefers-reduced-motion freezes both illustrations.
+The local experimental console retains its original controls and logic.
+Recorded mocks and offline verifier evidence remain independent of animation.
 
 **Code-only Draft PR**: neither creating the PR nor passing QA authorizes
 merging, an automatic hosting side effect or deploying the live site. Accept
@@ -47,10 +51,11 @@ python3 scripts/check_docs.py. In an isolated Chromium/Chrome session served
 over loopback, inspect RO and EN at 1440px, 375px and 320px. Confirm the exact
 hero headlines, section order and mobile navigation without overflow; verify
 scenario mock data and the distinct recorded offline verifier outcome. Only
-retest the changed browser presentation and its interaction with the preserved
-animation controls, including settled pause/frozen SVG transform and
-prefers-reduced-motion; reuse prior unaffected evidence. No localhost result
-is a live-domain acceptance or a release gate.
+retest the changed public browser presentation: default auto-motion for both
+illustrations, automatic changes among pass/hold/return, offscreen suspension,
+reduced-motion fallback, and absence of animation playback buttons. The
+Noir/Barretenberg graphic scrolls horizontally on narrow screens. Reuse
+unaffected evidence. Localhost QA is not Production acceptance.
 
 ## Build and scope
 
@@ -150,43 +155,24 @@ and recorded typed outcomes usable by mouse, keyboard and touch; the distinct
 precomputed genuine verifier panel visible; no mislabeled live progress.
 Test representative browsers without claiming untested engine compatibility.
 
-For Pause/Resume, first ensure **reduced motion is off** and the tab is visible.
-Use the control to pause, then check \`aria-pressed=true\`,
-\`data-motion=paused\`, CSS animation \`playState=paused\`, and frozen
-SVG transform **after allowing animation and style sampling to settle**.
-An early transform sample can advance after the click even when pause
-is correct; do not interpret one unsynchronized 240 ms comparison as a defect.
-Paste this non-production diagnostic in the browser DevTools console:
+For the public showcase, both SVG/CSS animations start automatically. Check
+the mission scene with the default pass scenario selected: the mission-craft
+element should use mission-cinema-pass, with four animated rotor groups.
+Changing the selector to hold or return restarts the corresponding synthetic
+animation without clicking another control. No mission or technical-animation
+playback buttons should be rendered. The technical diagram continuously cycles
+through the three conceptual stages while visible; it is never evidence.
 
-\`\`\`js
-(async () => {
-  const root = document.querySelector("#mission-control");
-  const craft = root.querySelector(".mission-craft");
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    return {mode: "reduced-motion", stationary: getComputedStyle(craft).animationName === "none"};
-  }
-  if (root.dataset.motion !== "paused") document.querySelector("#mission-motion-toggle").click();
-  const settle = () => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-  await settle();
-  const state = craft.getAnimations().map(a => a.playState);
-  const first = getComputedStyle(craft).transform;
-  await new Promise(resolve => setTimeout(resolve, 320));
-  await settle();
-  const second = getComputedStyle(craft).transform;
-  return {pressed: document.querySelector("#mission-motion-toggle").getAttribute("aria-pressed"),
-          visibility: root.dataset.visibility, state, frozen: first === second};
-})()
-\`\`\`
-
-Expected: pressed \`"true"\`, visibility \`"visible"\`, animation
-state \`["paused"]\` and frozen \`true\`. Then click Resume and confirm
-\`aria-pressed=false\` and animation \`running\`. In reduced-motion mode,
-the vehicle is stationary, and the toggle is disabled. On hidden tab, the
-animation must pause. This is a **manual acceptance instruction**, not a
-claim that any of those browser checks ran in this PR.
+For accessibility, both SVG animations pause outside the viewport or
+when the tab is hidden. With prefers-reduced-motion: reduce, their CSS
+animation names must be none, while labels and evidence remain readable.
+On narrow screens verify that the technical diagram scrolls horizontally
+inside its own container, without page-level horizontal overflow. Chromium
+QA must also check absence of console exceptions and independent JSON evidence
+loading. These are acceptance procedures, not Production attestations.
 
 Pre-launch **GO** requires: focused CI PASS on exact PR HEAD; code review and
-no new material findings; desktop/mobile + Pause/Resume/reduced-motion
+no new material findings; desktop/mobile + automatic scenario-switch/reduced-motion
 acceptance; a manual inspection of emitted assets and public source/network
 for absent operator execution; approved hosting, TLS, response headers and
 DNS configuration; explicit owner approval for **merge** and a separate
