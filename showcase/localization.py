@@ -295,9 +295,19 @@ RO_TEXT = {
     "Laboratory scenarios and recorded outcomes": "Scenarii de laborator și rezultate înregistrate",
     "These scenarios replay deterministic mocks, not cryptographic verification in the browser. The separately recorded offline-verifier outcome is labeled independently.": "Aceste scenarii redau simulări deterministe, nu verificări criptografice în browser. Rezultatul separat al verificatorului offline este etichetat independent.",
     "Limitations and assumptions": "Limite și ipoteze",
+    # TAG-CONCEPT-VISUAL-01: purely decorative, no real telemetry or browser proving.
+    "PRIVATE INFORMATION": "INFORMAȚII PRIVATE",
+    "ILLUSTRATION ONLY": "DOAR ILUSTRAȚIE",
+    "PRIVATE VALUE": "VALOARE PRIVATĂ",
+    "NOT EXPOSED": "NEDEZVĂLUITĂ",
+    "PUBLIC CLAIM": "CONDIȚIE PUBLICĂ",
+    "CHECKABLE": "VERIFICABILĂ",
+    "Conceptual animation only. No private measurement or proof is processed here.":
+        "Doar animație conceptuală. Aici nu sunt procesate măsurători private sau dovezi.",
     # Preserve machine-readable evidence codes and experimental markings.
+    # The banner is visitor-facing; evidence JSON and local CLI retain immutable codes.
     "EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION":
-        "EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION",
+        "EXPERIMENTAL · EXCLUSIV DATE SINTETICE · NIVEL DE ASIGURARE A0 · NU REPREZINTĂ VALIDARE SAU AUTORIZARE PENTRU PRODUCȚIE",
     "speed_cm_s ≤ maximum_speed_cm_s": "speed_cm_s ≤ maximum_speed_cm_s",
     "NOT_LOADED": "NEÎNCĂRCAT",
     "NOT_OBSERVED": "NEOBSERVAT",
@@ -317,6 +327,7 @@ RO_ARIA = {
     "Experimental proof flow, executed offline": "Flux experimental al dovezii, executat offline",
     "Tool documentation and TAG implementation": "Documentația instrumentelor și implementarea TAG",
     "Technical research panels": "Panouri de cercetare tehnică",
+    "Conceptual illustration of private input becoming a limited-disclosure proof": "Ilustrație conceptuală a transformării unei valori private într-o dovadă cu divulgare limitată",
 }
 
 SCENARIO_RO = {
