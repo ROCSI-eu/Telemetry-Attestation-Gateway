@@ -391,14 +391,14 @@ def build(out: Path) -> tuple[str, ...]:
     scenarios = minimized_scenarios(json.loads(SCENARIOS.read_text(encoding="utf-8")))
     authentic = minimized_verifier(json.loads(VERIFIER.read_text(encoding="utf-8")))
     assets = {
-        "index.html": html_ro,
+        "ro/index.html": html_ro,
         "en/index.html": html_en,
         "404.html": localize_404("ro"),
         "en/404.html": localize_404("en"),
         "evidence-results.json": json.dumps(scenarios, indent=2, ensure_ascii=False) + "\n",
         "authentic-evidence.json": json.dumps(authentic, indent=2, ensure_ascii=False) + "\n",
         "_headers": security_headers(html_ro),
-        "_redirects": '/ro/ / 301\n',
+        "_redirects": '/ /ro/ 301\n',
         # Crawlers need access to static Open Graph metadata and PNGs. The
         # X-Robots-Tag and HTML robots=noindex remain set for search indexing.
         "robots.txt": "User-agent: *\nAllow: /\n",
@@ -409,6 +409,11 @@ def build(out: Path) -> tuple[str, ...]:
         "og/en.png": (media / "og/en.png").read_bytes(),
     }
     target.mkdir(parents=True, exist_ok=True)
+    # Avoid shipping a stale root page if the output directory is reused.
+    obsolete_root = target / "index.html"
+    if obsolete_root.is_symlink() or (obsolete_root.exists() and not obsolete_root.is_file()):
+        raise ValueError("refusing unsafe stale root entry")
+    obsolete_root.unlink(missing_ok=True)
     for filename, content in assets.items():
         destination = target / filename
         if not destination.resolve().is_relative_to(target):
