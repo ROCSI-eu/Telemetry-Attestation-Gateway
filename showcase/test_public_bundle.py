@@ -54,7 +54,7 @@ class StaticShowcaseTests(unittest.TestCase):
                 self.assertIn('id="scope-limits"', page)
                 self.assertIn('id="mission-pattern"', page)
                 self.assertIn("PRECOMPUTED_GENUINE_SYNTHETIC_VERIFICATION", page)
-                self.assertIn('class="notice" role="note"', page)
+                self.assertNotIn('class="notice" role="note"', page)
                 self.assertIn('id="concept-cinema" data-visibility="visible"', page)
                 self.assertIn('class="concept-stage"', page)
                 self.assertIn('class="concept-private-wave"', page)
@@ -64,24 +64,22 @@ class StaticShowcaseTests(unittest.TestCase):
                 self.assertIn('.concept-cinema[data-visibility="hidden"]', page)
                 self.assertIn('.concept-cinema .concept-private-wave', page)
                 self.assertIn('@media(prefers-reduced-motion:reduce)', page)
-            self.assertIn(
-                '<div class="notice" role="note">EXPERIMENTAL · EXCLUSIV DATE SINTETICE · '
-                'NIVEL DE ASIGURARE A0 · NU REPREZINTĂ VALIDARE SAU AUTORIZARE PENTRU PRODUCȚIE</div>',
-                ro,
-            )
-            self.assertIn(
-                '<div class="notice" role="note">EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · '
-                'NOT VALIDATION OR PRODUCTION AUTHORIZATION</div>',
-                en,
-            )
+            self.assertIn('class="primer-visual"', ro)
+            self.assertIn('class="primer-copy"', ro)
+            self.assertIn('class="primer-visual"', en)
+            self.assertNotIn('DOAR ILUSTRAȚIE', ro)
+            self.assertNotIn('Conceptual animation only. No private measurement', en)
+            self.assertIn('VERIFICARE SELECTIVĂ', ro)
+            self.assertIn('SELECTIVE VERIFICATION', en)
+            self.assertIn('CERCETARE · CONFIDENȚIALITATEA DATELOR', ro)
+            self.assertIn('RESEARCH · DATA PRIVACY', en)
+            self.assertIn('A0_SYNTHETIC', ro)  # Technical research, not hero status.
             self.assertIn('VALOARE PRIVATĂ', ro)
             self.assertIn('NEDEZVĂLUITĂ', ro)
             self.assertIn('INFORMAȚII PRIVATE', ro)
             self.assertIn('PUBLIC CLAIM', en)
             self.assertIn('CHECKABLE', en)
-            self.assertIn('Conceptual animation only.', en)
-            self.assertIn("O dovadă validă nu confirmă", ro)
-            self.assertIn("A valid proof does not", en)
+            self.assertIn('PRIVATE VALUE', en)
             self.assertIn("nu a fost încă demonstrat", ro)
             self.assertIn("has not yet been demonstrated", en)
             self.assertEqual(
@@ -96,9 +94,9 @@ class StaticShowcaseTests(unittest.TestCase):
             ro = (target / "ro/index.html").read_text(encoding="utf-8")
             en = (target / "en/index.html").read_text(encoding="utf-8")
             for page, words in (
-                (ro, ("TAG / OBSERVAȚIE SINTETICĂ", "DOAR OBSERVAȚIE",
+                (ro, ("TAG / CERCETAREA TELEMETRIEI", "DATE PRIVATE · CONDIȚII VERIFICABILE",
                       "Definirea condiției", "Verificare independentă")),
-                (en, ("TAG / SYNTHETIC OBSERVATION", "OBSERVATION ONLY",
+                (en, ("TAG / TELEMETRY RESEARCH", "PRIVATE DATA · VERIFIABLE CONDITIONS",
                       "Define the rule", "Verify independently")),
             ):
                 self.assertIn('class="hero-scene"', page)
@@ -110,7 +108,7 @@ class StaticShowcaseTests(unittest.TestCase):
                 for item in words:
                     self.assertIn(item, page)
                 self.assertNotIn('class="hero-axis"', page)
-            self.assertIn('evidence-path', ro)
+            self.assertIn('class="concept-cinema"', ro)
             self.assertEqual(
                 re.search(r'<script>(.*?)</script>', ro, flags=re.S).group(1),
                 re.search(r'<script>(.*?)</script>', en, flags=re.S).group(1),
@@ -257,8 +255,8 @@ class StaticShowcaseTests(unittest.TestCase):
             ro = (target / "ro/index.html").read_text(encoding="utf-8")
             en = (target / "en/index.html").read_text(encoding="utf-8")
             for page, headline in (
-                (ro, "ANIMAȚIE CONCEPTUALĂ"),
-                (en, "CONCEPTUAL ANIMATION"),
+                (ro, "PROCESUL DOVEZII"),
+                (en, "PROOF WORKFLOW"),
             ):
                 self.assertEqual(page.count('id="tech-animation"'), 1)
                 self.assertIn('id="tech-animation-svg"', page)
@@ -287,8 +285,8 @@ class StaticShowcaseTests(unittest.TestCase):
                     {"/evidence-results.json", "/authentic-evidence.json"},
                 )
                 self.assertNotIn('type="module"', page)
-            self.assertIn('fără generare sau verificare în browser', ro)
-            self.assertIn('no proving or verification in this browser', en)
+            self.assertIn('Condiție definită · dovadă pregătită · rezultat verificat', ro)
+            self.assertIn('Rule defined · proof prepared · result checked', en)
             script = re.search(r'<script>(.*?)</script>', en, flags=re.S).group(1)
             self.assertIn('const techObserver=new IntersectionObserver', script)
             self.assertIn('document.addEventListener("visibilitychange",syncTechAnimation)', script)
@@ -380,9 +378,9 @@ class StaticShowcaseTests(unittest.TestCase):
             html = (target / "ro/index.html").read_text(encoding="utf-8")
             self.assertIn('lang="ro"', html)
             self.assertIn("Centru de comandă și control", html)
-            self.assertIn("DEMONSTRAȚIE PUBLICĂ · DOAR REZULTATE PRECALCULATE", html)
+            self.assertIn("TELEMETRIE CU PROTECȚIA DATELOR", html)
             self.assertIn("telemetrie sintetică → normalizare → dovadă → verificare independentă → publicare opțională", html)
-            self.assertIn("TRASEU SINTETIC · FĂRĂ REFERINȚĂ GEOGRAFICĂ", html)
+            self.assertIn("TRASEU DE MISIUNE · TREI MODELE", html)
             self.assertIn("Fără comenzi MAVLink, controlul navigației", html)
             # The banner is localized for visitors; immutable protocol labels
             # remain exact in the exported evidence contracts.
