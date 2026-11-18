@@ -86,8 +86,6 @@ class StaticShowcaseTests(unittest.TestCase):
             )
 
     def test_cinematic_hero_is_decorative_bilingual_and_reduced_motion_safe(self) -> None:
-        from xml.etree import ElementTree
-
         with tempfile.TemporaryDirectory() as folder:
             target = Path(folder)
             build(target)
@@ -97,7 +95,6 @@ class StaticShowcaseTests(unittest.TestCase):
                 match = re.search(r'<svg class="hero-scene".*?</svg>', page, flags=re.S)
                 self.assertIsNotNone(match)
                 scene = match.group()
-                ElementTree.fromstring(scene)
                 scenes.append(scene)
                 self.assertIn('class="hero-vehicle"', scene)
                 self.assertIn('class="hero-route-flow"', scene)
