@@ -86,6 +86,21 @@ def safe_user_bus() -> dict[str, str]:
     }
 
 
+
+def verify_bwrap_size() -> None:
+    """Fail before the listener when the installed bubblewrap cannot bound tmpfs."""
+    try:
+        result = subprocess.run(
+            ["/usr/bin/bwrap", "--help"], stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+            text=True, timeout=3, check=False,
+            env={"PATH": "/usr/bin:/bin", "LANG": "C"},
+        )
+        if result.returncode or "--size BYTES" not in result.stdout:
+            raise Unavailable
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise Unavailable from exc
+
 def systemctl(env: dict[str, str], *args: str) -> str:
     result = subprocess.run(
         ["/usr/bin/systemctl", "--user", *args],
@@ -150,6 +165,7 @@ def build_command(unit: str, parent: Path, seconds: int, check_only: bool) -> li
 def launch(parent: Path, seconds: int, check_only: bool) -> int:
     local.private_parent(parent)
     local.bridge.trusted_bwrap()
+    verify_bwrap_size()
     env = safe_user_bus()
     root = user_cgroup_root() / "tag.slice" / SLICE
     if root.exists():  # stale or concurrent service: require separate owner inspection

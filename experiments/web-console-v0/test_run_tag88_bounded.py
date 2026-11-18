@@ -64,10 +64,28 @@ class BoundedLocalTests(unittest.TestCase):
                 finally:
                     file.write_text(previous)
 
+    def test_missing_bwrap_size_fails_before_any_listener(self):
+        for result in (SimpleNamespace(returncode=0, stdout="--tmpfs DEST"),
+                       SimpleNamespace(returncode=1, stdout="--size BYTES")):
+            with self.subTest(result=result.returncode), \
+                 patch.object(pkg.subprocess, "run", return_value=result) as worker:
+                with self.assertRaises(pkg.Unavailable):
+                    pkg.verify_bwrap_size()
+                self.assertEqual(worker.call_args.args[0],
+                                 ["/usr/bin/bwrap", "--help"])
+
+    def test_supported_bwrap_size_preflight(self):
+        with patch.object(pkg.subprocess, "run",
+                          return_value=SimpleNamespace(
+                              returncode=0, stdout="--size BYTES")) as worker:
+            pkg.verify_bwrap_size()
+        worker.assert_called_once()
+
     def test_no_launch_on_existing_slice(self):
         with patch.object(pkg, "user_cgroup_root", return_value=self.root), \
              patch.object(pkg, "safe_user_bus", return_value={}), \
              patch.object(pkg.local.bridge, "trusted_bwrap"), \
+             patch.object(pkg, "verify_bwrap_size"), \
              patch.object(pkg.subprocess, "run") as spawn:
             (self.root / "tag.slice" / pkg.SLICE).mkdir(parents=True)
             with self.assertRaises(pkg.Unavailable):
@@ -78,6 +96,7 @@ class BoundedLocalTests(unittest.TestCase):
         with patch.object(pkg, "user_cgroup_root", return_value=self.root), \
              patch.object(pkg, "safe_user_bus", return_value={}), \
              patch.object(pkg.local.bridge, "trusted_bwrap"), \
+             patch.object(pkg, "verify_bwrap_size"), \
              patch.object(pkg, "systemctl", return_value="inactive"), \
              patch.object(pkg, "cleanup") as cleanup, \
              patch.object(pkg.subprocess, "run",
