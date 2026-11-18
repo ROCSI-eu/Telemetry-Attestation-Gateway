@@ -248,6 +248,11 @@ def execute(scenario: str, toolchain_root: Path | None = None) -> dict:
         raise Rejected
     capture, bound, _, _ = PRESETS[scenario]
     tools = offline_toolchain(toolchain_root) if scenario == "verified_synthetic" else None
+    tmpfs_bytes = os.environ.get("TAG_BWRAP_TMPFS_BYTES")
+    if tmpfs_bytes not in (None, "8388608"):
+        raise Rejected
+    if tmpfs_bytes is not None and tools is not None:
+        raise Rejected  # #88 is non-cryptographic and never runs proof workloads
     # Expose only system Python and the repository's synthetic experiment tree.
     # In particular: never bind host /, /home, /etc or the full /dev tree.
     experiments = HERE.parent
@@ -256,6 +261,7 @@ def execute(scenario: str, toolchain_root: Path | None = None) -> dict:
            "--symlink", "usr/lib", "/lib",
            "--symlink", "usr/lib64", "/lib64",
            "--ro-bind", str(experiments), str(experiments),
+           *(["--size", "8388608"] if tmpfs_bytes == "8388608" else []),
            "--tmpfs", "/tmp", "--dev", "/dev", "--proc", "/proc",
            "--setenv", "HOME", "/tmp", "--setenv", "TMPDIR", "/tmp"]
     if tools is not None:

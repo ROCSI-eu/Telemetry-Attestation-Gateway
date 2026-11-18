@@ -477,5 +477,31 @@ class BridgeHttpTests(unittest.TestCase):
         conn.close()
 
 
+    def test_tag88_tmpfs_8m_is_opt_in_and_before_tmpfs_mount(self) -> None:
+        import os
+        with patch.object(bridge, "trusted_bwrap", return_value="/usr/bin/bwrap"), \
+             patch.dict(os.environ, {"TAG_BWRAP_TMPFS_BYTES": "8388608"}), \
+             patch.object(bridge, "_bounded_run", return_value=(b"{}", 3)) as run:
+            with self.assertRaises(bridge.Rejected):
+                bridge.execute("over_limit")
+        cmd = run.call_args.args[0]
+        self.assertEqual(cmd[cmd.index("--tmpfs")-2:cmd.index("--tmpfs")+2],
+                         ["--size", "8388608", "--tmpfs", "/tmp"])
+        with patch.object(bridge, "trusted_bwrap", return_value="/usr/bin/bwrap"), \
+             patch.dict(os.environ, {}, clear=True), \
+             patch.object(bridge, "_bounded_run", return_value=(b"{}", 3)) as run:
+            with self.assertRaises(bridge.Rejected):
+                bridge.execute("over_limit")
+        self.assertNotIn("--size", run.call_args.args[0])
+
+    def test_tag88_invalid_tmpfs_size_fails_before_any_worker(self) -> None:
+        import os
+        with patch.dict(os.environ, {"TAG_BWRAP_TMPFS_BYTES": "0"}), \
+             patch.object(bridge, "_bounded_run") as run:
+            with self.assertRaises(bridge.Rejected):
+                bridge.execute("over_limit")
+            run.assert_not_called()
+
+
 if __name__ == "__main__":
     unittest.main()
