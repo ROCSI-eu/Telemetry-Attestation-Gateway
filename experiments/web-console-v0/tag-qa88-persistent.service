@@ -1,0 +1,48 @@
+# TAG #88 / PERSISTENT-RUNTIME-01 — TEMPLATE ONLY, NEVER INSTALLED BY THIS PR.
+# Qube Dev1 non-Production only; use the exact verified checkout before a later QA.
+# No [Install] section: enabling/autostart is outside this Draft.
+[Unit]
+Description=TAG experimental persistent loopback console (synthetic only)
+StartLimitIntervalSec=60
+StartLimitBurst=2
+
+[Service]
+Type=simple
+User=1000
+Group=1000
+UMask=0077
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictSUIDSGID=yes
+LimitCORE=0
+ProtectSystem=strict
+ProtectHome=yes
+ProtectControlGroups=yes
+ProtectKernelTunables=yes
+PrivateDevices=yes
+KillMode=control-group
+TimeoutStopSec=2s
+Slice=tag-qa88.slice
+MemoryAccounting=yes
+CPUAccounting=yes
+TasksAccounting=yes
+MemoryMax=134217728
+MemorySwapMax=0
+CPUQuota=50%
+TasksMax=12
+# One bounded outer runtime mount; CLI /tmp binds its own disposable workdir
+# within this same filesystem (no independent inner tmpfs).
+TemporaryFileSystem=/run/tag-qa88:size=8388608,nr_inodes=128,mode=0700,uid=1000,gid=1000,nodev,nosuid,noexec
+ReadWritePaths=/run/tag-qa88
+# Only owner-readable operator credential, on the host /run tmpfs.
+# This tiny control-plane directory is deliberately outside the CLI runtime cap.
+RuntimeDirectory=tag-qa88-control
+RuntimeDirectoryMode=0700
+RuntimeDirectoryPreserve=no
+Environment=PYTHONDONTWRITEBYTECODE=1
+WorkingDirectory=/
+# QA MUST use an exact pinned non-Production checkout; no self-install.
+ExecStart=/usr/bin/python3 -B /mnt/qube-dev1/tag-isolated-package-01/repo/experiments/web-console-v0/local_cli_bridge.py --persistent --runtime-root /run/tag-qa88 --operator-token-file /run/tag-qa88-control/operator.token
+Restart=on-failure
+RestartSec=3s
