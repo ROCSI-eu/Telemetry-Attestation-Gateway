@@ -25,7 +25,6 @@ KillMode=control-group
 TimeoutStopSec=2s
 Slice=tag-qa88.slice
 MemoryAccounting=yes
-CPUAccounting=yes
 TasksAccounting=yes
 MemoryMax=134217728
 MemorySwapMax=0
