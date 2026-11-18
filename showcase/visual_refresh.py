@@ -1,7 +1,8 @@
 """Presentation-only transformation of the isolated public TAG showcase.
 
 The source console, synthetic animation logic, typed evidence, and trust boundaries
-remain unchanged. No new scripts, requests, fonts, images or operator controls.
+remain unchanged. The decorative hero SVG has CSS-only animation; no new scripts,
+requests, fonts, external assets or operator controls.
 """
 from __future__ import annotations
 
@@ -272,10 +273,219 @@ VISUAL_CSS = """
       .hero-art{min-height:260px}
       .hero .sub{font-size:.91rem}
     }
+
+    /* TAG-HERO-CINEMATIC-01: deterministic, decorative synthetic SVG; no real footage or telemetry. */
+    .hero-art{background:#071116;box-shadow:inset 0 0 75px #01090ab8,0 14px 52px #01070938}
+    .hero-art:before{opacity:.24;background:repeating-linear-gradient(0deg,transparent 0 72px,#6e9b9e35 73px),repeating-linear-gradient(90deg,transparent 0 72px,#6e9b9e35 73px)}
+    .hero-art:after{background:linear-gradient(180deg,#071216cf 0,transparent 20%,transparent 79%,#061117ea 100%),linear-gradient(90deg,#0711168e,transparent 20%,transparent 82%,#0711168e);pointer-events:none}
+    .hero-scene{overflow:hidden}
+    .hero-flight{transform-box:view-box;transform-origin:0 0;animation:hero-hover 10s ease-in-out infinite;will-change:transform}
+    .hero-floor-shadow{animation:hero-shadow-drift 10s ease-in-out infinite;transform-origin:402px 416px}
+    .hero-sweep{transform-origin:385px 350px;animation:hero-radar-sweep 22s linear infinite}
+    .hero-route-flow{animation:hero-route-drift 11s linear infinite}
+    .hero-rotor-disc{transform-box:fill-box;transform-origin:center;animation:hero-propeller .24s linear infinite;will-change:transform}
+    .hero-rotor:nth-of-type(even) .hero-rotor-disc{animation-direction:reverse}
+    .hero-beacon-pulse{transform-box:fill-box;transform-origin:center;animation:hero-beacon 4.5s ease-out infinite}
+    .hero-waypoints>g:last-child .hero-beacon-pulse{animation-delay:-2.3s}
+    .hero-spotlight,.hero-landscape{pointer-events:none}
+    @keyframes hero-hover{
+      0%,100%{transform:translate(389px,350px) rotate(-1.8deg)}
+      26%{transform:translate(399px,339px) rotate(.7deg)}
+      54%{transform:translate(379px,347px) rotate(1.4deg)}
+      78%{transform:translate(394px,356px) rotate(-.6deg)}
+    }
+    @keyframes hero-shadow-drift{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-5px,7px) scale(.93)}}
+    @keyframes hero-radar-sweep{to{transform:rotate(360deg)}}
+    @keyframes hero-route-drift{to{stroke-dashoffset:-390}}
+    @keyframes hero-propeller{to{transform:rotate(360deg)}}
+    @keyframes hero-beacon{0%,100%{opacity:.15;transform:scale(.8)}45%{opacity:.65;transform:scale(1.2)}80%{opacity:.12;transform:scale(1.42)}}
+    @media(prefers-reduced-motion:reduce){
+      .hero-flight,.hero-floor-shadow,.hero-sweep,.hero-route-flow,.hero-rotor-disc,.hero-beacon-pulse{animation:none!important;will-change:auto}
+    }
+
     @media(prefers-reduced-motion:reduce){
       .hero-actions a{transition:none}
     }
 """
+
+
+HERO_SCENE_SVG = r'''<svg class="hero-scene" viewBox="0 0 760 700" preserveAspectRatio="xMidYMid meet" focusable="false">
+        <defs>
+          <radialGradient id="hero-ambient" cx="51%" cy="47%" r="67%">
+            <stop stop-color="#224b54"/><stop offset=".44" stop-color="#102a33"/><stop offset="1" stop-color="#060d13"/>
+          </radialGradient>
+          <radialGradient id="hero-bloom">
+            <stop stop-color="#8adce0" stop-opacity=".36"/><stop offset=".45" stop-color="#2a7883" stop-opacity=".14"/><stop offset="1" stop-color="#1c485b" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="hero-spotlight">
+            <stop stop-color="#d8eacc" stop-opacity=".24"/><stop offset=".28" stop-color="#6bb0b2" stop-opacity=".10"/><stop offset="1" stop-color="#62b1c2" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="hero-route-light" x1="0" y1="1" x2="1" y2="0">
+            <stop stop-color="#297b89"/><stop offset=".52" stop-color="#b4f2e6"/><stop offset="1" stop-color="#56bdd0"/>
+          </linearGradient>
+          <linearGradient id="hero-shell" x1="0" y1="0" x2=".86" y2="1">
+            <stop stop-color="#f2f3e6"/><stop offset=".13" stop-color="#98b9b9"/><stop offset=".42" stop-color="#304c54"/><stop offset=".68" stop-color="#152e37"/><stop offset="1" stop-color="#091c29"/>
+          </linearGradient>
+          <linearGradient id="hero-shell-side" x1="0" y1="0" x2=".94" y2="1">
+            <stop stop-color="#86bcc4"/><stop offset=".32" stop-color="#345c69"/><stop offset="1" stop-color="#071923"/>
+          </linearGradient>
+          <linearGradient id="hero-carbon" x1="0" y1="0" x2="0" y2="1">
+            <stop stop-color="#708c94"/><stop offset=".12" stop-color="#253f49"/><stop offset=".51" stop-color="#101f2b"/><stop offset=".83" stop-color="#304c54"/><stop offset="1" stop-color="#07151d"/>
+          </linearGradient>
+          <linearGradient id="hero-canopy" x1="0" y1="0" x2=".9" y2=".9">
+            <stop stop-color="#d6f5ed"/><stop offset=".16" stop-color="#81d2db"/><stop offset=".42" stop-color="#285b6f"/><stop offset=".75" stop-color="#142f42"/><stop offset="1" stop-color="#071b2e"/>
+          </linearGradient>
+          <radialGradient id="hero-engine">
+            <stop stop-color="#e2f3ea"/><stop offset=".22" stop-color="#82bec7"/><stop offset=".55" stop-color="#345865"/><stop offset="1" stop-color="#0b222c"/>
+          </radialGradient>
+          <linearGradient id="hero-rotor-blade" x1="0" y1="0" x2="1" y2="1">
+            <stop stop-color="#c3eaec" stop-opacity=".78"/><stop offset=".5" stop-color="#5399a3" stop-opacity=".6"/><stop offset="1" stop-color="#173f4a" stop-opacity=".7"/>
+          </linearGradient>
+          <linearGradient id="hero-radar" x1="0" y1="0" x2="1" y2=".85">
+            <stop stop-color="#8cf4e0" stop-opacity=".24"/><stop offset=".75" stop-color="#66b8c7" stop-opacity=".06"/><stop offset="1" stop-color="#66b8c7" stop-opacity="0"/>
+          </linearGradient>
+          <pattern id="hero-panel-texture" width="11" height="11" patternUnits="userSpaceOnUse">
+            <path d="M0 11L11 0" fill="none" stroke="#bbd8dc" stroke-opacity=".06" stroke-width=".7"/>
+          </pattern>
+          <filter id="hero-soft-shadow" x="-65%" y="-200%" width="230%" height="500%">
+            <feGaussianBlur stdDeviation="14"/>
+          </filter>
+          <filter id="hero-soft-beacon" x="-300%" y="-300%" width="700%" height="700%">
+            <feGaussianBlur stdDeviation="6"/>
+          </filter>
+        </defs>
+        <rect width="760" height="700" fill="url(#hero-ambient)"/>
+        <ellipse cx="407" cy="345" rx="350" ry="300" fill="url(#hero-bloom)"/>
+        <ellipse cx="566" cy="206" rx="248" ry="245" fill="url(#hero-spotlight)"/>
+        <g class="hero-landscape" fill="none" stroke="#688b8e" stroke-width="1" opacity=".15">
+          <path d="M-32 518C137 439 229 519 380 451S639 350 809 374"/>
+          <path d="M-40 545C147 465 222 549 393 470S639 368 811 395"/>
+          <path d="M-34 573C151 499 236 577 405 486S646 398 805 417"/>
+          <path d="M-45 599C137 535 264 597 436 512S639 429 813 453"/>
+          <path d="M-33 625C155 561 268 616 446 543S664 470 817 481"/>
+          <path d="M-24 647C158 597 268 652 452 578S655 500 813 515"/>
+        </g>
+        <g class="hero-grid-perspective" fill="none" stroke="#4b7480" stroke-width="1" opacity=".2">
+          <path d="M381 70V677M105 345H652M25 483H735M62 555H702"/>
+          <path d="M380 70L-130 700M380 70L105 700M380 70L650 700M380 70L891 700"/>
+        </g>
+        <g class="hero-radar" fill="none" stroke="#a2d0cb" stroke-width="1">
+          <circle cx="385" cy="350" r="228" opacity=".15"/>
+          <circle cx="385" cy="350" r="163" opacity=".2"/>
+          <circle cx="385" cy="350" r="88" opacity=".18"/>
+          <circle cx="385" cy="350" r="290" stroke-dasharray="3 16" opacity=".18"/>
+          <path d="M385 90V609M124 350H647" opacity=".14"/>
+          <path d="M154 307h19m-9-9v19M602 389h19m-9-9v19" opacity=".46"/>
+        </g>
+        <g class="hero-sweep">
+          <path d="M385 350L385 121A229 229 0 0 1 590 248Z" fill="url(#hero-radar)"/>
+          <path d="M385 350L590 248" stroke="#baf6e6" stroke-opacity=".2" stroke-width="1.4"/>
+        </g>
+        <path d="M98 548C225 522 305 439 389 350S569 203 681 136" fill="none" stroke="#031016" stroke-width="22" opacity=".65"/>
+        <path d="M98 548C225 522 305 439 389 350S569 203 681 136" fill="none" stroke="url(#hero-route-light)" stroke-width="8" opacity=".09"/>
+        <path class="hero-route-static" d="M98 548C225 522 305 439 389 350S569 203 681 136" fill="none" stroke="#86d5dc" stroke-width="2.1" stroke-dasharray="9 13" opacity=".72"/>
+        <path class="hero-route-flow" d="M98 548C225 522 305 439 389 350S569 203 681 136" fill="none" stroke="#d8fbef" stroke-width="2.7" stroke-dasharray="2 37" stroke-linecap="round"/>
+        <g class="hero-waypoints">
+          <g transform="translate(98 548)">
+            <circle r="27" fill="#93e8da" opacity=".19" filter="url(#hero-soft-beacon)"/>
+            <circle class="hero-beacon-pulse" r="18" fill="none" stroke="#9de9d7" stroke-width="1.4" opacity=".55"/>
+            <circle r="8.5" fill="#dfbf8a" stroke="#d6ebd7" stroke-width="2"/>
+          </g>
+          <g transform="translate(389 350)">
+            <circle r="24" fill="#96dfdd" opacity=".16" filter="url(#hero-soft-beacon)"/>
+            <circle r="8" fill="#e0c18e" stroke="#d8f1e7" stroke-width="2"/>
+          </g>
+          <g transform="translate(681 136)">
+            <circle r="27" fill="#9fe7df" opacity=".18" filter="url(#hero-soft-beacon)"/>
+            <circle class="hero-beacon-pulse" r="18" fill="none" stroke="#9de9d7" stroke-width="1.4" opacity=".55"/>
+            <circle r="8.5" fill="#dfbf8a" stroke="#d6ebd7" stroke-width="2"/>
+          </g>
+        </g>
+        <g fill="#e1ebe6" font-family="Arial,Helvetica,sans-serif" font-size="17" letter-spacing="3" font-weight="750">
+          <text x="78" y="582">A</text><text x="409" y="340" opacity=".68">B</text><text x="683" y="117">C</text>
+        </g>
+        <g class="hero-floor-shadow">
+          <ellipse cx="402" cy="416" rx="147" ry="30" transform="rotate(-22 402 416)" fill="#02080e" opacity=".82" filter="url(#hero-soft-shadow)"/>
+          <ellipse cx="399" cy="419" rx="99" ry="11" transform="rotate(-22 399 419)" fill="#020b10" opacity=".7"/>
+        </g>
+        <g class="hero-flight" transform="translate(389 350)">
+          <g transform="rotate(-20)">
+            <ellipse cx="0" cy="8" rx="187" ry="127" fill="url(#hero-bloom)" opacity=".24"/>
+            <!-- Forged, shaded rear arms and lift-motor pods: conceptual vehicle only. -->
+            <path d="M-46 -20L-148 -84L-160 -64L-61 5M51 -19L154 -83L166 -63L63 6" fill="url(#hero-carbon)" stroke="#6d9ca2" stroke-width="2.1" stroke-linejoin="round"/>
+            <path d="M-48 28L-145 106L-131 122L-20 52M54 28L155 103L142 120L23 52" fill="url(#hero-carbon)" stroke="#548592" stroke-width="2.1" stroke-linejoin="round"/>
+            <g class="hero-rotor hero-rotor-rear" transform="translate(-150 -76)">
+              <ellipse rx="55" ry="18" fill="#76bfbe" opacity=".13"/>
+              <ellipse rx="48" ry="14" fill="none" stroke="#93d2d0" stroke-width="1.3" opacity=".4"/>
+              <g class="hero-rotor-disc">
+                <ellipse rx="52" ry="8" fill="url(#hero-rotor-blade)" opacity=".84"/>
+                <ellipse rx="53" ry="6.5" fill="url(#hero-rotor-blade)" transform="rotate(77)" opacity=".49"/>
+              </g>
+              <ellipse ry="10" rx="13" fill="url(#hero-engine)" stroke="#a1bec1" stroke-width="2"/>
+              <ellipse ry="3" rx="5" cy="-3" fill="#d7e9e0" opacity=".8"/>
+            </g>
+            <g class="hero-rotor hero-rotor-rear" transform="translate(158 -76)">
+              <ellipse rx="55" ry="18" fill="#76bfbe" opacity=".13"/>
+              <ellipse rx="48" ry="14" fill="none" stroke="#93d2d0" stroke-width="1.3" opacity=".4"/>
+              <g class="hero-rotor-disc">
+                <ellipse rx="52" ry="8" fill="url(#hero-rotor-blade)" opacity=".84"/>
+                <ellipse rx="53" ry="6.5" fill="url(#hero-rotor-blade)" transform="rotate(77)" opacity=".49"/>
+              </g>
+              <ellipse ry="10" rx="13" fill="url(#hero-engine)" stroke="#a1bec1" stroke-width="2"/>
+              <ellipse ry="3" rx="5" cy="-3" fill="#d7e9e0" opacity=".8"/>
+            </g>
+            <path d="M-57 -37L-23 -75L36 -71L71 -33L70 32L35 70L-32 68L-68 29Z" fill="#081822" stroke="#5a8d9a" stroke-width="4"/>
+            <path d="M-58 -34L-25 -72L36 -67L71 -32L62 29L30 61L-33 60L-64 26Z" fill="url(#hero-shell)" stroke="#b4d4d2" stroke-width="2.3"/>
+            <path d="M-58 -34L-25 -72L-6 -40L-24 56L-64 26Z" fill="#7aa4ad" opacity=".45"/>
+            <path d="M71 -32L62 29L30 61L39 -34Z" fill="url(#hero-shell-side)" opacity=".88"/>
+            <path d="M-21 -61L30 -59L43 -19L23 34L-27 31L-37 -12Z" fill="url(#hero-canopy)" stroke="#cde3df" stroke-width="2"/>
+            <path d="M-29 -13L-17 -47L26 -46" fill="none" stroke="#edfbef" stroke-opacity=".86" stroke-width="3.2" stroke-linecap="round"/>
+            <path d="M-31 20L24 26L37 -13" fill="none" stroke="#99c7cc" stroke-opacity=".37" stroke-width="1.1"/>
+            <path d="M-55 30L-28 52L29 54L56 27" fill="none" stroke="#051925" stroke-width="5" opacity=".85"/>
+            <path d="M-51 32L-27 54L28 56" fill="none" stroke="#d3e9df" stroke-width="1.1" opacity=".62"/>
+            <path d="M-58 -33L-20 -65L36 -66" fill="none" stroke="#fcfff3" stroke-width="1.8" opacity=".8"/>
+            <path d="M-62 -17L-62 22M68 -24L64 17" stroke="#d7efea" opacity=".46" stroke-width="1.5"/>
+            <path d="M-40 40l14 8m7-4l14 4m7-2l13 -1" stroke="#081722" stroke-width="4" stroke-linecap="round"/>
+            <path d="M-44 40l11 6m7 0l12 4" stroke="#a4bec0" stroke-width=".8" opacity=".8"/>
+            <path d="M-55 -34L-24 -67L36 -66L70 -32L61 29L29 62L-32 60L-63 25Z" fill="url(#hero-panel-texture)" opacity=".5"/>
+            <g class="hero-optics" transform="translate(0 44)">
+              <path d="M-23 10L-19 26L18 26L22 10" fill="#172e38" stroke="#7097a1" stroke-width="1.5"/>
+              <rect x="-13" y="16" width="26" height="16" rx="4" fill="#0c1a24" stroke="#a4bfc0" stroke-width="1.7"/>
+              <circle cx="0" cy="24" r="7.5" fill="#070e18" stroke="#6fabb9" stroke-width="2"/>
+              <circle cx="0" cy="24" r="3.5" fill="#266777"/>
+              <circle cx="-2" cy="21" r="1.2" fill="#d3f6ed"/>
+            </g>
+            <circle cx="-42" cy="-26" r="3.5" fill="#e9c790"/>
+            <circle cx="46" cy="-25" r="3.2" fill="#8df3e0"/>
+            <circle cx="-42" cy="-26" r="12" fill="#d6af75" opacity=".33" filter="url(#hero-soft-beacon)"/>
+            <circle cx="46" cy="-25" r="12" fill="#7bdece" opacity=".4" filter="url(#hero-soft-beacon)"/>
+            <g class="hero-rotor hero-rotor-front" transform="translate(-141 108)">
+              <ellipse rx="50" ry="16" fill="#76bfbe" opacity=".15"/>
+              <ellipse rx="46" ry="13" fill="none" stroke="#90cdd0" stroke-width="1.3" opacity=".37"/>
+              <g class="hero-rotor-disc">
+                <ellipse rx="50" ry="7.3" fill="url(#hero-rotor-blade)" opacity=".87"/>
+                <ellipse rx="50" ry="6.5" fill="url(#hero-rotor-blade)" transform="rotate(78)" opacity=".46"/>
+              </g>
+              <ellipse ry="10" rx="12" fill="url(#hero-engine)" stroke="#b2d1cd" stroke-width="2"/>
+            </g>
+            <g class="hero-rotor hero-rotor-front" transform="translate(150 109)">
+              <ellipse rx="50" ry="16" fill="#76bfbe" opacity=".15"/>
+              <ellipse rx="46" ry="13" fill="none" stroke="#90cdd0" stroke-width="1.3" opacity=".37"/>
+              <g class="hero-rotor-disc">
+                <ellipse rx="50" ry="7.3" fill="url(#hero-rotor-blade)" opacity=".87"/>
+                <ellipse rx="50" ry="6.5" fill="url(#hero-rotor-blade)" transform="rotate(78)" opacity=".46"/>
+              </g>
+              <ellipse ry="10" rx="12" fill="url(#hero-engine)" stroke="#b2d1cd" stroke-width="2"/>
+            </g>
+          </g>
+        </g>
+        <g fill="none" stroke="#bfd6d5" stroke-width="1" opacity=".43">
+          <path d="M465 374h105v35m-335 97H143v-34"/>
+        </g>
+        <g fill="#bed9da" font-family="Arial,Helvetica,sans-serif" font-size="12" letter-spacing="2.1">
+          <text x="578" y="425">OBS / 02</text><text x="116" y="461">ROUTE / SYN</text>
+        </g>
+      </svg>'''
 
 
 TECH_TOOLING = """  <section class="proof-tooling" aria-labelledby="proof-tooling-title">
@@ -495,54 +705,7 @@ def redesign_public_html(html: str) -> str:
     <div class="hero-art" aria-hidden="true">
       <span class="hero-art-label">TAG / SYNTHETIC OBSERVATION</span>
       <span class="hero-art-index">A–B–C / 01</span>
-      <svg class="hero-scene" viewBox="0 0 760 700" preserveAspectRatio="xMidYMid meet" focusable="false">
-        <defs>
-          <linearGradient id="hero-craft-shell" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#f4eddb"/><stop offset=".44" stop-color="#91c8cf"/><stop offset="1" stop-color="#27536a"/>
-          </linearGradient>
-          <linearGradient id="hero-craft-wing" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#78c8d6"/><stop offset="1" stop-color="#1d4f60"/>
-          </linearGradient>
-          <radialGradient id="hero-craft-halo">
-            <stop offset="0" stop-color="#328e9b" stop-opacity=".24"/><stop offset="1" stop-color="#328e9b" stop-opacity="0"/>
-          </radialGradient>
-        </defs>
-        <circle cx="382" cy="346" r="286" fill="url(#hero-craft-halo)"/>
-        <g class="hero-reticle" fill="none" stroke="#70969b" stroke-width="1">
-          <circle cx="385" cy="346" r="225" opacity=".22"/>
-          <circle cx="385" cy="346" r="145" opacity=".26"/>
-          <path d="M385 74V618 M118 346H650" opacity=".15"/>
-          <path d="M116 536L202 506M594 203L662 161" opacity=".58"/>
-        </g>
-        <path d="M98 548 C235 514 298 446 389 350 S559 228 681 136" fill="none" stroke="#172c35" stroke-width="30" opacity=".5"/>
-        <path d="M98 548 C235 514 298 446 389 350 S559 228 681 136" fill="none" stroke="#78d4db" stroke-width="3" stroke-dasharray="13 12" opacity=".92"/>
-        <g fill="#e6c28a" stroke="#1a3338" stroke-width="5">
-          <circle cx="98" cy="548" r="10"/><circle cx="389" cy="350" r="10"/><circle cx="681" cy="136" r="10"/>
-        </g>
-        <g fill="#d8e3df" font-size="19" font-family="Arial,Helvetica,sans-serif" font-weight="700" letter-spacing="3">
-          <text x="75" y="584">A</text><text x="414" y="341">B</text><text x="684" y="118">C</text>
-        </g>
-        <g class="hero-vehicle" transform="translate(389 350) rotate(-24)">
-          <ellipse cx="2" cy="66" rx="122" ry="26" fill="#020b12" opacity=".5"/>
-          <path d="M-120 -35L-58 -13 M58 -13L120 -35 M-62 21L-102 70 M62 21L102 70" stroke="#447d8d" stroke-width="17" stroke-linecap="round"/>
-          <g fill="#5bb8be" opacity=".72">
-            <ellipse cx="-120" cy="-35" rx="48" ry="12"/><ellipse cx="120" cy="-35" rx="48" ry="12"/>
-            <ellipse cx="-102" cy="70" rx="39" ry="10"/><ellipse cx="102" cy="70" rx="39" ry="10"/>
-          </g>
-          <path d="M-67 -16L0 -60L67 -16L0 38Z" fill="url(#hero-craft-shell)" stroke="#e3f5ef" stroke-width="3"/>
-          <path d="M-67 -16L0 38L0 62L-67 2Z" fill="url(#hero-craft-wing)"/>
-          <path d="M67 -16L0 38L0 62L67 2Z" fill="#143f54"/>
-          <path d="M0 -60L0 38" fill="none" stroke="#f5e9cb" stroke-width="2" opacity=".7"/>
-          <path d="M-39 -11L0 -36L39 -11" fill="none" stroke="#d7e9e7" stroke-width="2"/>
-          <circle cx="0" cy="-16" r="8" fill="#e8c58b"/>
-        </g>
-        <g fill="none" stroke="#c5d2cc" opacity=".45" stroke-width="1">
-          <path d="M443 354H586V390"/><path d="M236 502H124V463"/>
-        </g>
-        <g font-family="Arial,Helvetica,sans-serif" fill="#c2dbdc" font-size="13" letter-spacing="2">
-          <text x="593" y="409">OBS / 02</text><text x="90" y="453">ROUTE / SYN</text>
-        </g>
-      </svg>
+{HERO_SCENE_SVG}
       <span class="hero-art-caption">A0 / SYNTHETIC · OBSERVATION ONLY</span>
     </div>
   </section>"""
