@@ -85,6 +85,40 @@ class StaticShowcaseTests(unittest.TestCase):
                 re.search(r'<script>(.*?)</script>', en, flags=re.S).group(1),
             )
 
+    def test_cinematic_hero_is_decorative_bilingual_and_reduced_motion_safe(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            target = Path(folder)
+            build(target)
+            scenes = []
+            for language in ("ro", "en"):
+                page = (target / language / "index.html").read_text(encoding="utf-8")
+                match = re.search(r'<svg class="hero-scene".*?</svg>', page, flags=re.S)
+                self.assertIsNotNone(match)
+                scene = match.group()
+                scenes.append(scene)
+                self.assertIn('class="hero-vehicle"', scene)
+                self.assertIn('class="hero-route-flow"', scene)
+                self.assertIn('class="hero-sweep"', scene)
+                self.assertEqual(scene.count('class="hero-rotor-disc"'), 4)
+                self.assertEqual(scene.count('class="hero-beacon-pulse"'), 2)
+                self.assertNotIn("<image", scene)
+                self.assertNotIn("<foreignObject", scene)
+                self.assertNotIn("http://", scene)
+                self.assertNotIn("https://", scene)
+                self.assertIn("@keyframes hero-hover", page)
+                self.assertIn("@keyframes hero-propeller", page)
+                self.assertIn("@keyframes hero-radar-sweep", page)
+                self.assertIn("@media(prefers-reduced-motion:reduce)", page)
+                self.assertIn(".hero-vehicle,.hero-floor-shadow,.hero-sweep,.hero-route-flow,.hero-rotor-disc,.hero-beacon-pulse{animation:none!important;will-change:auto}", page)
+                self.assertIn("A0_SYNTHETIC", page)
+                self.assertIn("SYNTHETIC_ONLY", page)
+            # Romanian localization translates the route label and HTML-normalizes
+            # SVG element tag case; the geometric animation selectors stay aligned.
+            self.assertEqual(
+                scenes[0].casefold().replace("traseu / sint", "route / syn"),
+                scenes[1].casefold(),
+            )
+
     def test_proof_tooling_is_bilingual_static_and_in_evidence_section(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             target = Path(folder)
