@@ -12,7 +12,7 @@ import grp
 from pathlib import Path
 import stat
 
-RUNTIME = Path("/run/tag-qa88")
+RUNTIME = Path("/var/lib/tag-qa88/runtime")
 CONTROL = Path("/run/tag-qa88-control")
 UNIT = "tag-qa88-persistent.service"
 EXPECTED_CGROUP = "/tag.slice/tag-qa88.slice/" + UNIT
@@ -75,9 +75,14 @@ def verify_identity_and_cgroup(*, proc: Path = Path("/proc"),
 
 def verify_mount(path: Path) -> None:
     try:
-        mounts = [line for line in Path("/proc/self/mountinfo").read_text().splitlines()
-                  if line.split()[4] == str(path)]
-        if len(mounts) != 1 or " - tmpfs " not in mounts[0]:
+        mounts = [line.split() for line in Path("/proc/self/mountinfo").read_text().splitlines()
+                  if len(line.split()) > 5 and line.split()[4] == str(path)]
+        if len(mounts) != 1 or " - " not in (" " + " ".join(mounts[0]) + " "):
+            raise GateRejected
+        separator = mounts[0].index("-")
+        if (mounts[0][separator + 1] != "tmpfs"
+                or not {"nodev", "nosuid", "noexec"}.issubset(
+                    set(mounts[0][5].split(",")))):
             raise GateRejected
         fs = os.statvfs(path)
         if (not 0 < fs.f_blocks * fs.f_frsize <= 8 * 1024 * 1024

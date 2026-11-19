@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
-"""TAG #88 non-Production systemd package and private mountpoint lifecycle.
+"""TAG #88 non-Production installer and read-only persistent-mount verifier.
 
-No action is implicit. install/remove require an explicitly authorized local
-root session; this script must never be invoked during Draft review.
+No runtime mount, chmod, unlink or rmdir occurs on service start/stop.
+Install/remove are separate, root-only, explicitly authorized operations.
 """
 from __future__ import annotations
 
 import argparse
-import errno
 import grp
 import hashlib
 import io
@@ -25,44 +24,32 @@ import tarfile
 ACCOUNT = "tag-qa88"
 PREFIX = Path("/opt/tag-qa88")
 UNIT_PATH = Path("/etc/systemd/system/tag-qa88-persistent.service")
+LEGACY_CLEAN_UNIT_PATH = Path("/etc/systemd/system/tag-qa88-postcleanup.service")
+UNIT_NAME = "tag-qa88-persistent.service"
 TEMPLATE = Path("experiments/web-console-v0/tag-qa88-persistent.service")
-MOUNT = Path("/run/tag-qa88")
-MARKER = Path("/run/tag-qa88-mountpoint-owned")
+HOST_PARENT = Path("/var/lib/tag-qa88")
+MOUNT = HOST_PARENT / "runtime"
 CONTROL = Path("/run/tag-qa88-control")
-LABEL = "TAG-88-MOUNTPOINT-V1\n"
 ROOT_UID = 0
 ROOT_GID = 0
 SHA_RE = re.compile(r"[a-f0-9]{40}\Z")
+DIAGNOSTICS = frozenset({
+    "VERIFY_ROOT_REQUIRED", "VERIFY_RECEIPT_INVALID", "VERIFY_IDENTITY",
+    "VERIFY_HOST_INVALID", "VERIFY_HOST_CHANGED", "VERIFY_HOST_MOUNTED",
+    "VERIFY_PRIVATE_INVALID", "VERIFY_PRIVATE_FLAGS", "VERIFY_PRIVATE_IDENTITY",
+    "VERIFY_PRIVATE_QUOTA", "VERIFY_MOUNTINFO_INVALID",
+})
 
 
 class Refused(RuntimeError):
     pass
 
 
-# Fixed public labels only: never print exception messages or local paths.
-MOUNT_CODES = frozenset({
-    "MOUNT_ROOT_REQUIRED", "MOUNT_MARKER_PRESENT", "MOUNT_CREATE_FAILED",
-    "MOUNT_OPEN_FAILED", "MOUNT_NOT_DIRECTORY", "MOUNT_OWNER_MISMATCH",
-    "MOUNT_MODE_MISMATCH", "MOUNT_MOUNTINFO_FAILED", "MOUNT_ALREADY_MOUNTED",
-    "MOUNT_NOT_EMPTY", "MOUNT_PATH_REPLACED", "MOUNT_CHMOD_FAILED",
-    "MOUNT_MARKER_CREATE_FAILED", "MOUNT_MARKER_WRITE_FAILED",
-    "MOUNT_CLEAN_ROOT_REQUIRED", "MOUNT_CLEAN_UNOWNED",
-    "MOUNT_CLEAN_CHANGED", "MOUNT_HOST_LOOKUP_FAILED",
-    "MOUNT_HOST_MOUNTED", "MOUNT_PRIVATE_INVALID",
-    "MOUNT_PRIVATE_QUOTA", "MOUNT_PRIVATE_FLAGS",
-    "MOUNT_PRIVATE_IDENTITY", "MOUNT_CLEAN_HOST_INVALID",
-    "MOUNT_CLEAN_PARENT_OPEN_FAILED", "MOUNT_CLEAN_HOST_LOOKUP_FAILED",
-    "MOUNT_CLEAN_ENTRY_STAT_FAILED", "MOUNT_CLEAN_ENTRY_CHANGED",
-    "MOUNT_CLEAN_RMDIR_BUSY", "MOUNT_CLEAN_RMDIR_DENIED",
-    "MOUNT_CLEAN_RMDIR_NOT_EMPTY", "MOUNT_CLEAN_RMDIR_FAILED",
-    "MOUNT_CLEAN_MARKER_UNLINK_FAILED",
-})
-
-
 class MountRefused(Refused):
-    def __init__(self, code: str) -> None:
-        if code not in MOUNT_CODES:
-            raise ValueError("invalid diagnostic code")
+    """Fixed non-secret failure codes for the start-time gate."""
+    def __init__(self, code: str):
+        if code not in DIAGNOSTICS:
+            raise ValueError("unknown diagnostic code")
         self.code = code
         super().__init__(code)
 
@@ -76,275 +63,181 @@ def checked_identity() -> tuple[int, int]:
     try:
         user, group = pwd.getpwnam(ACCOUNT), grp.getgrnam(ACCOUNT)
     except KeyError as exc:
-        raise Refused("dedicated account missing") from exc
-    if user.pw_uid == 0 or group.gr_gid == 0 or user.pw_gid != group.gr_gid:
-        raise Refused("unexpected account identity")
+        raise Refused("dedicated identity missing") from exc
+    if user.pw_uid <= 0 or group.gr_gid <= 0 or user.pw_gid != group.gr_gid:
+        raise Refused("unexpected identity")
     return user.pw_uid, group.gr_gid
 
 
 def checked_abs(path: Path) -> Path:
     if not path.is_absolute() or path != Path(os.path.realpath(path)):
-        raise Refused("path must be absolute and free of symlinks")
+        raise Refused("path is not absolute or contains a symlink")
     return path
 
 
 def must_be_absent(*paths: Path) -> None:
     if any(os.path.lexists(p) for p in paths):
-        raise Refused("TAG path already exists; no overwrite or stale reuse")
-
-
-def is_mount(path: Path) -> bool:
-    return any(row.split()[4] == str(path) for row in Path("/proc/self/mountinfo").read_text().splitlines())
-
-
-def _host_view(path: Path) -> Path:
-    """Resolve the host's view through PID 1, never through this hook's mount namespace."""
-    return Path("/proc/1/root") / path.relative_to("/")
+        raise Refused("existing installation path; no implicit adoption")
 
 
 def _mount_row(path: Path, table: Path) -> tuple[str, set[str]] | None:
-    """Return (fstype, mount flags) for exactly one mount, or None.
-
-    Fail closed if mount metadata cannot be inspected. The target paths are
-    fixed by the installed unit, without whitespace or mountinfo escapes.
-    """
+    """Match an exact, fixed mountpoint; ambiguous/unreadable tables reject."""
     try:
-        lines = table.read_text().splitlines()
-        matches = [line for line in lines if line.split()[4] == str(path)]
+        matches = [line.split() for line in table.read_text().splitlines()
+                   if len(line.split()) > 4 and line.split()[4] == str(path)]
         if len(matches) > 1:
-            raise MountRefused("MOUNT_MOUNTINFO_FAILED")
+            raise MountRefused("VERIFY_MOUNTINFO_INVALID")
         if not matches:
             return None
-        fields = matches[0].split()
+        fields = matches[0]
         separator = fields.index("-")
         return fields[separator + 1], set(fields[5].split(","))
     except (OSError, IndexError, ValueError) as exc:
-        raise MountRefused("MOUNT_MOUNTINFO_FAILED") from exc
+        raise MountRefused("VERIFY_MOUNTINFO_INVALID") from exc
 
 
-def _open_checked(path: Path, uid: int, gid: int, mode: int,
-                  *, code: str) -> tuple[int, os.stat_result]:
+def _checked_directory(path: Path, owner: tuple[int, int], mode: int) -> tuple[int, os.stat_result]:
     try:
         fd = os.open(path, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
-    except OSError as exc:
-        raise MountRefused(code) from exc
-    try:
         entry = os.fstat(fd)
-        if not stat.S_ISDIR(entry.st_mode):
-            raise MountRefused(code)
-        if (entry.st_uid != uid or entry.st_gid != gid
-                or stat.S_IMODE(entry.st_mode) != mode):
-            raise MountRefused(code)
-        if os.listdir(fd):
-            raise MountRefused("MOUNT_NOT_EMPTY")
         current = path.lstat()
-        if ((current.st_dev, current.st_ino) != (entry.st_dev, entry.st_ino)
-                or not stat.S_ISDIR(current.st_mode)):
-            raise MountRefused(code)
+        if (not stat.S_ISDIR(entry.st_mode)
+                or (entry.st_dev, entry.st_ino) != (current.st_dev, current.st_ino)
+                or (entry.st_uid, entry.st_gid) != owner
+                or stat.S_IMODE(entry.st_mode) != mode):
+            raise MountRefused("VERIFY_HOST_INVALID")
         return fd, entry
+    except OSError as exc:
+        if "fd" in locals():
+            os.close(fd)
+        raise MountRefused("VERIFY_HOST_INVALID") from exc
     except BaseException:
-        os.close(fd)
+        if "fd" in locals():
+            os.close(fd)
         raise
 
 
-def _host_directory(mode: int) -> tuple[int, os.stat_result]:
-    host = _host_view(MOUNT)
-    # PID 1 sees the host mount namespace, not systemd's per-command tmpfs.
-    if _mount_row(MOUNT, Path("/proc/1/mountinfo")) is not None:
-        raise MountRefused("MOUNT_HOST_MOUNTED")
-    fd, entry = _open_checked(host, ROOT_UID, ROOT_GID, mode,
-                              code="MOUNT_HOST_LOOKUP_FAILED")
+def verified_host(*, root: Path, table: Path, expected: dict | None = None) -> dict[str, int]:
+    """Inspect stable host anchor, never adopt or modify an existing directory.
+
+    For the service hook, root=/proc/1/root and table=/proc/1/mountinfo.
+    The host-side directory is root-owned and inaccessible for modification
+    by the unprivileged service; private tmpfs never changes the host inode.
+    """
+    parent = root / HOST_PARENT.relative_to("/")
+    child = root / MOUNT.relative_to("/")
+    if _mount_row(HOST_PARENT, table) is not None or _mount_row(MOUNT, table) is not None:
+        raise MountRefused("VERIFY_HOST_MOUNTED")
+    parent_fd, parent_st = _checked_directory(parent, (ROOT_UID, ROOT_GID), 0o755)
     try:
-        if entry.st_dev != _host_view(MOUNT.parent).stat().st_dev:
-            raise MountRefused("MOUNT_HOST_LOOKUP_FAILED")
-    except BaseException:
-        os.close(fd)
-        raise
-    return fd, entry
+        child_fd, child_st = _checked_directory(child, (ROOT_UID, ROOT_GID), 0o755)
+        try:
+            if (parent_st.st_dev != child_st.st_dev
+                    or os.listdir(parent_fd) != [MOUNT.name]
+                    or os.listdir(child_fd)):
+                raise MountRefused("VERIFY_HOST_INVALID")
+            observed = {
+                "parent_dev": parent_st.st_dev, "parent_ino": parent_st.st_ino,
+                "mount_dev": child_st.st_dev, "mount_ino": child_st.st_ino,
+            }
+            if expected is not None and observed != expected:
+                raise MountRefused("VERIFY_HOST_CHANGED")
+            return observed
+        finally:
+            os.close(child_fd)
+    finally:
+        os.close(parent_fd)
 
 
-def _separate_device(path: Path, entry: os.stat_result) -> bool:
-    return entry.st_dev != path.parent.stat().st_dev
-
-
-def _private_directory() -> tuple[int, os.stat_result]:
-    facts = _mount_row(MOUNT, Path("/proc/self/mountinfo"))
-    if facts is None or facts[0] != "tmpfs":
-        raise MountRefused("MOUNT_PRIVATE_INVALID")
-    if not {"nodev", "nosuid", "noexec"}.issubset(facts[1]):
-        raise MountRefused("MOUNT_PRIVATE_FLAGS")
+def verified_private(*, table: Path = Path("/proc/self/mountinfo")) -> None:
+    """Validate the service's independent, bounded tmpfs before the CLI."""
+    row = _mount_row(MOUNT, table)
+    if row is None or row[0] != "tmpfs":
+        raise MountRefused("VERIFY_PRIVATE_INVALID")
+    if not {"nodev", "nosuid", "noexec"}.issubset(row[1]):
+        raise MountRefused("VERIFY_PRIVATE_FLAGS")
     try:
         uid, gid = checked_identity()
     except Refused as exc:
-        raise MountRefused("MOUNT_PRIVATE_IDENTITY") from exc
-    fd, entry = _open_checked(MOUNT, uid, gid, 0o700, code="MOUNT_PRIVATE_IDENTITY")
+        raise MountRefused("VERIFY_PRIVATE_IDENTITY") from exc
     try:
-        fs = os.fstatvfs(fd)
-        if not (0 < fs.f_blocks * fs.f_frsize <= 8 * 1024 * 1024
-                and 0 < fs.f_files <= 128):
-            raise MountRefused("MOUNT_PRIVATE_QUOTA")
-        if not _separate_device(MOUNT, entry):
-            raise MountRefused("MOUNT_PRIVATE_INVALID")
-    except BaseException:
-        os.close(fd)
-        raise
-    return fd, entry
-
-
-def mount_prepare() -> None:
+        fd, entry = _checked_directory(MOUNT, (uid, gid), 0o700)
+    except MountRefused as exc:
+        raise MountRefused("VERIFY_PRIVATE_IDENTITY") from exc
     try:
-        require_root()
-    except Refused as exc:
-        raise MountRefused("MOUNT_ROOT_REQUIRED") from exc
-    if os.path.lexists(MARKER):
-        raise MountRefused("MOUNT_MARKER_PRESENT")
-
-    own_mount = _mount_row(MOUNT, Path("/proc/self/mountinfo"))
-    if own_mount is not None:
-        # systemd's private tmpfs is already mounted for the + hook. Never
-        # chmod/remove that mount, and never mistake its uid/gid for host ownership.
-        private_fd, _ = _private_directory()
-        try:
-            host_fd, _ = _host_directory(0o755)
-            os.close(host_fd)
-        finally:
-            os.close(private_fd)
-    else:
-        # Host-only compatibility path. The [Unit] assertions forbid adopting
-        # pre-existing residue before systemd prepares the unit.
-        existed = os.path.lexists(MOUNT)
-        if not existed:
-            try:
-                os.mkdir(MOUNT, 0o700)
-            except OSError as exc:
-                raise MountRefused("MOUNT_CREATE_FAILED") from exc
-        try:
-            fd, entry = _open_checked(MOUNT, ROOT_UID, ROOT_GID,
-                                      0o755 if existed else 0o700,
-                                      code="MOUNT_HOST_LOOKUP_FAILED")
-            try:
-                host_fd, host_entry = _host_directory(0o755 if existed else 0o700)
-                try:
-                    if (host_entry.st_dev, host_entry.st_ino) != (entry.st_dev, entry.st_ino):
-                        raise MountRefused("MOUNT_HOST_LOOKUP_FAILED")
-                finally:
-                    os.close(host_fd)
-                os.fchmod(fd, 0o700)
-            finally:
-                os.close(fd)
-        except MountRefused:
-            raise
-        except OSError as exc:
-            raise MountRefused("MOUNT_CHMOD_FAILED") from exc
-
-    try:
-        fd = os.open(MARKER, os.O_CREAT | os.O_EXCL | os.O_WRONLY
-                     | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600)
+        quota = os.fstatvfs(fd)
+        if os.listdir(fd):
+            raise MountRefused("VERIFY_PRIVATE_INVALID")
+        if (entry.st_dev == MOUNT.parent.stat().st_dev
+                or not 0 < quota.f_blocks * quota.f_frsize <= 8388608
+                or not 0 < quota.f_files <= 128):
+            raise MountRefused("VERIFY_PRIVATE_QUOTA")
     except OSError as exc:
-        raise MountRefused("MOUNT_MARKER_CREATE_FAILED") from exc
-    try:
-        try:
-            marker_stat = os.fstat(fd)
-            if (marker_stat.st_uid != ROOT_UID or marker_stat.st_gid != ROOT_GID
-                    or stat.S_IMODE(marker_stat.st_mode) != 0o600):
-                raise MountRefused("MOUNT_MARKER_CREATE_FAILED")
-            if os.write(fd, LABEL.encode("ascii")) != len(LABEL.encode("ascii")):
-                raise MountRefused("MOUNT_MARKER_WRITE_FAILED")
-        except OSError as exc:
-            raise MountRefused("MOUNT_MARKER_WRITE_FAILED") from exc
+        raise MountRefused("VERIFY_PRIVATE_INVALID") from exc
     finally:
         os.close(fd)
 
 
-def mount_clean() -> None:
+def trusted_receipt() -> dict:
+    try:
+        fd = os.open(PREFIX / "receipt.json", os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
+        try:
+            st = os.fstat(fd)
+            if (not stat.S_ISREG(st.st_mode) or st.st_nlink != 1
+                    or (st.st_uid, st.st_gid) != (ROOT_UID, ROOT_GID)
+                    or stat.S_IMODE(st.st_mode) != 0o644 or st.st_size > 131072):
+                raise MountRefused("VERIFY_RECEIPT_INVALID")
+            with os.fdopen(fd, "r", closefd=False) as f:
+                receipt = json.load(f)
+        finally:
+            os.close(fd)
+        sha = receipt["sha"]
+        if (not isinstance(sha, str) or not SHA_RE.fullmatch(sha)
+                or not isinstance(receipt["host"], dict)
+                or set(receipt["host"]) != {"parent_dev", "parent_ino", "mount_dev", "mount_ino"}
+                or any(type(n) is not int or n <= 0 for n in receipt["host"].values())):
+            raise MountRefused("VERIFY_RECEIPT_INVALID")
+        return receipt
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise MountRefused("VERIFY_RECEIPT_INVALID") from exc
+
+
+def mount_verify() -> None:
+    """Only reads state; does not prepare, create, chmod or clean anything."""
     try:
         require_root()
     except Refused as exc:
-        raise MountRefused("MOUNT_CLEAN_ROOT_REQUIRED") from exc
-    if not os.path.lexists(MARKER) and not os.path.lexists(MOUNT):
-        return
-    if (not MARKER.is_file() or MARKER.is_symlink()
-            or MARKER.lstat().st_uid != ROOT_UID
-            or MARKER.lstat().st_gid != ROOT_GID
-            or stat.S_IMODE(MARKER.lstat().st_mode) != 0o600
-            or MARKER.read_text() != LABEL):
-        raise MountRefused("MOUNT_CLEAN_UNOWNED")
+        raise MountRefused("VERIFY_ROOT_REQUIRED") from exc
+    receipt = trusted_receipt()
+    try:
+        uid, gid = checked_identity()
+    except Refused as exc:
+        raise MountRefused("VERIFY_IDENTITY") from exc
+    if (uid, gid) != (receipt.get("uid"), receipt.get("gid")):
+        raise MountRefused("VERIFY_IDENTITY")
+    expected_release = PREFIX / ("release-" + receipt["sha"])
+    if Path(__file__).resolve() != expected_release / "scripts/tag88_service.py":
+        raise MountRefused("VERIFY_RECEIPT_INVALID")
+    verified_host(root=Path("/proc/1/root"), table=Path("/proc/1/mountinfo"),
+                  expected=receipt["host"])
+    verified_private()
 
-    own_mount = _mount_row(MOUNT, Path("/proc/self/mountinfo"))
-    if own_mount is not None:
-        # A fresh namespace may be created for ExecStopPost=+. Validate it,
-        # then remove ONLY PID 1's host-side empty directory, not the tmpfs.
-        private_fd, _ = _private_directory()
-        try:
-            host_fd, _ = _host_directory(0o755)
-            os.close(host_fd)
-        except BaseException:
-            os.close(private_fd)
-            raise
-        os.close(private_fd)
-    else:
-        host_fd, _ = _host_directory(0o700)
-        os.close(host_fd)
-
-    # Parent fd anchors removal to PID1's host /run. Diagnostic stage
-    # labels are fixed and nonsecret; all validation and deletion remain strict.
-    parent = _host_view(MOUNT.parent)
-    try:
-        parent_fd = os.open(parent, os.O_RDONLY | os.O_DIRECTORY
-                            | os.O_NOFOLLOW | os.O_CLOEXEC)
-    except OSError as exc:
-        raise MountRefused("MOUNT_CLEAN_PARENT_OPEN_FAILED") from exc
-    try:
-        try:
-            host_fd, entry = _open_checked(_host_view(MOUNT), ROOT_UID, ROOT_GID,
-                                           0o755 if own_mount is not None else 0o700,
-                                           code="MOUNT_CLEAN_HOST_LOOKUP_FAILED")
-        except OSError as exc:
-            raise MountRefused("MOUNT_CLEAN_HOST_LOOKUP_FAILED") from exc
-        try:
-            try:
-                target = os.stat(MOUNT.name, dir_fd=parent_fd, follow_symlinks=False)
-            except OSError as exc:
-                raise MountRefused("MOUNT_CLEAN_ENTRY_STAT_FAILED") from exc
-            if (target.st_dev, target.st_ino) != (entry.st_dev, entry.st_ino):
-                raise MountRefused("MOUNT_CLEAN_ENTRY_CHANGED")
-            try:
-                os.rmdir(MOUNT.name, dir_fd=parent_fd)
-            except OSError as exc:
-                reasons = {
-                    errno.EBUSY: "MOUNT_CLEAN_RMDIR_BUSY",
-                    errno.EACCES: "MOUNT_CLEAN_RMDIR_DENIED",
-                    errno.EPERM: "MOUNT_CLEAN_RMDIR_DENIED",
-                    errno.ENOTEMPTY: "MOUNT_CLEAN_RMDIR_NOT_EMPTY",
-                    errno.EEXIST: "MOUNT_CLEAN_RMDIR_NOT_EMPTY",
-                }
-                raise MountRefused(reasons.get(exc.errno, "MOUNT_CLEAN_RMDIR_FAILED")) from exc
-        finally:
-            os.close(host_fd)
-    finally:
-        os.close(parent_fd)
-    try:
-        MARKER.unlink()
-    except OSError as exc:
-        raise MountRefused("MOUNT_CLEAN_MARKER_UNLINK_FAILED") from exc
 
 def git_checked_checkout(checkout: Path, sha: str) -> bytes:
     checked_abs(checkout)
     if not SHA_RE.fullmatch(sha) or not checkout.is_dir():
         raise Refused("invalid SHA or checkout")
     def git(*args: str) -> bytes:
-        p = subprocess.run(["git", "-C", str(checkout), *args], check=True,
-                           stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30)
-        return p.stdout
+        return subprocess.run(["git", "-C", str(checkout), *args], check=True,
+                              stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30).stdout
     if git("rev-parse", "HEAD").decode().strip() != sha:
-        raise Refused("checkout is not at the exact approved SHA")
+        raise Refused("checkout is not at the approved SHA")
     if git("status", "--porcelain", "--untracked-files=all").strip():
-        raise Refused("checkout must be clean, including untracked files")
+        raise Refused("checkout not clean")
     return git("archive", "--format=tar", sha)
 
 
 def unpack_archive(archive: bytes, release: Path) -> dict[str, str]:
-    """Extract trusted, exact-SHA Git tree with no links or special entries."""
     files: dict[str, str] = {}
     with tarfile.open(fileobj=io.BytesIO(archive), mode="r:") as tar:
         members = tar.getmembers()
@@ -352,7 +245,7 @@ def unpack_archive(archive: bytes, release: Path) -> dict[str, str]:
             rel = PurePosixPath(item.name)
             if (not item.name or rel.is_absolute() or ".." in rel.parts
                     or not (item.isdir() or item.isfile())):
-                raise Refused("unsafe archive entry")
+                raise Refused("unsafe archive member")
         release.mkdir(mode=0o755)
         for item in members:
             target = release.joinpath(*PurePosixPath(item.name).parts)
@@ -365,14 +258,15 @@ def unpack_archive(archive: bytes, release: Path) -> dict[str, str]:
                     fp.write(payload)
                 os.chmod(target, 0o644)
                 files[item.name] = hashlib.sha256(payload).hexdigest()
-        for directory in sorted((p for p in release.rglob("*") if p.is_dir()), key=lambda p: len(p.parts)):
-            os.chmod(directory, 0o755)
+        for folder in sorted((p for p in release.rglob("*") if p.is_dir()),
+                             key=lambda p: len(p.parts)):
+            os.chmod(folder, 0o755)
     return files
 
 
 def unit_render(template: str, release: Path, uid: int, gid: int) -> str:
     if not all(isinstance(v, int) and v > 0 for v in (uid, gid)):
-        raise Refused("invalid identity")
+        raise Refused("invalid uid/gid")
     return (template.replace("@TAG_UID@", str(uid))
                     .replace("@TAG_GID@", str(gid))
                     .replace("@TAG_RELEASE@", str(release)))
@@ -385,7 +279,7 @@ def run_admin(*argv: str) -> None:
 def install(checkout: Path, sha: str) -> None:
     require_root()
     checked_abs(PREFIX)
-    must_be_absent(PREFIX, UNIT_PATH, MOUNT, MARKER, CONTROL)
+    must_be_absent(PREFIX, UNIT_PATH, LEGACY_CLEAN_UNIT_PATH, HOST_PARENT, CONTROL)
     try:
         pwd.getpwnam(ACCOUNT)
     except KeyError:
@@ -398,7 +292,7 @@ def install(checkout: Path, sha: str) -> None:
         pass
     else:
         raise Refused("dedicated group already exists")
-    archive = git_checked_checkout(checkout, sha)  # before any write
+    archive = git_checked_checkout(checkout, sha)
     PREFIX.mkdir(mode=0o755)
     release = PREFIX / ("release-" + sha)
     files = unpack_archive(archive, release)
@@ -406,63 +300,112 @@ def install(checkout: Path, sha: str) -> None:
     run_admin(useradd, "--system", "--user-group", "--no-create-home",
               "--home-dir", "/nonexistent", "--shell", "/usr/sbin/nologin", ACCOUNT)
     uid, gid = checked_identity()
+    HOST_PARENT.mkdir(mode=0o755)
+    os.chmod(HOST_PARENT, 0o755)
+    MOUNT.mkdir(mode=0o755)
+    os.chmod(MOUNT, 0o755)
+    host = verified_host(root=Path("/"), table=Path("/proc/self/mountinfo"))
     unit = unit_render((release / TEMPLATE).read_text(), release, uid, gid)
-    if any(marker in unit for marker in ("@TAG_UID@", "@TAG_GID@", "@TAG_RELEASE@")):
-        raise Refused("unresolved unit placeholder")
-    receipt = {"sha": sha, "uid": uid, "gid": gid, "files": files,
-               "unit_sha256": hashlib.sha256(unit.encode()).hexdigest()}
+    if (any(marker in unit for marker in ("@TAG_UID@", "@TAG_GID@", "@TAG_RELEASE@"))
+            or unit.count("TemporaryFileSystem=") != 1
+            or unit.count("ExecStartPre=") != 1
+            or "mount-verify" not in unit
+            or "OnSuccess=" in unit or "OnFailure=" in unit or "postcleanup" in unit
+            or "RuntimeDirectory=tag-qa88\n" in unit
+            or "ReadWritePaths=" in unit):
+        raise Refused("unit policy invalid")
+    receipt = {
+        "sha": sha, "uid": uid, "gid": gid, "files": files, "host": host,
+        "unit_sha256": hashlib.sha256(unit.encode()).hexdigest(),
+    }
     (PREFIX / "receipt.json").write_text(json.dumps(receipt, sort_keys=True) + "\n")
     os.chmod(PREFIX / "receipt.json", 0o644)
     fd = os.open(UNIT_PATH, os.O_CREAT | os.O_EXCL | os.O_WRONLY | os.O_NOFOLLOW, 0o644)
     with os.fdopen(fd, "w") as dest:
         dest.write(unit)
-    run_admin("/usr/bin/systemctl", "daemon-reload")  # NOT enable/start
+    run_admin("/usr/bin/systemctl", "daemon-reload")  # no enable/start
     print("INSTALLED_DISABLED", sha)
+
+
+def _require_primary_inactive_disabled() -> None:
+    """Reject any unavailable, ambiguous or non-terminal systemd state."""
+    required = ("LoadState", "ActiveState", "MainPID", "ControlPID", "UnitFileState")
+    try:
+        result = subprocess.run(
+            ["/usr/bin/systemctl", "show", UNIT_NAME,
+             *(arg for prop in required for arg in ("-p", prop)), "--no-pager"],
+            check=True, stdin=subprocess.DEVNULL, text=True,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=15,
+        )
+        rows = result.stdout.splitlines()
+        if len(rows) != len(required):
+            raise Refused("ambiguous systemd state")
+        fields = {}
+        for row in rows:
+            if row.count("=") != 1:
+                raise Refused("malformed systemd state")
+            key, value = row.split("=", 1)
+            if key not in required or key in fields or not value:
+                raise Refused("unexpected systemd state")
+            fields[key] = value
+    except (OSError, ValueError, subprocess.SubprocessError, AttributeError) as exc:
+        raise Refused("unable to attest systemd state") from exc
+    if fields != {
+        "LoadState": "loaded", "ActiveState": "inactive",
+        "MainPID": "0", "ControlPID": "0", "UnitFileState": "disabled",
+    }:
+        raise Refused("service is not definitively inactive and disabled")
 
 
 def remove() -> None:
     require_root()
-    must_be_absent(MOUNT, MARKER, CONTROL)
-    if not PREFIX.is_dir() or not (PREFIX / "receipt.json").is_file() or not UNIT_PATH.is_file():
-        raise Refused("installation receipt/unit missing; no partial removal")
-    receipt = json.loads((PREFIX / "receipt.json").read_text())
-    sha = receipt.get("sha")
-    if not isinstance(sha, str) or not SHA_RE.fullmatch(sha):
-        raise Refused("receipt SHA invalid")
+    must_be_absent(CONTROL)
+    if (not PREFIX.is_dir() or not UNIT_PATH.is_file()
+            or not (PREFIX / "receipt.json").is_file()):
+        raise Refused("receipt or primary unit missing")
+    receipt = trusted_receipt()
+    sha = receipt["sha"]
     release = PREFIX / ("release-" + sha)
     uid, gid = checked_identity()
     if (uid, gid) != (receipt.get("uid"), receipt.get("gid")):
-        raise Refused("user identity changed")
+        raise Refused("dedicated account mismatch")
     if hashlib.sha256(UNIT_PATH.read_bytes()).hexdigest() != receipt["unit_sha256"]:
-        raise Refused("unit was modified")
+        raise Refused("unit modified")
+    expected = set()
     for name, digest in receipt["files"].items():
         rel = PurePosixPath(name)
-        if not name or rel.is_absolute() or ".." in rel.parts or not isinstance(digest, str):
-            raise Refused("unsafe receipt entry")
+        if (not name or rel.is_absolute() or ".." in rel.parts
+                or not isinstance(digest, str)):
+            raise Refused("unsafe release file entry")
         path = release.joinpath(*rel.parts)
-        if path.is_symlink() or not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != digest:
-            raise Refused("release files modified")
-    # Systemd activation is managed only in the separately approved lifecycle.
-    state = subprocess.run(["/usr/bin/systemctl", "is-active", "--quiet",
-                            "tag-qa88-persistent.service"], check=False, timeout=15)
-    enabled = subprocess.run(["/usr/bin/systemctl", "is-enabled", "--quiet",
-                              "tag-qa88-persistent.service"], check=False, timeout=15)
-    if state.returncode == 0 or enabled.returncode == 0:
-        raise Refused("service is active or enabled; stop/disable via separate authorization")
-    # Verify exact installed scope before removal.
-    expected = {release / name for name in receipt["files"]}
+        if (path.is_symlink() or not path.is_file()
+                or hashlib.sha256(path.read_bytes()).hexdigest() != digest):
+            raise Refused("release modified")
+        expected.add(path)
     actual = {p for p in release.rglob("*") if p.is_file() or p.is_symlink()}
     if actual != expected:
-        raise Refused("unexpected files in release")
+        raise Refused("unexpected release content")
+    _require_primary_inactive_disabled()
+    jobs = subprocess.run(["/usr/bin/systemctl", "list-jobs", "--no-legend", "--no-pager"],
+                          check=True, text=True, stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE, timeout=15)
+    if UNIT_NAME in jobs.stdout:
+        raise Refused("pending systemd job")
+    verified_host(root=Path("/"), table=Path("/proc/self/mountinfo"),
+                  expected=receipt["host"])
+    # A different-namespace mount is out of scope; this operation is separately
+    # authorized and must be performed only after a reviewed host preflight.
     UNIT_PATH.unlink()
     for path in sorted(expected, key=lambda p: len(p.parts), reverse=True):
         path.unlink()
-    for path in sorted((p for p in release.rglob("*") if p.is_dir()),
-                       key=lambda p: len(p.parts), reverse=True):
-        path.rmdir()
+    for folder in sorted((p for p in release.rglob("*") if p.is_dir()),
+                         key=lambda p: len(p.parts), reverse=True):
+        folder.rmdir()
     release.rmdir()
     (PREFIX / "receipt.json").unlink()
     PREFIX.rmdir()
+    MOUNT.rmdir()
+    HOST_PARENT.rmdir()
     userdel = shutil.which("userdel") or "/usr/sbin/userdel"
     run_admin(userdel, ACCOUNT)
     run_admin("/usr/bin/systemctl", "daemon-reload")
@@ -470,27 +413,23 @@ def remove() -> None:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description=__doc__)
-    choices = ap.add_subparsers(dest="command", required=True)
-    ins = choices.add_parser("install")
-    ins.add_argument("--checkout", type=Path, required=True)
-    ins.add_argument("--sha", required=True)
+    parser = argparse.ArgumentParser(description=__doc__)
+    choices = parser.add_subparsers(dest="command", required=True)
+    add = choices.add_parser("install")
+    add.add_argument("--checkout", type=Path, required=True)
+    add.add_argument("--sha", required=True)
     choices.add_parser("remove")
-    choices.add_parser("mount-prepare")
-    choices.add_parser("mount-clean")
-    args = ap.parse_args()
+    choices.add_parser("mount-verify")
+    args = parser.parse_args()
     try:
         if args.command == "install":
             install(args.checkout, args.sha)
         elif args.command == "remove":
             remove()
-        elif args.command == "mount-prepare":
-            mount_prepare()
-        elif args.command == "mount-clean":
-            mount_clean()
-    except (Refused, OSError, subprocess.SubprocessError, ValueError, KeyError, tarfile.TarError) as exc:
-        # Mount diagnostics are enumerated, non-secret labels. Other errors
-        # retain their original type-only output; no paths or tokens are shown.
+        else:
+            mount_verify()
+    except (Refused, OSError, subprocess.SubprocessError, ValueError,
+            KeyError, TypeError, tarfile.TarError) as exc:
         if isinstance(exc, MountRefused):
             print("TAG_INSTALL_FAIL_CLOSED: Refused", exc.code, file=sys.stderr)
         else:
