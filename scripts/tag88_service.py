@@ -70,8 +70,24 @@ def is_mount(path: Path) -> bool:
 
 def mount_prepare() -> None:
     require_root()
-    must_be_absent(MOUNT, MARKER)
-    os.mkdir(MOUNT, 0o700)
+    must_be_absent(MARKER)
+    # systemd 259 creates the host destination for TemporaryFileSystem before
+    # ExecStartPre. Unit assertions reject any pre-existing/stale host path
+    # before that setup. Accept ONLY its fresh, empty root-owned 0755 directory.
+    try:
+        directory_fd = os.open(MOUNT, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    except OSError as exc:
+        raise Refused("systemd mountpoint missing or unsafe") from exc
+    try:
+        entry = os.fstat(directory_fd)
+        if (not stat.S_ISDIR(entry.st_mode)
+                or entry.st_uid != ROOT_UID or entry.st_gid != ROOT_GID
+                or stat.S_IMODE(entry.st_mode) != 0o755
+                or is_mount(MOUNT) or list(MOUNT.iterdir())):
+            raise Refused("systemd mountpoint is not fresh and empty")
+        os.fchmod(directory_fd, 0o700)
+    finally:
+        os.close(directory_fd)
     fd = os.open(MARKER, os.O_CREAT | os.O_EXCL | os.O_WRONLY | os.O_NOFOLLOW, 0o600)
     try:
         os.write(fd, LABEL.encode("ascii"))

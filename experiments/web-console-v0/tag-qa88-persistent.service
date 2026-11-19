@@ -3,6 +3,9 @@
 # Install places this disabled; enabling/start/reboot require separate approval.
 [Unit]
 Description=TAG experimental persistent loopback console (synthetic only)
+# Evaluate before namespace setup. Existing host paths must never be adopted.
+AssertPathExists=!/run/tag-qa88
+AssertPathExists=!/run/tag-qa88-mountpoint-owned
 StartLimitIntervalSec=60
 StartLimitBurst=2
 
@@ -32,7 +35,9 @@ CPUQuota=50%
 TasksMax=12
 # One bounded outer runtime mount; CLI /tmp binds its own disposable workdir
 # within this same filesystem (no independent inner tmpfs).
-# Requires a pre-created, empty root:root 0700 /run/tag-qa88 mountpoint.
+# systemd 259 creates an empty root:root 0755 host mountpoint before the
+# privileged ExecStartPre hook validates it and tightens it to 0700.
+# Unit assertions above forbid a stale/mutated host path before this step.
 # Do not add ReadWritePaths= or RuntimeDirectory= for this same path:
 # systemd 259 can prioritize those entries over the bounded tmpfs.
 TemporaryFileSystem=/run/tag-qa88:size=8388608,nr_inodes=128,mode=0700,uid=@TAG_UID@,gid=@TAG_GID@,nodev,nosuid,noexec
