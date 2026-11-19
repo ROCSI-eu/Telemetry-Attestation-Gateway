@@ -7,6 +7,8 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 import os
+import pwd
+import grp
 from pathlib import Path
 import stat
 
@@ -24,12 +26,25 @@ class GateRejected(Exception):
     """No listener may start if any prerequisite cannot be attested."""
 
 
+def expected_identity() -> tuple[int, int]:
+    """Resolve the fixed, dedicated system account; never accept UID 0."""
+    try:
+        user = pwd.getpwnam("tag-qa88")
+        group = grp.getgrnam("tag-qa88")
+    except KeyError as exc:
+        raise GateRejected from exc
+    if user.pw_uid <= 0 or group.gr_gid <= 0 or user.pw_gid != group.gr_gid:
+        raise GateRejected
+    return user.pw_uid, group.gr_gid
+
+
 def private_dir(path: Path) -> None:
     try:
         entry = path.lstat()
+        uid, gid = expected_identity()
         if (not path.is_absolute() or str(path) != os.path.realpath(path)
                 or not stat.S_ISDIR(entry.st_mode)
-                or entry.st_uid != 1000 or entry.st_gid != 1000
+                or entry.st_uid != uid or entry.st_gid != gid
                 or stat.S_IMODE(entry.st_mode) != 0o700):
             raise GateRejected
     except OSError as exc:
@@ -38,7 +53,8 @@ def private_dir(path: Path) -> None:
 
 def verify_identity_and_cgroup(*, proc: Path = Path("/proc"),
                                cgroup_root: Path = Path("/sys/fs/cgroup")) -> None:
-    if os.geteuid() != 1000 or os.getegid() != 1000:
+    uid, gid = expected_identity()
+    if os.geteuid() != uid or os.getegid() != gid:
         raise GateRejected
     try:
         status = (proc / "self/status").read_text()
@@ -108,7 +124,8 @@ def exclusive_token_file(path: Path, token: str):
         raise GateRejected from exc
     entry = os.fstat(fd)
     try:
-        if (entry.st_uid != 1000 or entry.st_gid != 1000
+        uid, gid = expected_identity()
+        if (entry.st_uid != uid or entry.st_gid != gid
                 or stat.S_IMODE(entry.st_mode) != 0o600):
             raise GateRejected
         os.write(fd, (token + "\n").encode("ascii"))

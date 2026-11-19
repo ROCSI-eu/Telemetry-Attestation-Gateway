@@ -1,14 +1,19 @@
 #!/usr/bin/env python3
 """Focused unit tests only; no systemd, root, real CLI, SITL or cryptography."""
 import http.client
+import io
 import json
 import os
 from pathlib import Path
+import sys
+import tarfile
 import tempfile
 import threading
 import unittest
 from unittest.mock import patch
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
+import tag88_service as service
 import local_cli_bridge as bridge
 import tag88_persistent_gate as gate
 
@@ -131,7 +136,8 @@ class PersistentGateTest(unittest.TestCase):
             for key, value in gate.EXPECTED_LIMITS.items():
                 (group / key).write_text(value + "\n")
             with patch.object(gate.os, "geteuid", return_value=1000), \
-                 patch.object(gate.os, "getegid", return_value=1000):
+                 patch.object(gate.os, "getegid", return_value=1000), \
+                 patch.object(gate, "expected_identity", return_value=(1000, 1000)):
                 gate.verify_identity_and_cgroup(proc=proc, cgroup_root=base / "sys")
                 (group / "memory.swap.max").write_text("max")
                 with self.assertRaises(gate.GateRejected):
@@ -156,6 +162,77 @@ class PersistentGateTest(unittest.TestCase):
         self.assertNotIn('print(token)', clause)
         self.assertNotIn('print(server.token)', clause)
         self.assertIn("exclusive_token_file", clause)
+
+
+class PersistentInstallPackageTest(unittest.TestCase):
+    def test_install_template_is_rendered_and_disabled(self):
+        template = (Path(__file__).with_name("tag-qa88-persistent.service")).read_text()
+        rendered = service.unit_render(template, Path("/opt/tag-qa88/release-" + "a" * 40), 991, 992)
+        self.assertIn("User=tag-qa88", rendered)
+        self.assertIn("Group=tag-qa88", rendered)
+        self.assertIn("uid=991,gid=992", rendered)
+        self.assertIn("WantedBy=multi-user.target", rendered)
+        self.assertIn("Restart=no", rendered)
+        self.assertIn("ExecStartPre=+/usr/bin/python3", rendered)
+        self.assertIn("ExecStopPost=+/usr/bin/python3", rendered)
+        self.assertIn("RuntimeDirectory=tag-qa88-control", rendered)
+        self.assertNotIn("ReadWritePaths=/run/tag-qa88", rendered)
+        self.assertNotIn("RuntimeDirectory=tag-qa88\n", rendered)
+        self.assertNotIn("@TAG_", rendered)
+        with self.assertRaises(service.Refused):
+            service.unit_render(template, Path("/opt/tag-qa88/release"), 0, 992)
+
+    def test_mountpoint_lifecycle_is_exclusive_and_nonprivileged_test(self):
+        with tempfile.TemporaryDirectory() as root:
+            mount, marker = Path(root) / "mount", Path(root) / "marker"
+            with patch.object(service, "MOUNT", mount), patch.object(service, "MARKER", marker), \
+                 patch.object(service, "ROOT_UID", os.getuid()), \
+                 patch.object(service, "ROOT_GID", os.getgid()), \
+                 patch.object(service, "require_root"), \
+                 patch.object(service, "is_mount", return_value=False):
+                service.mount_prepare()
+                self.assertEqual(mount.stat().st_mode & 0o777, 0o700)
+                self.assertEqual(marker.stat().st_mode & 0o777, 0o600)
+                with self.assertRaises(service.Refused):
+                    service.mount_prepare()  # never overwrite an existing mountpoint
+                service.mount_clean()
+                self.assertFalse(mount.exists())
+                self.assertFalse(marker.exists())
+                service.mount_clean()  # no-op after clean stop
+                mount.mkdir(mode=0o700)
+                with self.assertRaises(service.Refused):
+                    service.mount_clean()  # no deletion without an ownership marker
+                self.assertTrue(mount.exists())
+
+    def test_exact_tree_archive_only_allows_regular_files(self):
+        with tempfile.TemporaryDirectory() as root:
+            def make_archive(kind):
+                data = io.BytesIO()
+                with tarfile.open(fileobj=data, mode="w") as tf:
+                    item = tarfile.TarInfo("sample.py")
+                    if kind == "link":
+                        item.type = tarfile.SYMTYPE
+                        item.linkname = "/etc/passwd"
+                        tf.addfile(item)
+                    else:
+                        payload = b"print('synthetic')\n"
+                        item.size = len(payload)
+                        tf.addfile(item, io.BytesIO(payload))
+                return data.getvalue()
+            with self.assertRaises(service.Refused):
+                service.unpack_archive(make_archive("link"), Path(root) / "bad")
+            self.assertFalse((Path(root) / "bad").exists())
+            result = service.unpack_archive(make_archive("regular"), Path(root) / "ok")
+            self.assertIn("sample.py", result)
+            self.assertEqual((Path(root) / "ok" / "sample.py").read_text(), "print('synthetic')\n")
+
+    def test_fail_closed_install_without_root_or_sha(self):
+        with patch.object(service.os, "geteuid", return_value=1000):
+            with self.assertRaises(service.Refused):
+                service.install(Path("/tmp"), "a" * 40)
+        with tempfile.TemporaryDirectory() as root:
+            with self.assertRaises(service.Refused):
+                service.git_checked_checkout(Path(root), "bad-sha")
 
 
 if __name__ == "__main__":
