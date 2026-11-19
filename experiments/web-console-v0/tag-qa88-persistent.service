@@ -1,6 +1,6 @@
-# TAG #88 / PERSISTENT-RUNTIME-01 — TEMPLATE ONLY, NEVER INSTALLED BY THIS PR.
-# Qube Dev1 non-Production only; use the exact verified checkout before a later QA.
-# No [Install] section: enabling/autostart is outside this Draft.
+# TAG #88 / PERSISTENT-RUNTIME-02 — renderable non-Production template.
+# The root-only installer substitutes @TAG_RELEASE@ and numeric UID/GID.
+# Install places this disabled; enabling/start/reboot require separate approval.
 [Unit]
 Description=TAG experimental persistent loopback console (synthetic only)
 StartLimitIntervalSec=60
@@ -8,8 +8,8 @@ StartLimitBurst=2
 
 [Service]
 Type=simple
-User=1000
-Group=1000
+User=tag-qa88
+Group=tag-qa88
 UMask=0077
 NoNewPrivileges=yes
 CapabilityBoundingSet=
@@ -35,7 +35,7 @@ TasksMax=12
 # Requires a pre-created, empty root:root 0700 /run/tag-qa88 mountpoint.
 # Do not add ReadWritePaths= or RuntimeDirectory= for this same path:
 # systemd 259 can prioritize those entries over the bounded tmpfs.
-TemporaryFileSystem=/run/tag-qa88:size=8388608,nr_inodes=128,mode=0700,uid=1000,gid=1000,nodev,nosuid,noexec
+TemporaryFileSystem=/run/tag-qa88:size=8388608,nr_inodes=128,mode=0700,uid=@TAG_UID@,gid=@TAG_GID@,nodev,nosuid,noexec
 # Only owner-readable operator credential, on the host /run tmpfs.
 # This tiny control-plane directory is deliberately outside the CLI runtime cap.
 RuntimeDirectory=tag-qa88-control
@@ -43,7 +43,11 @@ RuntimeDirectoryMode=0700
 RuntimeDirectoryPreserve=no
 Environment=PYTHONDONTWRITEBYTECODE=1
 WorkingDirectory=/
-# QA MUST use an exact pinned non-Production checkout; no self-install.
-ExecStart=/usr/bin/python3 -B /mnt/qube-dev1/tag-isolated-package-01/repo/experiments/web-console-v0/local_cli_bridge.py --persistent --runtime-root /run/tag-qa88 --operator-token-file /run/tag-qa88-control/operator.token
-Restart=on-failure
-RestartSec=3s
+# Root-only hooks are fixed, narrowly scoped; main process remains unprivileged.
+ExecStartPre=+/usr/bin/python3 -B @TAG_RELEASE@/scripts/tag88_service.py mount-prepare
+ExecStart=/usr/bin/python3 -B @TAG_RELEASE@/experiments/web-console-v0/local_cli_bridge.py --persistent --runtime-root /run/tag-qa88 --operator-token-file /run/tag-qa88-control/operator.token
+ExecStopPost=+/usr/bin/python3 -B @TAG_RELEASE@/scripts/tag88_service.py mount-clean
+Restart=no
+
+[Install]
+WantedBy=multi-user.target

@@ -241,103 +241,66 @@ Use the one-session URL and token only in that machine's local browser; never in
 
 
 
-### TAG #88 / PERSISTENT-RUNTIME-01 — Draft only (Qube, non-Production)
+### TAG #88 / PERSISTENT-RUNTIME-01 — verified transient baseline
 
-The opt-in `local_cli_bridge.py --persistent` mode and
-`tag-qa88-persistent.service` are **proposed, not installed or enabled**.
-Existing one-shot commands and source fixtures are unchanged by default.
-The system-manager unit runs as UID/GID 1000 with no effective capabilities
-and `NoNewPrivileges=yes`. Startup rejects the wrong UID, cgroup,
-RAM/swap/CPU/process limits, tmpfs mount, byte/inode quotas or access modes
-**before opening the loopback listener**.
+The persistent bridge and single bounded tmpfs were added in #147. The
+**2026-11-19 08:49 Qube transient QA PASS** exercised two successive short-
+circuit synthetic CLI requests in one systemd service, with UID/GID 1000,
+128 MiB RAM, zero swap, 50% CPU, 12 tasks, an 8 MiB/128-inode private tmpfs,
+loopback-only access, a private volatile token and complete cleanup. All
+transient unit, mount, cgroup, token and QA checkout state was removed.
+This does **not** prove lifecycle after installation or reboot.
 
-The service's one private runtime tmpfs is `/run/tag-qa88` with
-`size=8388608,nr_inodes=128,mode=0700`. Each synthetic CLI request gets
-a disposable subdirectory of `/run/tag-qa88/work`, passed to the existing
-inner bubblewrap as a bind-mounted `/tmp`. This **shares one filesystem
-quota**: there is no second independently sized `--tmpfs` inside bwrap.
-Host sources remain read-only; no proofs, SITL, MAVLink, publication, external
-network exposure or retained CLI results are allowed. The persistent bridge
-exposes only `over_limit` and `malformed_source` (no proof toolchain).
-Its HTTP server is single-threaded, allowing at most one CLI request to run
-at a time. Requests are sequential, not streamed; each CLI run retains the
-existing 20-second deadline, bounded stdout and child cleanup. No service-wide
-`RuntimeMaxSec` is set; restart is bounded by systemd start-limit policy.
+### TAG #88 / PERSISTENT-RUNTIME-02 — reproducible package, Draft only
 
-For local operator use, the only host-visible control-plane exception is
-`/run/tag-qa88-control/operator.token`, an owner-only `0600` file on
-volatile host `/run` (not ext4), created exclusively and normally removed
-on service exit. The manager removes the runtime directory on stop. This small
-credential file is **outside** the 8 MiB runtime quota; therefore the quota
-applies to TAG's private **CLI runtime**, not to every possible byte written
-by the service. Neither this token nor its value belongs in CLI arguments,
-Git, journald, screenshots or shared logs. An operator may read the file
-privately from a local Qube terminal after separate service authorization;
-the token is never printed by the persistent service. Do not log it.
+The existing service template is now rendered for the dedicated non-login
+`tag-qa88` system user (UID/GID assigned locally), with sources copied from an
+**exact clean Git SHA** into root-owned `/opt/tag-qa88/release-<sha>`.
+`tag88_persistent_gate.py` resolves and verifies that local identity in
+addition to exact cgroup, capability, resource and tmpfs constraints.
+The 127.0.0.1 listener, local 0600 token, fixed `over_limit` and
+`malformed_source` scenarios, serial execution and bounded workspaces are
+unchanged; this package neither provisions cryptography nor enables SITL.
 
-**Qube QA checkpoint (2026-11-19, 08:49 local time): PASS.** A single
-separately approved **transient** system-manager service ran as UID/GID 1000,
-with no capabilities, under the bounded cgroup. Its fail-closed startup gate
-verified a dedicated private tmpfs, actual 8 MiB and 128-inode `ENOSPC`,
-and read-only host ext4. The loopback operator completed two sequential
-non-cryptographic short-circuit requests (`over_limit`, `malformed_source`)
-in the **same service process**, using the same quota-backed workspace inside
-bubblewrap; private token and per-request cleanup checks passed. The service
-was stopped and the unit, cgroup, tmpfs, token and QA checkout were removed.
-This is **QA for the transient configuration only**, not installation,
-autostart or Production authorization.
+One root-only helper, `scripts/tag88_service.py`, has four explicit operations:
+`install --checkout /ABSOLUTE/CLEAN/REPO --sha <approved-40-hex-sha>`,
+`remove`, `mount-prepare` and `mount-clean`. **None has been run** on a real
+system during this PR. The installer checks exact commit and clean tracked /
+untracked state, rejects pre-existing TAG directories/unit/account, archives
+only the pinned Git tree and renders the existing unit with numeric tmpfs
+UID/GID and immutable release path. It installs the **disabled** unit and
+reloads systemd, but never starts or enables it. A failure stops without
+fallback or destructive overwrite; any partial install requires inspection
+before separately authorized cleanup.
 
-**Non-Production system-service prerequisites — not executed by this PR:**
-the exact service source checkout must first be pinned and verified, and the
-template's illustrative `ExecStart` path must be updated to that exact,
-clean checkout. The current template still refers to an older Qube research
-checkout; it must **not** be installed as-is. Before any separately approved
-local start, verify that no `tag-qa88*` unit/cgroup or `/run/tag-qa88`
-already exists. In the authorized **local Qube terminal** (not remote sudo),
-a privileged operator prepares only the empty, host-visible mountpoint:
+At each authorized service start (including after reboot), the same unit's
+privileged `ExecStartPre` creates exactly one empty root-owned
+`/run/tag-qa88` mountpoint and a root-only ownership marker. systemd mounts
+only `TemporaryFileSystem=/run/tag-qa88` for the unprivileged main process,
+sharing the single 8 MiB, 128-inode quota with inner bubblewrap. The fixed
+`ExecStopPost` removes the mountpoint and marker **only** when the marker,
+ownership, permissions, emptiness and no-mounted-filesystem checks pass;
+otherwise it stops without deleting anything. The control token remains in
+`RuntimeDirectory=tag-qa88-control`, outside the quota. Never introduce
+`ReadWritePaths=/run/tag-qa88` or overlap that path with `RuntimeDirectory`.
+There is no additional service and no automatic restart on failure.
 
-```sh
-sudo -n /usr/bin/mkdir -m 0700 -- /run/tag-qa88
-test "$(stat -c '%u:%g:%a' /run/tag-qa88)" = 0:0:700
-! findmnt -M /run/tag-qa88
-```
+The template includes `[Install]` / `WantedBy=multi-user.target` **only to
+permit later opt-in autostart**. Enabling, starting, stopping, rebooting and
+executing the install/remove helper as root all require separate local Qube
+authorization. Root authentication must occur in the Qube terminal, never
+be transferred to Desktop Commander. `remove` refuses to act while the unit
+is active/enabled or any runtime residue remains, validates the receipt and
+installed file hashes, then removes only the tagged package, unit and dedicated
+account. Reinstall from a prior approved clean SHA is the rollback path.
 
-The service then uses **only**
-`TemporaryFileSystem=/run/tag-qa88:size=8388608,nr_inodes=128,mode=0700,uid=1000,gid=1000,nodev,nosuid,noexec`
-to create its own bounded mount in its mount namespace.
-`RuntimeDirectory=tag-qa88-control` handles only the separate volatile
-credential directory. **Never set** `ReadWritePaths=/run/tag-qa88` or add
-`tag-qa88` to `RuntimeDirectory=`: systemd 259 prioritizes those overlapping
-entries and can discard the dedicated tmpfs mount. The operator must
-explicitly authorize the subsequent systemd start; nothing in this Draft
-runs, installs, enables or schedules it. The template intentionally has
-no `[Install]` section, so boot/autostart requires a future separate design
-and approval. As `/run` is volatile, the mountpoint prerequisite must be
-satisfied again after a reboot before any approved service start.
-
-**Stop/cleanup — only after an authorized start:** stop the **exact** TAG
-service through the system manager; verify its PID/cgroup are empty, the unit
-is stopped, the private mount is gone, and
-`/run/tag-qa88-control/operator.token` and its runtime directory are gone.
-Then remove **only** the empty root-owned `0700` host mountpoint, after
-verifying it is not an active mount and does not contain unrelated files:
-
-```sh
-test "$(stat -c '%u:%g:%a' /run/tag-qa88)" = 0:0:700
-! findmnt -M /run/tag-qa88
-sudo -n /usr/bin/rmdir -- /run/tag-qa88
-```
-
-Stop if any check fails: **no `rm -rf`, retries, fallback mounts, stale
-resource reuse or removal of other services**. Cleanup of the private QA
-checkout belongs to the separately authorized transient QA harness and is
-not part of a future persistent-service installation.
-
-**Remaining readiness boundary:** the transient QA passed, but a real
-system-service installation and stop/restart lifecycle on a pinned checkout
-remain untested and require distinct approval. No changes to the kernel,
-mount options, quotas, token exposure, SITL, cryptography, Production VM,
-DNS, Cloudflare or merge are authorized by this Draft.
+Focused source-only tests cover template rendering, account gate and private
+mountpoint create/cleanup in an ordinary temporary directory without sudo,
+service startup or host `/run` changes. Remaining **unverified** gates are:
+real systemd install/start, sequential requests under the dedicated UID,
+stop/restart/cleanup, post-reboot mountpoint recreation and autostart.
+No installation, enablement, reboot, merge, Production VM, Cloudflare, DNS,
+MAVLink, SITL or cryptographic execution is authorized by this Draft.
 
 ### TAG #88: opt-in aggregate bounds on Qube Dev1 (non-Production)
 
