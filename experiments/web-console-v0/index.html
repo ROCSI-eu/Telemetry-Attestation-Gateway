@@ -524,6 +524,7 @@ function renderOperator(e) {
   setText("mission-backend-crypto",e.cryptographic);
   $("operator-result").hidden=false;
 }
+let persistentOperator=false;
 async function initializeOperator() {
   try {
     const response=await fetch("operator-capabilities",{cache:"no-store"});
@@ -532,10 +533,20 @@ async function initializeOperator() {
     if(!e||typeof e!=="object"||Array.isArray(e)||Object.keys(e).length!==4
       ||e.schema_version!=="TAG_LOCAL_CLI_SHORT_CIRCUIT_V0_EXPERIMENTAL"
       ||JSON.stringify(e.labels)!==JSON.stringify(OPERATOR_LABELS)
-      ||e.mode!=="ONE_SHOT_LOCAL_CLI"
-      ||JSON.stringify(e.scenarios)!==JSON.stringify(Object.keys(OPERATOR_CASES)))return;
-    setText("console-mode","LOCAL PREVIEW · ACTIVE ONE-SHOT CLI");
-    setText("console-footer","Local/offline experimental operator mode: one authenticated synthetic CLI invocation can run inside the isolated sandbox. The genuine synthetic proof scenario requires the explicitly provisioned private toolchain. The browser displays only the final minimized CLI result and does not prove or verify. No live progress stream, analytics, external APIs, uploads, external fonts or public proof endpoint. Recorded mock orchestration and precomputed offline-verifier replay remain separate.");
+      ||!["ONE_SHOT_LOCAL_CLI","PERSISTENT_LOCAL_CLI"].includes(e.mode))return;
+    persistentOperator=e.mode==="PERSISTENT_LOCAL_CLI";
+    const expected=persistentOperator?["over_limit","malformed_source"]:Object.keys(OPERATOR_CASES);
+    if(JSON.stringify(e.scenarios)!==JSON.stringify(expected))return;
+    if(persistentOperator){
+      $("operator-scenario").querySelector('option[value="verified_synthetic"]').remove();
+      $("operator-panel").querySelector(".eyebrow").textContent="Local operator · authenticated · persistent";
+      $("operator-token").parentElement.firstChild.textContent="Local owner-only operator token ";
+      $("operator-run").textContent="Execute isolated synthetic scenario";
+    }
+    setText("console-mode",persistentOperator?"LOCAL PREVIEW · PERSISTENT SYNTHETIC CLI":"LOCAL PREVIEW · ACTIVE ONE-SHOT CLI");
+    setText("console-footer",persistentOperator
+      ?"Local/offline persistent operator mode: one synthetic CLI execution at a time; no proof generation, publication, persistent results or remote access. Only complete minimized results are displayed, not stage progress. Each CLI workdir is disposable. Recorded mock and verifier replay remain independent."
+      :"Local/offline experimental operator mode: one authenticated synthetic CLI invocation can run inside the isolated sandbox. The genuine synthetic proof scenario requires the explicitly provisioned private toolchain. The browser displays only the final minimized CLI result and does not prove or verify. No live progress stream, analytics, external APIs, uploads, external fonts or public proof endpoint. Recorded mock orchestration and precomputed offline-verifier replay remain separate.");
     $("operator-panel").hidden=false;
   }catch(_) { /* Static replay remains usable with no operator bridge. */ }
 }
@@ -555,15 +566,16 @@ $("operator-run").addEventListener("click",async()=>{
     const outcome=await response.json();
     if(!operatorResultAllowed(outcome,selected))throw Error("Incompatible response");
     renderOperator(outcome);
-    $("operator-status").textContent="COMPLETED · final observed CLI result (one-shot consumed)";
+    $("operator-status").textContent=persistentOperator?"COMPLETED · ready for another synthetic request":"COMPLETED · final observed CLI result (one-shot consumed)";
   }catch(_) {
     $("operator-result").hidden=true;
-    $("operator-status").textContent="UNAVAILABLE · no accepted CLI result; one-shot may have been consumed";
+    $("operator-status").textContent=persistentOperator?"UNAVAILABLE · no accepted CLI result":"UNAVAILABLE · no accepted CLI result; one-shot may have been consumed";
     setText("mission-backend-state","UNAVAILABLE · no accepted final CLI result");
     setText("mission-backend-proof","NOT_OBSERVED");
     setText("mission-backend-crypto","NOT_OBSERVED");
   }finally{
     $("operator-token").value="";
+    if(persistentOperator)$("operator-run").disabled=false;
   }
 });
 $("authentic-reload").addEventListener("click",initializeAuthentic);

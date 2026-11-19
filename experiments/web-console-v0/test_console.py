@@ -53,10 +53,10 @@ class ConsoleFixtureTests(unittest.TestCase):
         self.assertIn("or proof jobs. Sources are separately labeled", html)
         operator = html.split("async function initializeOperator() {", 1)[1].split(
             '$("operator-run").addEventListener', 1)[0]
-        gate = operator.index('e.mode!=="ONE_SHOT_LOCAL_CLI"')
+        gate = operator.index('["ONE_SHOT_LOCAL_CLI","PERSISTENT_LOCAL_CLI"].includes(e.mode)')
         active_label = operator.index(
-            'setText("console-mode","LOCAL PREVIEW · ACTIVE ONE-SHOT CLI")')
-        active_footer = operator.index('setText("console-footer","Local/offline experimental operator mode:')
+            'setText("console-mode",persistentOperator?')
+        active_footer = operator.index('setText("console-footer",persistentOperator')
         visible = operator.index('$("operator-panel").hidden=false')
         self.assertLess(gate, active_label)
         self.assertLess(active_label, active_footer)
@@ -65,6 +65,9 @@ class ConsoleFixtureTests(unittest.TestCase):
         self.assertIn('only the final minimized CLI result', operator)
         self.assertIn('does not prove or verify', operator)
         self.assertIn('Recorded mock orchestration and precomputed offline-verifier replay remain separate', operator)
+        self.assertIn('JSON.stringify(e.scenarios)!==JSON.stringify(expected)', operator)
+        self.assertIn('option[value="verified_synthetic"]', operator)
+        self.assertIn('if(persistentOperator)$("operator-run").disabled=false;', html)
         self.assertIn('if(!response.ok) return;', operator)
         self.assertIn('}catch(_) { /* Static replay remains usable with no operator bridge. */ }', operator)
 

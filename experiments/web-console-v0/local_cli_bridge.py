@@ -23,6 +23,7 @@ import socket
 import stat
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 
@@ -243,12 +244,15 @@ def _bounded_run(cmd: list[str], *, timeout: float | None = None,
         proc.stdout.close()
 
 
-def execute(scenario: str, toolchain_root: Path | None = None) -> dict:
+def execute(scenario: str, toolchain_root: Path | None = None,
+            *, shared_work: Path | None = None) -> dict:
     if scenario not in PRESETS:
         raise Rejected
     capture, bound, _, _ = PRESETS[scenario]
     tools = offline_toolchain(toolchain_root) if scenario == "verified_synthetic" else None
     tmpfs_bytes = os.environ.get("TAG_BWRAP_TMPFS_BYTES")
+    if shared_work is not None and (toolchain_root is not None or tmpfs_bytes is not None):
+        raise Rejected  # No proof workload or second independently sized tmpfs.
     if tmpfs_bytes not in (None, "8388608"):
         raise Rejected
     if tmpfs_bytes is not None and tools is not None:
@@ -261,8 +265,10 @@ def execute(scenario: str, toolchain_root: Path | None = None) -> dict:
            "--symlink", "usr/lib", "/lib",
            "--symlink", "usr/lib64", "/lib64",
            "--ro-bind", str(experiments), str(experiments),
-           *(["--size", "8388608"] if tmpfs_bytes == "8388608" else []),
-           "--tmpfs", "/tmp", "--dev", "/dev", "--proc", "/proc",
+           *(["--bind", str(shared_work), "/tmp"] if shared_work is not None
+             else [*(["--size", "8388608"] if tmpfs_bytes == "8388608" else []),
+                   "--tmpfs", "/tmp"]),
+           "--dev", "/dev", "--proc", "/proc",
            "--setenv", "HOME", "/tmp", "--setenv", "TMPDIR", "/tmp"]
     if tools is not None:
         cmd.extend(["--ro-bind", str(tools), str(tools)])
@@ -349,7 +355,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if self.path == "/operator-capabilities":
             capability = {
                 "schema_version": SCHEMA, "labels": LABELS,
-                "mode": "ONE_SHOT_LOCAL_CLI", "scenarios": list(PRESETS),
+                "mode": ("PERSISTENT_LOCAL_CLI" if self.server.persistent
+                         else "ONE_SHOT_LOCAL_CLI"),
+                "scenarios": list(self.server.scenarios),
             }
             self._send(200, json.dumps(capability, separators=(",", ":")).encode(),
                        "application/json")
@@ -378,24 +386,41 @@ class Handler(http.server.BaseHTTPRequestHandler):
             payload = json.loads(body)
             if (type(payload) is not dict or set(payload) != {"scenario"}
                 or type(payload["scenario"]) is not str
-                or payload["scenario"] not in PRESETS):
+                or payload["scenario"] not in self.server.scenarios):
                 raise Rejected
             with self.server.guard:
                 if self.server.used:
                     raise Rejected
                 self.server.used = True  # fail closed; no retries or queue
-            result = execute(payload["scenario"], self.server.toolchain_root)
+            if self.server.persistent:
+                # Same service lifetime, one bounded CLI run per request.
+                # The per-request directory and /tmp bind share the outer tmpfs quota.
+                with tempfile.TemporaryDirectory(prefix="tag-cli-", dir=self.server.work_root) as work:
+                    result = execute(payload["scenario"], shared_work=Path(work))
+            else:
+                result = execute(payload["scenario"], self.server.toolchain_root)
             self._send(200, json.dumps(result, separators=(",", ":")).encode(),
                        "application/json")
         except (Rejected, ValueError, TypeError, OSError):
             self._send(503, b'{"error":"UNAVAILABLE"}', "application/json")
+        finally:
+            if self.server.persistent:
+                with self.server.guard:
+                    self.server.used = False  # next request only after prior cleanup
 
 
 class Server(http.server.HTTPServer):
-    def __init__(self, token: str, toolchain_root: Path | None = None):
-        super().__init__(("127.0.0.1", 0), Handler)
+    def __init__(self, token: str, toolchain_root: Path | None = None,
+                 *, persistent: bool = False, work_root: Path | None = None):
+        if persistent and (toolchain_root is not None or work_root is None):
+            raise Rejected
+        bind_host = "127.0.0.1"  # keep the loopback-only invariant explicit
+        super().__init__((bind_host, 0), Handler)
         self.token = token
         self.toolchain_root = toolchain_root
+        self.persistent = persistent
+        self.work_root = work_root
+        self.scenarios = ("over_limit", "malformed_source") if persistent else tuple(PRESETS)
         self.guard = threading.Lock()
         self.used = False
 
@@ -403,11 +428,30 @@ class Server(http.server.HTTPServer):
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--seconds", type=int, default=120)
+    parser.add_argument("--persistent", action="store_true")
+    parser.add_argument("--runtime-root", type=Path)
+    parser.add_argument("--operator-token-file", type=Path)
     parser.add_argument("--offline-toolchain-root", type=Path,
                         help="existing owner-private, preprovisioned pinned research toolchain")
     args = parser.parse_args()
     if not 1 <= args.seconds <= 300:
         parser.error("preview lifetime must be 1-300 seconds")
+    if args.persistent:
+        if args.offline_toolchain_root is not None or not args.runtime_root or not args.operator_token_file:
+            parser.error("persistent synthetic-only mode needs a private tmpfs and operator token path")
+        # Import locally; normal one-shot mode remains independent of TAG #88.
+        from tag88_persistent_gate import persistent_preflight, exclusive_token_file
+        work_root = persistent_preflight(args.runtime_root, args.operator_token_file)
+        with exclusive_token_file(args.operator_token_file, secrets.token_urlsafe(32)) as token:
+            trusted_bwrap()
+            with Server(token, persistent=True, work_root=work_root) as server:
+                print("EXPERIMENTAL · SYNTHETIC_ONLY · persistent loopback operator", flush=True)
+                print(f"Local preview: http://127.0.0.1:{server.server_port}/", flush=True)
+                server.serve_forever(poll_interval=0.1)
+                server.token = ""
+        return 0
+    if args.runtime_root is not None or args.operator_token_file is not None:
+        parser.error("persistent-only options are not allowed in one-shot mode")
     trusted_bwrap()  # missing isolation means no listener
     if args.offline_toolchain_root is not None:
         offline_toolchain(args.offline_toolchain_root)
