@@ -46,7 +46,10 @@ MOUNT_CODES = frozenset({
     "MOUNT_NOT_EMPTY", "MOUNT_PATH_REPLACED", "MOUNT_CHMOD_FAILED",
     "MOUNT_MARKER_CREATE_FAILED", "MOUNT_MARKER_WRITE_FAILED",
     "MOUNT_CLEAN_ROOT_REQUIRED", "MOUNT_CLEAN_UNOWNED",
-    "MOUNT_CLEAN_CHANGED",
+    "MOUNT_CLEAN_CHANGED", "MOUNT_HOST_LOOKUP_FAILED",
+    "MOUNT_HOST_MOUNTED", "MOUNT_PRIVATE_INVALID",
+    "MOUNT_PRIVATE_QUOTA", "MOUNT_PRIVATE_FLAGS",
+    "MOUNT_PRIVATE_IDENTITY", "MOUNT_CLEAN_HOST_INVALID",
 })
 
 
@@ -88,6 +91,100 @@ def is_mount(path: Path) -> bool:
     return any(row.split()[4] == str(path) for row in Path("/proc/self/mountinfo").read_text().splitlines())
 
 
+def _host_view(path: Path) -> Path:
+    """Resolve the host's view through PID 1, never through this hook's mount namespace."""
+    return Path("/proc/1/root") / path.relative_to("/")
+
+
+def _mount_row(path: Path, table: Path) -> tuple[str, set[str]] | None:
+    """Return (fstype, mount flags) for exactly one mount, or None.
+
+    Fail closed if mount metadata cannot be inspected. The target paths are
+    fixed by the installed unit, without whitespace or mountinfo escapes.
+    """
+    try:
+        lines = table.read_text().splitlines()
+        matches = [line for line in lines if line.split()[4] == str(path)]
+        if len(matches) > 1:
+            raise MountRefused("MOUNT_MOUNTINFO_FAILED")
+        if not matches:
+            return None
+        fields = matches[0].split()
+        separator = fields.index("-")
+        return fields[separator + 1], set(fields[5].split(","))
+    except (OSError, IndexError, ValueError) as exc:
+        raise MountRefused("MOUNT_MOUNTINFO_FAILED") from exc
+
+
+def _open_checked(path: Path, uid: int, gid: int, mode: int,
+                  *, code: str) -> tuple[int, os.stat_result]:
+    try:
+        fd = os.open(path, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
+    except OSError as exc:
+        raise MountRefused(code) from exc
+    try:
+        entry = os.fstat(fd)
+        if not stat.S_ISDIR(entry.st_mode):
+            raise MountRefused(code)
+        if (entry.st_uid != uid or entry.st_gid != gid
+                or stat.S_IMODE(entry.st_mode) != mode):
+            raise MountRefused(code)
+        if os.listdir(fd):
+            raise MountRefused("MOUNT_NOT_EMPTY")
+        current = path.lstat()
+        if ((current.st_dev, current.st_ino) != (entry.st_dev, entry.st_ino)
+                or not stat.S_ISDIR(current.st_mode)):
+            raise MountRefused(code)
+        return fd, entry
+    except BaseException:
+        os.close(fd)
+        raise
+
+
+def _host_directory(mode: int) -> tuple[int, os.stat_result]:
+    host = _host_view(MOUNT)
+    # PID 1 sees the host mount namespace, not systemd's per-command tmpfs.
+    if _mount_row(MOUNT, Path("/proc/1/mountinfo")) is not None:
+        raise MountRefused("MOUNT_HOST_MOUNTED")
+    fd, entry = _open_checked(host, ROOT_UID, ROOT_GID, mode,
+                              code="MOUNT_HOST_LOOKUP_FAILED")
+    try:
+        if entry.st_dev != _host_view(MOUNT.parent).stat().st_dev:
+            raise MountRefused("MOUNT_HOST_LOOKUP_FAILED")
+    except BaseException:
+        os.close(fd)
+        raise
+    return fd, entry
+
+
+def _separate_device(path: Path, entry: os.stat_result) -> bool:
+    return entry.st_dev != path.parent.stat().st_dev
+
+
+def _private_directory() -> tuple[int, os.stat_result]:
+    facts = _mount_row(MOUNT, Path("/proc/self/mountinfo"))
+    if facts is None or facts[0] != "tmpfs":
+        raise MountRefused("MOUNT_PRIVATE_INVALID")
+    if not {"nodev", "nosuid", "noexec"}.issubset(facts[1]):
+        raise MountRefused("MOUNT_PRIVATE_FLAGS")
+    try:
+        uid, gid = checked_identity()
+    except Refused as exc:
+        raise MountRefused("MOUNT_PRIVATE_IDENTITY") from exc
+    fd, entry = _open_checked(MOUNT, uid, gid, 0o700, code="MOUNT_PRIVATE_IDENTITY")
+    try:
+        fs = os.fstatvfs(fd)
+        if not (0 < fs.f_blocks * fs.f_frsize <= 8 * 1024 * 1024
+                and 0 < fs.f_files <= 128):
+            raise MountRefused("MOUNT_PRIVATE_QUOTA")
+        if not _separate_device(MOUNT, entry):
+            raise MountRefused("MOUNT_PRIVATE_INVALID")
+    except BaseException:
+        os.close(fd)
+        raise
+    return fd, entry
+
+
 def mount_prepare() -> None:
     try:
         require_root()
@@ -95,50 +192,45 @@ def mount_prepare() -> None:
         raise MountRefused("MOUNT_ROOT_REQUIRED") from exc
     if os.path.lexists(MARKER):
         raise MountRefused("MOUNT_MARKER_PRESENT")
-    # The [Unit] assertions reject pre-existing host paths BEFORE systemd
-    # configures TemporaryFileSystem. The privileged + hook may subsequently
-    # see either no directory or a fresh root-owned 0755 host mountpoint.
-    preexisting = os.path.lexists(MOUNT)
-    if not preexisting:
+
+    own_mount = _mount_row(MOUNT, Path("/proc/self/mountinfo"))
+    if own_mount is not None:
+        # systemd's private tmpfs is already mounted for the + hook. Never
+        # chmod/remove that mount, and never mistake its uid/gid for host ownership.
+        private_fd, _ = _private_directory()
         try:
-            os.mkdir(MOUNT, 0o700)  # exclusive: EEXIST must fail closed
-        except OSError as exc:
-            raise MountRefused("MOUNT_CREATE_FAILED") from exc
-    try:
-        directory_fd = os.open(
-            MOUNT, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
-    except OSError as exc:
-        raise MountRefused("MOUNT_OPEN_FAILED") from exc
-    try:
-        entry = os.fstat(directory_fd)
-        if not stat.S_ISDIR(entry.st_mode):
-            raise MountRefused("MOUNT_NOT_DIRECTORY")
-        if entry.st_uid != ROOT_UID or entry.st_gid != ROOT_GID:
-            raise MountRefused("MOUNT_OWNER_MISMATCH")
-        if stat.S_IMODE(entry.st_mode) != (0o755 if preexisting else 0o700):
-            raise MountRefused("MOUNT_MODE_MISMATCH")
+            host_fd, _ = _host_directory(0o755)
+            os.close(host_fd)
+        finally:
+            os.close(private_fd)
+    else:
+        # Host-only compatibility path. The [Unit] assertions forbid adopting
+        # pre-existing residue before systemd prepares the unit.
+        existed = os.path.lexists(MOUNT)
+        if not existed:
+            try:
+                os.mkdir(MOUNT, 0o700)
+            except OSError as exc:
+                raise MountRefused("MOUNT_CREATE_FAILED") from exc
         try:
-            mounted = is_mount(MOUNT)
-        except (OSError, ValueError, IndexError) as exc:
-            raise MountRefused("MOUNT_MOUNTINFO_FAILED") from exc
-        if mounted:
-            raise MountRefused("MOUNT_ALREADY_MOUNTED")
-        try:
-            if os.listdir(directory_fd):
-                raise MountRefused("MOUNT_NOT_EMPTY")
-            current = MOUNT.lstat()
-        except OSError as exc:
-            raise MountRefused("MOUNT_PATH_REPLACED") from exc
-        if (not stat.S_ISDIR(current.st_mode)
-                or (current.st_dev, current.st_ino)
-                != (entry.st_dev, entry.st_ino)):
-            raise MountRefused("MOUNT_PATH_REPLACED")
-        try:
-            os.fchmod(directory_fd, 0o700)
+            fd, entry = _open_checked(MOUNT, ROOT_UID, ROOT_GID,
+                                      0o755 if existed else 0o700,
+                                      code="MOUNT_HOST_LOOKUP_FAILED")
+            try:
+                host_fd, host_entry = _host_directory(0o755 if existed else 0o700)
+                try:
+                    if (host_entry.st_dev, host_entry.st_ino) != (entry.st_dev, entry.st_ino):
+                        raise MountRefused("MOUNT_HOST_LOOKUP_FAILED")
+                finally:
+                    os.close(host_fd)
+                os.fchmod(fd, 0o700)
+            finally:
+                os.close(fd)
+        except MountRefused:
+            raise
         except OSError as exc:
             raise MountRefused("MOUNT_CHMOD_FAILED") from exc
-    finally:
-        os.close(directory_fd)
+
     try:
         fd = os.open(MARKER, os.O_CREAT | os.O_EXCL | os.O_WRONLY
                      | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600)
@@ -146,7 +238,12 @@ def mount_prepare() -> None:
         raise MountRefused("MOUNT_MARKER_CREATE_FAILED") from exc
     try:
         try:
-            os.write(fd, LABEL.encode("ascii"))
+            marker_stat = os.fstat(fd)
+            if (marker_stat.st_uid != ROOT_UID or marker_stat.st_gid != ROOT_GID
+                    or stat.S_IMODE(marker_stat.st_mode) != 0o600):
+                raise MountRefused("MOUNT_MARKER_CREATE_FAILED")
+            if os.write(fd, LABEL.encode("ascii")) != len(LABEL.encode("ascii")):
+                raise MountRefused("MOUNT_MARKER_WRITE_FAILED")
         except OSError as exc:
             raise MountRefused("MOUNT_MARKER_WRITE_FAILED") from exc
     finally:
@@ -159,18 +256,53 @@ def mount_clean() -> None:
     except Refused as exc:
         raise MountRefused("MOUNT_CLEAN_ROOT_REQUIRED") from exc
     if not os.path.lexists(MARKER) and not os.path.lexists(MOUNT):
-        return  # failed start before creation
-    if not MARKER.is_file() or MARKER.is_symlink() or not MOUNT.is_dir() or MOUNT.is_symlink():
+        return
+    if (not MARKER.is_file() or MARKER.is_symlink()
+            or MARKER.lstat().st_uid != ROOT_UID
+            or MARKER.lstat().st_gid != ROOT_GID
+            or stat.S_IMODE(MARKER.lstat().st_mode) != 0o600
+            or MARKER.read_text() != LABEL):
         raise MountRefused("MOUNT_CLEAN_UNOWNED")
-    token = MARKER.lstat()
-    directory = MOUNT.lstat()
-    if (token.st_uid != ROOT_UID or token.st_gid != ROOT_GID
-            or stat.S_IMODE(token.st_mode) != 0o600
-            or directory.st_uid != ROOT_UID or directory.st_gid != ROOT_GID
-            or stat.S_IMODE(directory.st_mode) != 0o700
-            or MARKER.read_text() != LABEL or is_mount(MOUNT) or list(MOUNT.iterdir())):
-        raise MountRefused("MOUNT_CLEAN_CHANGED")
-    os.rmdir(MOUNT)
+
+    own_mount = _mount_row(MOUNT, Path("/proc/self/mountinfo"))
+    if own_mount is not None:
+        # A fresh namespace may be created for ExecStopPost=+. Validate it,
+        # then remove ONLY PID 1's host-side empty directory, not the tmpfs.
+        private_fd, _ = _private_directory()
+        try:
+            host_fd, _ = _host_directory(0o755)
+            os.close(host_fd)
+        except BaseException:
+            os.close(private_fd)
+            raise
+        os.close(private_fd)
+    else:
+        host_fd, _ = _host_directory(0o700)
+        os.close(host_fd)
+
+    # The parent fd anchors removal to the host's /run path. Refuse symlinks
+    # and replacement rather than blindly rmdir a path in a private namespace.
+    parent = _host_view(MOUNT.parent)
+    try:
+        parent_fd = os.open(parent, os.O_RDONLY | os.O_DIRECTORY
+                            | os.O_NOFOLLOW | os.O_CLOEXEC)
+    except OSError as exc:
+        raise MountRefused("MOUNT_CLEAN_HOST_INVALID") from exc
+    try:
+        host_fd, entry = _open_checked(_host_view(MOUNT), ROOT_UID, ROOT_GID,
+                                       0o755 if own_mount is not None else 0o700,
+                                       code="MOUNT_CLEAN_HOST_INVALID")
+        try:
+            target = os.stat(MOUNT.name, dir_fd=parent_fd, follow_symlinks=False)
+            if (target.st_dev, target.st_ino) != (entry.st_dev, entry.st_ino):
+                raise MountRefused("MOUNT_CLEAN_HOST_INVALID")
+            os.rmdir(MOUNT.name, dir_fd=parent_fd)
+        finally:
+            os.close(host_fd)
+    except OSError as exc:
+        raise MountRefused("MOUNT_CLEAN_HOST_INVALID") from exc
+    finally:
+        os.close(parent_fd)
     MARKER.unlink()
 
 def git_checked_checkout(checkout: Path, sha: str) -> bytes:

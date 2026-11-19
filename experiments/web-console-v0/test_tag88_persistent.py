@@ -184,38 +184,72 @@ class PersistentInstallPackageTest(unittest.TestCase):
         with self.assertRaises(service.Refused):
             service.unit_render(template, Path("/opt/tag-qa88/release"), 0, 992)
 
-    def test_mountpoint_lifecycle_is_exclusive_and_nonprivileged_test(self):
+    def mount_case(self, root, *, private=False):
+        """Private mount and PID1 host views are separate fake filesystems."""
+        base = Path(root)
+        self_host = base / "host"
+        self_private = base / "private"
+        self_host.mkdir()
+        self_private.mkdir()
+        mount = self_private / "mnt"
+        host = self_host / "mnt"
+        marker = self_private / "marker"
+        host.mkdir(mode=0o755)
+        os.chmod(host, 0o755)
+        if private:
+            mount.mkdir(mode=0o700)
+            os.chmod(mount, 0o700)
+        else:
+            mount = host
+            marker = base / "marker"
+
+        from types import SimpleNamespace
+        flags = {"nodev", "nosuid", "noexec"}
+        def mount_row(path, table):
+            if str(table) == "/proc/1/mountinfo":
+                return None
+            return ("tmpfs", flags) if private else None
+        def host_view(path):
+            if path == mount:
+                return host
+            if path == mount.parent:
+                return host.parent
+            raise AssertionError("unexpected host path")
+        def fake_statvfs(fd):
+            return SimpleNamespace(f_blocks=2048, f_frsize=4096, f_files=128)
+        return mount, host, marker, mount_row, host_view, fake_statvfs
+
+    def test_host_only_mount_prepare_and_clean(self):
         with tempfile.TemporaryDirectory() as root:
-            mount, marker = Path(root) / "mount", Path(root) / "marker"
+            mount, host, marker, rows, view, vfs = self.mount_case(root)
             with patch.object(service, "MOUNT", mount), patch.object(service, "MARKER", marker), \
                  patch.object(service, "ROOT_UID", os.getuid()), \
                  patch.object(service, "ROOT_GID", os.getgid()), \
                  patch.object(service, "require_root"), \
-                 patch.object(service, "is_mount", return_value=False):
-                mount.mkdir(mode=0o755)  # systemd host-side mountpoint
-                os.chmod(mount, 0o755)
+                 patch.object(service, "_mount_row", side_effect=rows), \
+                 patch.object(service, "_host_view", side_effect=view):
                 service.mount_prepare()
                 self.assertEqual(mount.stat().st_mode & 0o777, 0o700)
                 self.assertEqual(marker.stat().st_mode & 0o777, 0o600)
-                with self.assertRaises(service.Refused):
-                    service.mount_prepare()  # never overwrite an existing mountpoint
+                with self.assertRaises(service.MountRefused) as cm:
+                    service.mount_prepare()
+                self.assertEqual(cm.exception.code, "MOUNT_MARKER_PRESENT")
                 service.mount_clean()
                 self.assertFalse(mount.exists())
                 self.assertFalse(marker.exists())
-                service.mount_clean()  # no-op after clean stop
-                mount.mkdir(mode=0o700)
-                with self.assertRaises(service.Refused):
-                    service.mount_clean()  # no deletion without an ownership marker
-                self.assertTrue(mount.exists())
+                service.mount_clean()
 
-    def test_mount_prepare_accepts_exclusively_created_absent_path(self):
+    def test_host_absent_is_created_exclusively_and_removed(self):
         with tempfile.TemporaryDirectory() as root:
-            mount, marker = Path(root) / "mount", Path(root) / "marker"
+            base = Path(root)
+            mount = base / "mnt"
+            marker = base / "marker"
             with patch.object(service, "MOUNT", mount), patch.object(service, "MARKER", marker), \
                  patch.object(service, "ROOT_UID", os.getuid()), \
                  patch.object(service, "ROOT_GID", os.getgid()), \
                  patch.object(service, "require_root"), \
-                 patch.object(service, "is_mount", return_value=False):
+                 patch.object(service, "_mount_row", return_value=None), \
+                 patch.object(service, "_host_view", side_effect=lambda p: p):
                 service.mount_prepare()
                 self.assertEqual(mount.stat().st_mode & 0o777, 0o700)
                 self.assertEqual(marker.stat().st_mode & 0o777, 0o600)
@@ -223,101 +257,185 @@ class PersistentInstallPackageTest(unittest.TestCase):
                 self.assertFalse(mount.exists())
                 self.assertFalse(marker.exists())
 
-    def test_mount_prepare_refuses_ambiguous_systemd_path(self):
-        codes = {
-            "wrong_mode": "MOUNT_MODE_MISMATCH",
-            "nonempty": "MOUNT_NOT_EMPTY",
-            "marker_present": "MOUNT_MARKER_PRESENT",
-            "mounted": "MOUNT_ALREADY_MOUNTED",
-            "symlink": "MOUNT_OPEN_FAILED",
-            "wrong_owner": "MOUNT_OWNER_MISMATCH",
-            "regular_file": "MOUNT_OPEN_FAILED",
+    def test_mountinfo_real_parser(self):
+        with tempfile.TemporaryDirectory() as root:
+            table = Path(root) / "mountinfo"
+            fake_path = Path(root) / "mnt"
+            table.write_text(
+                f"100 9 0:99 / {fake_path} rw,nosuid,nodev,noexec,relatime - tmpfs tmpfs rw,size=8192k,nr_inodes=128\n"
+            )
+            kind, flags = service._mount_row(fake_path, table)
+            self.assertEqual(kind, "tmpfs")
+            self.assertTrue({"nosuid", "nodev", "noexec"}.issubset(flags))
+            self.assertIsNone(service._mount_row(fake_path / "other", table))
+            with self.assertRaises(service.MountRefused):
+                service._mount_row(fake_path, Path(root) / "nonexistent")
+
+    def test_private_mount_prepare_and_clean_separate_host(self):
+        with tempfile.TemporaryDirectory() as root:
+            mount, host, marker, rows, view, vfs = self.mount_case(root, private=True)
+            with patch.object(service, "MOUNT", mount), patch.object(service, "MARKER", marker), \
+                 patch.object(service, "ROOT_UID", os.getuid()), \
+                 patch.object(service, "ROOT_GID", os.getgid()), \
+                 patch.object(service, "checked_identity", return_value=(os.getuid(), os.getgid())), \
+                 patch.object(service, "require_root"), \
+                 patch.object(service, "_mount_row", side_effect=rows), \
+                 patch.object(service, "_host_view", side_effect=view), \
+                 patch.object(service, "_separate_device", return_value=True), \
+                 patch.object(service.os, "fstatvfs", side_effect=vfs):
+                service.mount_prepare()
+                self.assertEqual(mount.stat().st_mode & 0o777, 0o700)
+                self.assertEqual(host.stat().st_mode & 0o777, 0o755)
+                self.assertEqual(marker.stat().st_mode & 0o777, 0o600)
+                service.mount_clean()
+                self.assertFalse(host.exists())
+                self.assertFalse(marker.exists())
+                self.assertTrue(mount.exists())  # private mount is NEVER removed by hook
+
+    def test_private_mount_rejects_untrusted_evidence(self):
+        from types import SimpleNamespace
+        cases = {
+            "bad_fs": "MOUNT_PRIVATE_INVALID",
+            "missing_flag": "MOUNT_PRIVATE_FLAGS",
+            "wrong_uid": "MOUNT_PRIVATE_IDENTITY",
+            "wrong_mode": "MOUNT_PRIVATE_IDENTITY",
+            "too_large": "MOUNT_PRIVATE_QUOTA",
+            "too_many_inodes": "MOUNT_PRIVATE_QUOTA",
+            "same_device": "MOUNT_PRIVATE_INVALID",
+            "mounted_host": "MOUNT_HOST_MOUNTED",
+            "nonempty_private": "MOUNT_NOT_EMPTY",
+            "nonempty_host": "MOUNT_NOT_EMPTY",
+            "host_wrong_owner": "MOUNT_HOST_LOOKUP_FAILED",
+            "host_wrong_mode": "MOUNT_HOST_LOOKUP_FAILED",
         }
-        cases = tuple(codes)
-        for case in cases:
+        for case, reason in cases.items():
             with self.subTest(case=case), tempfile.TemporaryDirectory() as root:
-                base = Path(root)
-                mount, marker = base / "mount", base / "marker"
-                if case == "symlink":
-                    target = base / "target"
-                    target.mkdir()
-                    mount.symlink_to(target)
-                elif case == "regular_file":
-                    mount.write_text("foreign")
-                else:
-                    mount.mkdir(mode=0o755)
-                    os.chmod(mount, 0o700 if case == "wrong_mode" else 0o755)
-                if case == "nonempty":
-                    (mount / "foreign").write_text("keep")
-                if case == "marker_present":
-                    marker.write_text("foreign")
+                mount, host, marker, rows, view, vfs = self.mount_case(root, private=True)
+                if case == "wrong_mode":
+                    os.chmod(mount, 0o755)
+                if case == "nonempty_private":
+                    (mount / "foreign").write_text("unchanged")
+                if case == "nonempty_host":
+                    (host / "foreign").write_text("unchanged")
+                if case == "host_wrong_mode":
+                    os.chmod(host, 0o700)
+                def fake_rows(path, table):
+                    if case == "mounted_host" and str(table) == "/proc/1/mountinfo":
+                        return ("ext4", set())
+                    result = rows(path, table)
+                    if result is not None and case == "bad_fs":
+                        return ("ext4", result[1])
+                    if result is not None and case == "missing_flag":
+                        return ("tmpfs", {"nodev", "nosuid"})
+                    return result
+                def fake_vfs(fd):
+                    if case == "too_large":
+                        return SimpleNamespace(f_blocks=4096, f_frsize=4096, f_files=128)
+                    if case == "too_many_inodes":
+                        return SimpleNamespace(f_blocks=2048, f_frsize=4096, f_files=1024)
+                    return vfs(fd)
                 with patch.object(service, "MOUNT", mount), patch.object(service, "MARKER", marker), \
-                     patch.object(service, "ROOT_UID", os.getuid() + (1 if case == "wrong_owner" else 0)), \
+                     patch.object(service, "ROOT_UID", os.getuid() + (1 if case == "host_wrong_owner" else 0)), \
                      patch.object(service, "ROOT_GID", os.getgid()), \
+                     patch.object(service, "checked_identity",
+                                  return_value=(os.getuid() + (1 if case == "wrong_uid" else 0),
+                                                os.getgid())), \
                      patch.object(service, "require_root"), \
-                     patch.object(service, "is_mount", return_value=case == "mounted"):
+                     patch.object(service, "_mount_row", side_effect=fake_rows), \
+                     patch.object(service, "_host_view", side_effect=view), \
+                     patch.object(service, "_separate_device", return_value=case != "same_device"), \
+                     patch.object(service.os, "fstatvfs", side_effect=fake_vfs):
                     with self.assertRaises(service.MountRefused) as cm:
                         service.mount_prepare()
-                    self.assertEqual(cm.exception.code, codes[case])
+                    self.assertEqual(cm.exception.code, reason)
+                self.assertFalse(marker.exists())
+                self.assertTrue(host.is_dir())
+                if case == "nonempty_host":
+                    self.assertEqual((host / "foreign").read_text(), "unchanged")
+                if case == "nonempty_private":
+                    self.assertEqual((mount / "foreign").read_text(), "unchanged")
+
+    def test_private_cleanup_refuses_changed_host_and_preserves_marker(self):
+        with tempfile.TemporaryDirectory() as root:
+            mount, host, marker, rows, view, vfs = self.mount_case(root, private=True)
+            with patch.object(service, "MOUNT", mount), patch.object(service, "MARKER", marker), \
+                 patch.object(service, "ROOT_UID", os.getuid()), \
+                 patch.object(service, "ROOT_GID", os.getgid()), \
+                 patch.object(service, "checked_identity", return_value=(os.getuid(), os.getgid())), \
+                 patch.object(service, "require_root"), \
+                 patch.object(service, "_mount_row", side_effect=rows), \
+                 patch.object(service, "_host_view", side_effect=view), \
+                 patch.object(service, "_separate_device", return_value=True), \
+                 patch.object(service.os, "fstatvfs", side_effect=vfs):
+                service.mount_prepare()
+                os.chmod(host, 0o700)
+                with self.assertRaises(service.MountRefused):
+                    service.mount_clean()
+                self.assertTrue(host.exists())
+                self.assertTrue(marker.exists())
+                self.assertEqual(marker.read_text(), service.LABEL)
+
+    def test_host_prepare_refuses_stale_or_ambiguous_paths(self):
+        for case in ("wrong_mode", "marker", "nonempty", "symlink", "regular_file"):
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as root:
+                mount, host, marker, rows, view, vfs = self.mount_case(root)
+                if case == "wrong_mode":
+                    os.chmod(mount, 0o700)
+                if case == "marker":
+                    marker.write_text("stale")
                 if case == "nonempty":
-                    self.assertEqual((mount / "foreign").read_text(), "keep")
-                if case == "marker_present":
-                    self.assertEqual(marker.read_text(), "foreign")
+                    (mount / "foreign").write_text("unchanged")
+                if case in ("symlink", "regular_file"):
+                    mount.rmdir()
+                    if case == "symlink":
+                        target = Path(root) / "target"
+                        target.mkdir()
+                        mount.symlink_to(target)
+                    else:
+                        mount.write_text("unchanged")
+                with patch.object(service, "MOUNT", mount), patch.object(service, "MARKER", marker), \
+                     patch.object(service, "ROOT_UID", os.getuid()), \
+                     patch.object(service, "ROOT_GID", os.getgid()), \
+                     patch.object(service, "require_root"), \
+                     patch.object(service, "_mount_row", side_effect=rows), \
+                     patch.object(service, "_host_view", side_effect=view):
+                    with self.assertRaises(service.MountRefused):
+                        service.mount_prepare()
+                if case == "marker":
+                    self.assertEqual(marker.read_text(), "stale")
                 else:
                     self.assertFalse(marker.exists())
+
+    def test_clean_unowned_host_residue_and_bad_marker(self):
+        with tempfile.TemporaryDirectory() as root:
+            mount, host, marker, rows, view, vfs = self.mount_case(root)
+            with patch.object(service, "MOUNT", mount), patch.object(service, "MARKER", marker), \
+                 patch.object(service, "ROOT_UID", os.getuid()), \
+                 patch.object(service, "ROOT_GID", os.getgid()), \
+                 patch.object(service, "require_root"), \
+                 patch.object(service, "_mount_row", side_effect=rows), \
+                 patch.object(service, "_host_view", side_effect=view):
+                with self.assertRaises(service.MountRefused) as cm:
+                    service.mount_clean()
+                self.assertEqual(cm.exception.code, "MOUNT_CLEAN_UNOWNED")
+                marker.write_text("not-the-tag-label")
+                os.chmod(marker, 0o600)
+                with self.assertRaises(service.MountRefused):
+                    service.mount_clean()
+                self.assertTrue(host.exists())
+                self.assertTrue(marker.exists())
 
     def test_mount_diagnostics_are_enumerated_and_nonsecret(self):
         err = io.StringIO()
         with patch.object(service, "mount_prepare",
-                          side_effect=service.MountRefused("MOUNT_MODE_MISMATCH")), \
+                          side_effect=service.MountRefused("MOUNT_PRIVATE_IDENTITY")), \
              patch.object(sys, "argv", ["tag88_service.py", "mount-prepare"]), \
              patch.object(sys, "stderr", err):
             self.assertEqual(service.main(), 1)
         self.assertEqual(err.getvalue(),
-                         "TAG_INSTALL_FAIL_CLOSED: Refused MOUNT_MODE_MISMATCH\n")
+                         "TAG_INSTALL_FAIL_CLOSED: Refused MOUNT_PRIVATE_IDENTITY\n")
         with self.assertRaises(ValueError):
             service.MountRefused("secret=/run/tag-qa88-control/operator.token")
-
-    def test_mount_prepare_rejects_root_and_marker_creation_error(self):
-        with tempfile.TemporaryDirectory() as root:
-            mount, marker = Path(root) / "mount", Path(root) / "marker"
-            mount.mkdir(mode=0o755)
-            os.chmod(mount, 0o755)
-            with patch.object(service, "MOUNT", mount), patch.object(service, "MARKER", marker), \
-                 patch.object(service, "ROOT_UID", os.getuid()), \
-                 patch.object(service, "ROOT_GID", os.getgid()), \
-                 patch.object(service, "is_mount", return_value=False):
-                with patch.object(service, "require_root",
-                                  side_effect=service.Refused("local root authorization required")):
-                    with self.assertRaises(service.MountRefused) as cm:
-                        service.mount_prepare()
-                    self.assertEqual(cm.exception.code, "MOUNT_ROOT_REQUIRED")
-                original = os.open
-                with patch.object(service, "require_root"), \
-                     patch.object(service.os, "open") as opener:
-                    def deny_marker(path, flags, *args, **kwargs):
-                        if path == marker:
-                            raise PermissionError("denied")
-                        return original(path, flags, *args, **kwargs)
-                    opener.side_effect = deny_marker
-                    with self.assertRaises(service.MountRefused) as cm:
-                        service.mount_prepare()
-                    self.assertEqual(cm.exception.code, "MOUNT_MARKER_CREATE_FAILED")
-                self.assertFalse(marker.exists())
-                self.assertEqual(mount.stat().st_mode & 0o777, 0o700)
-
-    def test_mount_clean_rejects_unowned_residue(self):
-        with tempfile.TemporaryDirectory() as root:
-            mount, marker = Path(root) / "mount", Path(root) / "marker"
-            mount.mkdir(mode=0o755)
-            with patch.object(service, "MOUNT", mount), patch.object(service, "MARKER", marker), \
-                 patch.object(service, "ROOT_UID", os.getuid()), \
-                 patch.object(service, "ROOT_GID", os.getgid()), \
-                 patch.object(service, "require_root"):
-                with self.assertRaises(service.MountRefused) as cm:
-                    service.mount_clean()
-                self.assertEqual(cm.exception.code, "MOUNT_CLEAN_UNOWNED")
-                self.assertTrue(mount.exists())
 
     def test_exact_tree_archive_only_allows_regular_files(self):
         with tempfile.TemporaryDirectory() as root:
