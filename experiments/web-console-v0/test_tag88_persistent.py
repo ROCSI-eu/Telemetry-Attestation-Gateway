@@ -173,6 +173,8 @@ class PersistentInstallPackageTest(unittest.TestCase):
         self.assertIn("uid=991,gid=992", rendered)
         self.assertIn("WantedBy=multi-user.target", rendered)
         self.assertIn("Restart=no", rendered)
+        self.assertIn("AssertPathExists=!/run/tag-qa88\n", rendered)
+        self.assertIn("AssertPathExists=!/run/tag-qa88-mountpoint-owned\n", rendered)
         self.assertIn("ExecStartPre=+/usr/bin/python3", rendered)
         self.assertIn("ExecStopPost=+/usr/bin/python3", rendered)
         self.assertIn("RuntimeDirectory=tag-qa88-control", rendered)
@@ -190,6 +192,8 @@ class PersistentInstallPackageTest(unittest.TestCase):
                  patch.object(service, "ROOT_GID", os.getgid()), \
                  patch.object(service, "require_root"), \
                  patch.object(service, "is_mount", return_value=False):
+                mount.mkdir(mode=0o755)  # systemd host-side mountpoint
+                os.chmod(mount, 0o755)
                 service.mount_prepare()
                 self.assertEqual(mount.stat().st_mode & 0o777, 0o700)
                 self.assertEqual(marker.stat().st_mode & 0o777, 0o600)
@@ -203,6 +207,38 @@ class PersistentInstallPackageTest(unittest.TestCase):
                 with self.assertRaises(service.Refused):
                     service.mount_clean()  # no deletion without an ownership marker
                 self.assertTrue(mount.exists())
+
+    def test_mount_prepare_refuses_ambiguous_systemd_path(self):
+        cases = ("missing", "wrong_mode", "nonempty", "marker_present", "mounted",
+                 "symlink", "wrong_owner")
+        for case in cases:
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as root:
+                base = Path(root)
+                mount, marker = base / "mount", base / "marker"
+                if case == "symlink":
+                    target = base / "target"
+                    target.mkdir()
+                    mount.symlink_to(target)
+                elif case != "missing":
+                    mount.mkdir(mode=0o755)
+                    os.chmod(mount, 0o700 if case == "wrong_mode" else 0o755)
+                if case == "nonempty":
+                    (mount / "foreign").write_text("keep")
+                if case == "marker_present":
+                    marker.write_text("foreign")
+                with patch.object(service, "MOUNT", mount), patch.object(service, "MARKER", marker), \
+                     patch.object(service, "ROOT_UID", os.getuid() + (1 if case == "wrong_owner" else 0)), \
+                     patch.object(service, "ROOT_GID", os.getgid()), \
+                     patch.object(service, "require_root"), \
+                     patch.object(service, "is_mount", return_value=case == "mounted"):
+                    with self.assertRaises(service.Refused):
+                        service.mount_prepare()
+                if case == "nonempty":
+                    self.assertEqual((mount / "foreign").read_text(), "keep")
+                if case == "marker_present":
+                    self.assertEqual(marker.read_text(), "foreign")
+                else:
+                    self.assertFalse(marker.exists())
 
     def test_exact_tree_archive_only_allows_regular_files(self):
         with tempfile.TemporaryDirectory() as root:
