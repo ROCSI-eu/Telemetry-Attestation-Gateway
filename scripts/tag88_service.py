@@ -38,6 +38,26 @@ class Refused(RuntimeError):
     pass
 
 
+# Fixed public labels only: never print exception messages or local paths.
+MOUNT_CODES = frozenset({
+    "MOUNT_ROOT_REQUIRED", "MOUNT_MARKER_PRESENT", "MOUNT_CREATE_FAILED",
+    "MOUNT_OPEN_FAILED", "MOUNT_NOT_DIRECTORY", "MOUNT_OWNER_MISMATCH",
+    "MOUNT_MODE_MISMATCH", "MOUNT_MOUNTINFO_FAILED", "MOUNT_ALREADY_MOUNTED",
+    "MOUNT_NOT_EMPTY", "MOUNT_PATH_REPLACED", "MOUNT_CHMOD_FAILED",
+    "MOUNT_MARKER_CREATE_FAILED", "MOUNT_MARKER_WRITE_FAILED",
+    "MOUNT_CLEAN_ROOT_REQUIRED", "MOUNT_CLEAN_UNOWNED",
+    "MOUNT_CLEAN_CHANGED",
+})
+
+
+class MountRefused(Refused):
+    def __init__(self, code: str) -> None:
+        if code not in MOUNT_CODES:
+            raise ValueError("invalid diagnostic code")
+        self.code = code
+        super().__init__(code)
+
+
 def require_root() -> None:
     if os.geteuid() != 0:
         raise Refused("local root authorization required")
@@ -69,38 +89,79 @@ def is_mount(path: Path) -> bool:
 
 
 def mount_prepare() -> None:
-    require_root()
-    must_be_absent(MARKER)
-    # systemd 259 creates the host destination for TemporaryFileSystem before
-    # ExecStartPre. Unit assertions reject any pre-existing/stale host path
-    # before that setup. Accept ONLY its fresh, empty root-owned 0755 directory.
     try:
-        directory_fd = os.open(MOUNT, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+        require_root()
+    except Refused as exc:
+        raise MountRefused("MOUNT_ROOT_REQUIRED") from exc
+    if os.path.lexists(MARKER):
+        raise MountRefused("MOUNT_MARKER_PRESENT")
+    # The [Unit] assertions reject pre-existing host paths BEFORE systemd
+    # configures TemporaryFileSystem. The privileged + hook may subsequently
+    # see either no directory or a fresh root-owned 0755 host mountpoint.
+    preexisting = os.path.lexists(MOUNT)
+    if not preexisting:
+        try:
+            os.mkdir(MOUNT, 0o700)  # exclusive: EEXIST must fail closed
+        except OSError as exc:
+            raise MountRefused("MOUNT_CREATE_FAILED") from exc
+    try:
+        directory_fd = os.open(
+            MOUNT, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
     except OSError as exc:
-        raise Refused("systemd mountpoint missing or unsafe") from exc
+        raise MountRefused("MOUNT_OPEN_FAILED") from exc
     try:
         entry = os.fstat(directory_fd)
-        if (not stat.S_ISDIR(entry.st_mode)
-                or entry.st_uid != ROOT_UID or entry.st_gid != ROOT_GID
-                or stat.S_IMODE(entry.st_mode) != 0o755
-                or is_mount(MOUNT) or list(MOUNT.iterdir())):
-            raise Refused("systemd mountpoint is not fresh and empty")
-        os.fchmod(directory_fd, 0o700)
+        if not stat.S_ISDIR(entry.st_mode):
+            raise MountRefused("MOUNT_NOT_DIRECTORY")
+        if entry.st_uid != ROOT_UID or entry.st_gid != ROOT_GID:
+            raise MountRefused("MOUNT_OWNER_MISMATCH")
+        if stat.S_IMODE(entry.st_mode) != (0o755 if preexisting else 0o700):
+            raise MountRefused("MOUNT_MODE_MISMATCH")
+        try:
+            mounted = is_mount(MOUNT)
+        except (OSError, ValueError, IndexError) as exc:
+            raise MountRefused("MOUNT_MOUNTINFO_FAILED") from exc
+        if mounted:
+            raise MountRefused("MOUNT_ALREADY_MOUNTED")
+        try:
+            if os.listdir(directory_fd):
+                raise MountRefused("MOUNT_NOT_EMPTY")
+            current = MOUNT.lstat()
+        except OSError as exc:
+            raise MountRefused("MOUNT_PATH_REPLACED") from exc
+        if (not stat.S_ISDIR(current.st_mode)
+                or (current.st_dev, current.st_ino)
+                != (entry.st_dev, entry.st_ino)):
+            raise MountRefused("MOUNT_PATH_REPLACED")
+        try:
+            os.fchmod(directory_fd, 0o700)
+        except OSError as exc:
+            raise MountRefused("MOUNT_CHMOD_FAILED") from exc
     finally:
         os.close(directory_fd)
-    fd = os.open(MARKER, os.O_CREAT | os.O_EXCL | os.O_WRONLY | os.O_NOFOLLOW, 0o600)
     try:
-        os.write(fd, LABEL.encode("ascii"))
+        fd = os.open(MARKER, os.O_CREAT | os.O_EXCL | os.O_WRONLY
+                     | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600)
+    except OSError as exc:
+        raise MountRefused("MOUNT_MARKER_CREATE_FAILED") from exc
+    try:
+        try:
+            os.write(fd, LABEL.encode("ascii"))
+        except OSError as exc:
+            raise MountRefused("MOUNT_MARKER_WRITE_FAILED") from exc
     finally:
         os.close(fd)
 
 
 def mount_clean() -> None:
-    require_root()
+    try:
+        require_root()
+    except Refused as exc:
+        raise MountRefused("MOUNT_CLEAN_ROOT_REQUIRED") from exc
     if not os.path.lexists(MARKER) and not os.path.lexists(MOUNT):
         return  # failed start before creation
     if not MARKER.is_file() or MARKER.is_symlink() or not MOUNT.is_dir() or MOUNT.is_symlink():
-        raise Refused("mountpoint ownership is ambiguous")
+        raise MountRefused("MOUNT_CLEAN_UNOWNED")
     token = MARKER.lstat()
     directory = MOUNT.lstat()
     if (token.st_uid != ROOT_UID or token.st_gid != ROOT_GID
@@ -108,10 +169,9 @@ def mount_clean() -> None:
             or directory.st_uid != ROOT_UID or directory.st_gid != ROOT_GID
             or stat.S_IMODE(directory.st_mode) != 0o700
             or MARKER.read_text() != LABEL or is_mount(MOUNT) or list(MOUNT.iterdir())):
-        raise Refused("mountpoint is busy, altered, or not empty")
+        raise MountRefused("MOUNT_CLEAN_CHANGED")
     os.rmdir(MOUNT)
     MARKER.unlink()
-
 
 def git_checked_checkout(checkout: Path, sha: str) -> bytes:
     checked_abs(checkout)
@@ -274,7 +334,12 @@ def main() -> int:
         elif args.command == "mount-clean":
             mount_clean()
     except (Refused, OSError, subprocess.SubprocessError, ValueError, KeyError, tarfile.TarError) as exc:
-        print("TAG_INSTALL_FAIL_CLOSED:", type(exc).__name__, file=sys.stderr)
+        # Mount diagnostics are enumerated, non-secret labels. Other errors
+        # retain their original type-only output; no paths or tokens are shown.
+        if isinstance(exc, MountRefused):
+            print("TAG_INSTALL_FAIL_CLOSED: Refused", exc.code, file=sys.stderr)
+        else:
+            print("TAG_INSTALL_FAIL_CLOSED:", type(exc).__name__, file=sys.stderr)
         return 1
     return 0
 
