@@ -275,17 +275,69 @@ Git, journald, screenshots or shared logs. An operator may read the file
 privately from a local Qube terminal after separate service authorization;
 the token is never printed by the persistent service. Do not log it.
 
-**Readiness blockers:** Qube's system-manager mount must pass a distinct
-root-assisted QA (the previous `systemd --user` `226/NAMESPACE` failure
-does not prove system-manager support). QA must check the exact source commit
-used by `ExecStart`, rootless child and nested-bwrap compatibility under
-`NoNewPrivileges`, actual 8 MiB/128-inode `ENOSPC`, two consecutive
-short-circuit scenarios, operator token lifecycle, host ext4 write isolation
-and full systemd mount/cgroup cleanup. The unit points at a Qube research
-checkout that may not have this Draft HEAD; **do not start it** until a pinned
-checkout has been verified and explicit QA approval is granted. The `[Install]`
-section is intentionally absent. No Production VM, DNS, Cloudflare, SITL,
-cryptography or merging is authorized by this Draft.
+**Qube QA checkpoint (2026-11-19, 08:49 local time): PASS.** A single
+separately approved **transient** system-manager service ran as UID/GID 1000,
+with no capabilities, under the bounded cgroup. Its fail-closed startup gate
+verified a dedicated private tmpfs, actual 8 MiB and 128-inode `ENOSPC`,
+and read-only host ext4. The loopback operator completed two sequential
+non-cryptographic short-circuit requests (`over_limit`, `malformed_source`)
+in the **same service process**, using the same quota-backed workspace inside
+bubblewrap; private token and per-request cleanup checks passed. The service
+was stopped and the unit, cgroup, tmpfs, token and QA checkout were removed.
+This is **QA for the transient configuration only**, not installation,
+autostart or Production authorization.
+
+**Non-Production system-service prerequisites — not executed by this PR:**
+the exact service source checkout must first be pinned and verified, and the
+template's illustrative `ExecStart` path must be updated to that exact,
+clean checkout. The current template still refers to an older Qube research
+checkout; it must **not** be installed as-is. Before any separately approved
+local start, verify that no `tag-qa88*` unit/cgroup or `/run/tag-qa88`
+already exists. In the authorized **local Qube terminal** (not remote sudo),
+a privileged operator prepares only the empty, host-visible mountpoint:
+
+```sh
+sudo -n /usr/bin/mkdir -m 0700 -- /run/tag-qa88
+test "$(stat -c '%u:%g:%a' /run/tag-qa88)" = 0:0:700
+! findmnt -M /run/tag-qa88
+```
+
+The service then uses **only**
+`TemporaryFileSystem=/run/tag-qa88:size=8388608,nr_inodes=128,mode=0700,uid=1000,gid=1000,nodev,nosuid,noexec`
+to create its own bounded mount in its mount namespace.
+`RuntimeDirectory=tag-qa88-control` handles only the separate volatile
+credential directory. **Never set** `ReadWritePaths=/run/tag-qa88` or add
+`tag-qa88` to `RuntimeDirectory=`: systemd 259 prioritizes those overlapping
+entries and can discard the dedicated tmpfs mount. The operator must
+explicitly authorize the subsequent systemd start; nothing in this Draft
+runs, installs, enables or schedules it. The template intentionally has
+no `[Install]` section, so boot/autostart requires a future separate design
+and approval. As `/run` is volatile, the mountpoint prerequisite must be
+satisfied again after a reboot before any approved service start.
+
+**Stop/cleanup — only after an authorized start:** stop the **exact** TAG
+service through the system manager; verify its PID/cgroup are empty, the unit
+is stopped, the private mount is gone, and
+`/run/tag-qa88-control/operator.token` and its runtime directory are gone.
+Then remove **only** the empty root-owned `0700` host mountpoint, after
+verifying it is not an active mount and does not contain unrelated files:
+
+```sh
+test "$(stat -c '%u:%g:%a' /run/tag-qa88)" = 0:0:700
+! findmnt -M /run/tag-qa88
+sudo -n /usr/bin/rmdir -- /run/tag-qa88
+```
+
+Stop if any check fails: **no `rm -rf`, retries, fallback mounts, stale
+resource reuse or removal of other services**. Cleanup of the private QA
+checkout belongs to the separately authorized transient QA harness and is
+not part of a future persistent-service installation.
+
+**Remaining readiness boundary:** the transient QA passed, but a real
+system-service installation and stop/restart lifecycle on a pinned checkout
+remain untested and require distinct approval. No changes to the kernel,
+mount options, quotas, token exposure, SITL, cryptography, Production VM,
+DNS, Cloudflare or merge are authorized by this Draft.
 
 ### TAG #88: opt-in aggregate bounds on Qube Dev1 (non-Production)
 
