@@ -7,6 +7,7 @@ root session; this script must never be invoked during Draft review.
 from __future__ import annotations
 
 import argparse
+import errno
 import grp
 import hashlib
 import io
@@ -50,6 +51,11 @@ MOUNT_CODES = frozenset({
     "MOUNT_HOST_MOUNTED", "MOUNT_PRIVATE_INVALID",
     "MOUNT_PRIVATE_QUOTA", "MOUNT_PRIVATE_FLAGS",
     "MOUNT_PRIVATE_IDENTITY", "MOUNT_CLEAN_HOST_INVALID",
+    "MOUNT_CLEAN_PARENT_OPEN_FAILED", "MOUNT_CLEAN_HOST_LOOKUP_FAILED",
+    "MOUNT_CLEAN_ENTRY_STAT_FAILED", "MOUNT_CLEAN_ENTRY_CHANGED",
+    "MOUNT_CLEAN_RMDIR_BUSY", "MOUNT_CLEAN_RMDIR_DENIED",
+    "MOUNT_CLEAN_RMDIR_NOT_EMPTY", "MOUNT_CLEAN_RMDIR_FAILED",
+    "MOUNT_CLEAN_MARKER_UNLINK_FAILED",
 })
 
 
@@ -280,30 +286,47 @@ def mount_clean() -> None:
         host_fd, _ = _host_directory(0o700)
         os.close(host_fd)
 
-    # The parent fd anchors removal to the host's /run path. Refuse symlinks
-    # and replacement rather than blindly rmdir a path in a private namespace.
+    # Parent fd anchors removal to PID1's host /run. Diagnostic stage
+    # labels are fixed and nonsecret; all validation and deletion remain strict.
     parent = _host_view(MOUNT.parent)
     try:
         parent_fd = os.open(parent, os.O_RDONLY | os.O_DIRECTORY
                             | os.O_NOFOLLOW | os.O_CLOEXEC)
     except OSError as exc:
-        raise MountRefused("MOUNT_CLEAN_HOST_INVALID") from exc
+        raise MountRefused("MOUNT_CLEAN_PARENT_OPEN_FAILED") from exc
     try:
-        host_fd, entry = _open_checked(_host_view(MOUNT), ROOT_UID, ROOT_GID,
-                                       0o755 if own_mount is not None else 0o700,
-                                       code="MOUNT_CLEAN_HOST_INVALID")
         try:
-            target = os.stat(MOUNT.name, dir_fd=parent_fd, follow_symlinks=False)
+            host_fd, entry = _open_checked(_host_view(MOUNT), ROOT_UID, ROOT_GID,
+                                           0o755 if own_mount is not None else 0o700,
+                                           code="MOUNT_CLEAN_HOST_LOOKUP_FAILED")
+        except OSError as exc:
+            raise MountRefused("MOUNT_CLEAN_HOST_LOOKUP_FAILED") from exc
+        try:
+            try:
+                target = os.stat(MOUNT.name, dir_fd=parent_fd, follow_symlinks=False)
+            except OSError as exc:
+                raise MountRefused("MOUNT_CLEAN_ENTRY_STAT_FAILED") from exc
             if (target.st_dev, target.st_ino) != (entry.st_dev, entry.st_ino):
-                raise MountRefused("MOUNT_CLEAN_HOST_INVALID")
-            os.rmdir(MOUNT.name, dir_fd=parent_fd)
+                raise MountRefused("MOUNT_CLEAN_ENTRY_CHANGED")
+            try:
+                os.rmdir(MOUNT.name, dir_fd=parent_fd)
+            except OSError as exc:
+                reasons = {
+                    errno.EBUSY: "MOUNT_CLEAN_RMDIR_BUSY",
+                    errno.EACCES: "MOUNT_CLEAN_RMDIR_DENIED",
+                    errno.EPERM: "MOUNT_CLEAN_RMDIR_DENIED",
+                    errno.ENOTEMPTY: "MOUNT_CLEAN_RMDIR_NOT_EMPTY",
+                    errno.EEXIST: "MOUNT_CLEAN_RMDIR_NOT_EMPTY",
+                }
+                raise MountRefused(reasons.get(exc.errno, "MOUNT_CLEAN_RMDIR_FAILED")) from exc
         finally:
             os.close(host_fd)
-    except OSError as exc:
-        raise MountRefused("MOUNT_CLEAN_HOST_INVALID") from exc
     finally:
         os.close(parent_fd)
-    MARKER.unlink()
+    try:
+        MARKER.unlink()
+    except OSError as exc:
+        raise MountRefused("MOUNT_CLEAN_MARKER_UNLINK_FAILED") from exc
 
 def git_checked_checkout(checkout: Path, sha: str) -> bytes:
     checked_abs(checkout)

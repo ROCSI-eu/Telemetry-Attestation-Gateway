@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Focused unit tests only; no systemd, root, real CLI, SITL or cryptography."""
+import errno
 import http.client
 import io
 import json
@@ -354,6 +355,36 @@ class PersistentInstallPackageTest(unittest.TestCase):
                     self.assertEqual((host / "foreign").read_text(), "unchanged")
                 if case == "nonempty_private":
                     self.assertEqual((mount / "foreign").read_text(), "unchanged")
+
+    def test_private_cleanup_diagnostics_do_not_remove_unverified_host(self):
+        cases = (
+            (errno.EBUSY, "MOUNT_CLEAN_RMDIR_BUSY"),
+            (errno.EACCES, "MOUNT_CLEAN_RMDIR_DENIED"),
+            (errno.ENOTEMPTY, "MOUNT_CLEAN_RMDIR_NOT_EMPTY"),
+            (errno.EIO, "MOUNT_CLEAN_RMDIR_FAILED"),
+        )
+        for reason, label in cases:
+            with self.subTest(reason=reason), tempfile.TemporaryDirectory() as root:
+                mount, host, marker, rows, view, vfs = self.mount_case(root, private=True)
+                with patch.object(service, "MOUNT", mount), patch.object(service, "MARKER", marker), \
+                     patch.object(service, "ROOT_UID", os.getuid()), \
+                     patch.object(service, "ROOT_GID", os.getgid()), \
+                     patch.object(service, "checked_identity", return_value=(os.getuid(), os.getgid())), \
+                     patch.object(service, "require_root"), \
+                     patch.object(service, "_mount_row", side_effect=rows), \
+                     patch.object(service, "_host_view", side_effect=view), \
+                     patch.object(service, "_separate_device", return_value=True), \
+                     patch.object(service.os, "fstatvfs", side_effect=vfs):
+                    service.mount_prepare()
+                    with patch.object(service.os, "rmdir",
+                                      side_effect=OSError(reason, "diagnostic-only")):
+                        with self.assertRaises(service.MountRefused) as cm:
+                            service.mount_clean()
+                    self.assertEqual(cm.exception.code, label)
+                    self.assertTrue(host.is_dir())
+                    self.assertTrue(marker.is_file())
+                    self.assertEqual(marker.read_text(), service.LABEL)
+                    self.assertTrue(mount.is_dir())
 
     def test_private_cleanup_refuses_changed_host_and_preserves_marker(self):
         with tempfile.TemporaryDirectory() as root:
