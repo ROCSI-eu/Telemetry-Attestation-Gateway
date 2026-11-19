@@ -32,8 +32,10 @@ CPUQuota=50%
 TasksMax=12
 # One bounded outer runtime mount; CLI /tmp binds its own disposable workdir
 # within this same filesystem (no independent inner tmpfs).
+# Requires a pre-created, empty root:root 0700 /run/tag-qa88 mountpoint.
+# Do not add ReadWritePaths= or RuntimeDirectory= for this same path:
+# systemd 259 can prioritize those entries over the bounded tmpfs.
 TemporaryFileSystem=/run/tag-qa88:size=8388608,nr_inodes=128,mode=0700,uid=1000,gid=1000,nodev,nosuid,noexec
-ReadWritePaths=/run/tag-qa88
 # Only owner-readable operator credential, on the host /run tmpfs.
 # This tiny control-plane directory is deliberately outside the CLI runtime cap.
 RuntimeDirectory=tag-qa88-control
