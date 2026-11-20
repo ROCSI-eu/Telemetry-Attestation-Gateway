@@ -353,6 +353,20 @@ RO_TEXT = {
     "Verifiable claim": "Afirmația verificabilă",
     "The private value is within the public limit": "Viteza privată respectă limita publică",
     "A zero-knowledge proof could support that claim without revealing the exact speed.": "O dovadă criptografică de tip ZKP ar putea confirma respectarea regulii fără să dezvăluie viteza exactă.",
+    "02 / THE ARCHITECTURE": "02 / ARHITECTURA",
+    "From a UAS measurement to a verifiable result.": "De la măsurarea UAS la un rezultat verificabil.",
+    "A proposed architecture linking an uncrewed aircraft, a TAG cryptographic gateway and command-and-control.": "O arhitectură propusă care conectează o aeronavă fără pilot, un gateway criptografic TAG și centrul de comandă și control.",
+    "Proposed UAS to TAG to command-and-control information flow": "Flux informațional propus între UAS, TAG și centrul de comandă și control",
+    "ARCHITECTURE UNDER RESEARCH": "ARHITECTURĂ ÎN CERCETARE",
+    "UAS": "UAS",
+    "Collects a private measurement": "Colectează o măsurare privată",
+    "Protected channel": "Canal protejat",
+    "TAG / ZKP": "TAG / ZKP",
+    "Would prepare a verifiable proof": "Ar pregăti o dovadă verificabilă",
+    "Verifiable result": "Rezultat verificabil",
+    "C2": "C2",
+    "Would check the defined condition": "Ar verifica respectarea condiției",
+    "Secure communication protects the channel; a ZKP supports verification. The combined UAS–TAG–C2 flow remains a research objective.": "Comunicația securizată protejează canalul, iar dovada ZKP permite verificarea. Integrarea UAS–TAG–C2 rămâne un obiectiv de cercetare.",
     # Preserve machine-readable evidence codes and experimental markings.
     # The banner is visitor-facing; evidence JSON and local CLI retain immutable codes.
     "EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION":
