@@ -6,6 +6,7 @@ import base64
 import copy
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import tempfile
@@ -87,6 +88,63 @@ class StaticShowcaseTests(unittest.TestCase):
                 re.search(r'<script>(.*?)</script>', ro, flags=re.S).group(1),
                 re.search(r'<script>(.*?)</script>', en, flags=re.S).group(1),
             )
+
+    def test_technical_sections_are_scannable_and_keep_original_evidence_in_archive(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            target = Path(folder)
+            build(target)
+            for lang, labels in (
+                ("ro", ("Cum funcționează dovada", "Rezultate înregistrate în laborator",
+                        "Limite și validări necesare", "Acceptată de verificatorul offline",
+                        "10 cazuri înregistrate")),
+                ("en", ("How the proof works", "Recorded laboratory evidence",
+                        "Limits and next validation steps", "Accepted by offline verifier",
+                        "10 recorded cases")),
+            ):
+                page = (target / lang / "index.html").read_text(encoding="utf-8")
+                for label in labels:
+                    self.assertIn(label, page)
+                self.assertEqual(page.count('class="research-detail"'), 3)
+                self.assertEqual(page.count('class="research-archive"'), 3)
+                self.assertEqual(page.count('class="research-simple-grid'), 3)
+                self.assertEqual(page.count('class="research-archive-body"'), 3)
+                self.assertIn('class="research-release"', page)
+                self.assertIn('id="proof-tooling-title"', page)
+                self.assertIn('id="scenario-title"', page)
+                self.assertIn('id="authentic-title"', page)
+                self.assertIn('id="scope-proves"', page)
+                self.assertIn('id="scope-limits"', page)
+                self.assertNotIn('TAG_RESEARCH_RELEASE', page)
+                self.assertNotIn('TAG_OFFLINE_OUTCOME', page)
+                self.assertNotIn('TAG_SCENARIO_COUNT', page)
+                self.assertLess(page.index('id="technical-evidence"'),
+                                page.index('id="laboratory-scenarios"'))
+                self.assertLess(page.index('id="laboratory-scenarios"'),
+                                page.index('id="research-limitations"'))
+
+    def test_cloudflare_build_revision_and_evidence_digest_track_source(self) -> None:
+        from unittest.mock import patch as mocked
+        from build import render_research_release
+        sha = "1a" * 20
+        with tempfile.TemporaryDirectory() as folder:
+            target = Path(folder)
+            with mocked.dict(os.environ, {"CF_PAGES_COMMIT_SHA": sha}):
+                build(target)
+            for lang in ("ro", "en"):
+                page = (target / lang / "index.html").read_text(encoding="utf-8")
+                self.assertIn('href="https://github.com/ROCSI-eu/Telemetry-Attestation-Gateway/commit/' + sha + '"', page)
+                self.assertEqual(page.count(sha[:10]), 2)  # full URL and displayed short hash
+            with self.assertRaisesRegex(ValueError, "invalid Pages source commit SHA"):
+                render_research_release(
+                    '<!-- TAG_RESEARCH_RELEASE --><!-- TAG_OFFLINE_OUTCOME -->'
+                    '<!-- TAG_SCENARIO_COUNT -->', "en",
+                    {"cases": {"a": {}}}, {"cryptographic": "VALID"},
+                    "a-not-a-hash",
+                )
+            fixture = json.loads(VERIFIER.read_text(encoding="utf-8"))
+            self.assertEqual(fixture["cryptographic"], "VALID")
+            self.assertFalse(fixture["browser_verified"])
+            self.assertEqual(len(json.loads(SCENARIOS.read_text())["cases"]), 10)
 
     def test_six_potential_application_cards_are_bilingual_and_accessible(self) -> None:
         with tempfile.TemporaryDirectory() as folder:

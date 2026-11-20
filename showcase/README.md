@@ -233,3 +233,26 @@ approval for **public activation**. Default: **NO-GO** for merging or deploying 
 Rollback: disable the Pages custom domain/route or revert the static
 deployment via the authorized hosting controls. Offline independent verification
 and the original local console remain unaffected.
+
+
+## TAG technical research presentation and release provenance (2026-11-20)
+
+The public research chapter uses three concise, collapsed technical topics with
+nested, optional raw diagnostics. The original scenario replay, offline-verifier
+result and scope fields remain available inside those archives and in the
+unchanged, precomputed JSON assets. No new live execution or network dependency
+was added.
+
+The **accepted research journal** remains `showcase/research_journal.json`,
+validated at build time with checked-in evidence references. New public-safe,
+owner-accepted results are added to that file **in the same reviewed PR** as
+their source evidence, not inferred automatically from unrelated GitHub commits.
+The compact scenario count and offline verification summary come from the
+validated fixtures in the same build.
+
+Cloudflare Pages injects `CF_PAGES_COMMIT_SHA` during an automatic build. The
+static HTML shows that exact build revision as a GitHub commit link when set,
+allowing comparisons with the newest GitHub source. Local offline builds without
+this variable show a neutral explanation instead of inventing a SHA. A successful
+GitHub merge or provider deployment check is **not** by itself proof that the
+custom domain already serves the new HTML; confirm RO/EN acceptance separately.

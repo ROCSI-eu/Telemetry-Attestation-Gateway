@@ -1133,6 +1133,32 @@ EDITORIAL_CSS = """
     .research-detail-body{padding:12px 0 35px;min-width:0}
     .research-detail .proof-tooling{margin:0}
     .research-detail .scope-disclosure{margin:0}
+    .research-technical-intro{font-size:.96rem;line-height:1.7;max-width:78ch;color:#c7d0cc;margin:0 0 20px}
+    .research-release{display:flex;align-items:center;justify-content:space-between;gap:10px 24px;flex-wrap:wrap;border:1px solid #3b5255;background:#0d1b1e;padding:15px 20px;margin:0 0 28px;font-size:.8rem;line-height:1.5;color:#c3cdc9}
+    .research-release a{color:#ead1a3;text-underline-offset:4px;font-weight:750;white-space:nowrap}
+    .research-release .research-revision-neutral{color:#aebcb8}
+    .research-detail>summary{display:flex;flex-direction:column;gap:6px}
+    .research-detail-heading{font-size:1.1rem;line-height:1.35;color:#f0e9d9}
+    .research-detail-teaser{font-size:.86rem;font-weight:400;line-height:1.55;color:#becac6}
+    .research-detail-body{padding:12px 0 26px}
+    .research-simple-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    .research-outcomes{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .research-simple-grid article{min-width:0;background:#121f22;border:1px solid #395156;padding:clamp(16px,2vw,24px)}
+    .research-simple-grid article>span{display:block;font-size:.71rem;font-weight:800;letter-spacing:.1em;color:#e2c08a;margin:0 0 13px}
+    .research-simple-grid h4{font-size:1.1rem;line-height:1.35;letter-spacing:-.02em;color:#f3ebdd;margin:0 0 9px}
+    .research-simple-grid p{color:#c6d0cc;font-size:.87rem;line-height:1.65;margin:0}
+    .research-method-boundary{color:#ccd5d1;font-size:.9rem;line-height:1.65;max-width:87ch;margin:19px 0 0}
+    .research-archive{border-top:1px solid #395257;margin-top:22px;padding:0}
+    .research-archive>summary{cursor:pointer;list-style:none;color:#e5c592;font-size:.86rem;font-weight:720;padding:18px 32px 18px 0;position:relative;line-height:1.5}
+    .research-archive>summary::-webkit-details-marker{display:none}
+    .research-archive>summary:after{content:'+';position:absolute;right:7px;top:15px;font-size:1.15rem}
+    .research-archive[open]>summary:after{content:'−'}
+    .research-archive>summary:focus-visible{outline:2px solid #e5bd7b;outline-offset:3px}
+    .research-archive-body{padding:4px 0 16px}
+    .research-archive-body .proof-tooling,.research-archive-body .scope-disclosure{margin:0}
+    .research-archive-body>.editorial-caveat{margin:0 0 20px}
+    @media(max-width:1050px) and (min-width:751px){.research-simple-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.research-methods article:last-child,.research-boundaries article:last-child{grid-column:1/-1}}
+    @media(max-width:750px){.research-simple-grid,.research-outcomes{grid-template-columns:1fr}.research-release{align-items:flex-start}.research-simple-grid article{padding:19px}.research-detail>summary{padding-right:35px}.research-detail-teaser{font-size:.82rem}}
     @media(max-width:750px){.editorial-process{padding-top:27px}.research-entry{grid-template-columns:1fr;gap:11px;padding:25px 0}.research-entry-meta{flex-direction:row;flex-wrap:wrap;align-items:baseline;gap:8px 15px}.research-next-question{margin:27px 0 55px}}
 """
 
@@ -1349,18 +1375,55 @@ def redesign_public_html(html: str) -> str:
     <h2 class="section-display" id="research-title">From the TAG research journal</h2>
     <p class="editorial-chapter-intro">What we tested in the lab, what we learned and what still needs to be demonstrated.</p>
     <!-- TAG_RESEARCH_JOURNAL -->
-    <h3 class="research-secondary-title">Explore the technical research</h3>
-    <p class="editorial-chapter-intro">Detailed methods, recorded scenarios and limitations are available below for readers who want to go deeper.</p>
+    <h3 class="research-secondary-title">Inside the experiments</h3>
+    <p class="research-technical-intro">The journal above records accepted findings. Open a topic below for the method, the recorded evidence or what still needs testing.</p>
+    <div class="research-release" aria-label="Published research version">
+      <span>Research notes and evidence are published together from the TAG repository.</span>
+      <!-- TAG_RESEARCH_RELEASE -->
+    </div>
     <div class="research-details" aria-label="Technical research panels">
-      <details class="research-detail" id="technical-evidence"><summary>Methods and tools</summary>
-        <div class="research-detail-body">''' + tooling_details + '''</div>
+      <details class="research-detail" id="technical-evidence">
+        <summary><span class="research-detail-heading">How the proof works</span><span class="research-detail-teaser">The rule, the proof and independent verification</span></summary>
+        <div class="research-detail-body">
+          <div class="research-simple-grid research-methods" aria-label="Three stages of the offline proof experiment">
+            <article><span>01</span><h4>Define the condition</h4><p>Noir describes a comparison between a private speed value and a public limit.</p></article>
+            <article><span>02</span><h4>Create the proof</h4><p>Barretenberg uses the private witness to generate a proof of that condition.</p></article>
+            <article><span>03</span><h4>Verify independently</h4><p>An offline verifier checks the proof with the expected verification key, without receiving the private speed.</p></article>
+          </div>
+          <details class="research-archive">
+            <summary>Tool versions, full method and source documentation</summary>
+            <div class="research-archive-body">''' + tooling_details + '''</div>
+          </details>
+        </div>
       </details>
-      <details class="research-detail" id="laboratory-scenarios"><summary>Laboratory scenarios and recorded outcomes</summary>
-        <div class="research-detail-body"><p class="editorial-caveat">These scenarios replay deterministic mocks, not cryptographic verification in the browser. The separately recorded offline-verifier outcome is labeled independently.</p>
+      <details class="research-detail" id="laboratory-scenarios">
+        <summary><span class="research-detail-heading">Recorded laboratory evidence</span><span class="research-detail-teaser">Separate offline verification from simulated orchestration</span></summary>
+        <div class="research-detail-body">
+          <div class="research-simple-grid research-outcomes">
+            <article><span>INDEPENDENT OFFLINE EXPERIMENT</span><h4><!-- TAG_OFFLINE_OUTCOME --></h4><p>The recorded verifier result is from a separate experiment with synthetic data. No cryptographic verification happens on this page.</p></article>
+            <article><span>DETERMINISTIC SCENARIOS</span><h4><!-- TAG_SCENARIO_COUNT --> recorded cases</h4><p>These cases exercise orchestration, input changes and publication states. They do not constitute independently verified cryptographic proofs.</p></article>
+          </div>
+          <p class="research-method-boundary">The current SITL observations and the offline ZKP result are distinct findings. The complete integration is still an open research question.</p>
+          <details class="research-archive">
+            <summary>Explore recorded scenarios and the full offline result</summary>
+            <div class="research-archive-body"><p class="editorial-caveat">The scenario controls replay static fixtures; their progress and publication indicators are not live operations.</p>
 ''' + evidence + '''</div>
+          </details>
+        </div>
       </details>
-      <details class="research-detail" id="research-limitations"><summary>Limitations and assumptions</summary>
-        <div class="research-detail-body">''' + scope + '''</div>
+      <details class="research-detail" id="research-limitations">
+        <summary><span class="research-detail-heading">Limits and next validation steps</span><span class="research-detail-teaser">What a successful cryptographic check cannot establish</span></summary>
+        <div class="research-detail-body">
+          <div class="research-simple-grid research-boundaries">
+            <article><h4>Source and time</h4><p>A valid proof alone does not establish who produced a measurement or whether its time is trustworthy.</p></article>
+            <article><h4>Coverage and integration</h4><p>The research has not yet demonstrated one continuous SITL-to-ZKP evidence chain or whole-mission coverage.</p></article>
+            <article><h4>Operational use</h4><p>Safety, policy acceptance, customer decisions and production readiness require separate validation.</p></article>
+          </div>
+          <details class="research-archive">
+            <summary>Full experimental boundaries and assurance fields</summary>
+            <div class="research-archive-body">''' + scope + '''</div>
+          </details>
+        </div>
       </details>
     </div>
   </section>
