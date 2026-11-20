@@ -113,7 +113,7 @@ class StaticShowcaseTests(unittest.TestCase):
                 )
                 self.assertIn(".research-details{border-top:1px solid #526165;margin-top:0}", page)
                 self.assertIn(
-                    "footer{border-top:0;padding-top:0;line-height:1.7",
+                    "footer{border-top:1px solid #344446;margin-top:28px;padding:22px 0 8px;line-height:1.75",
                     page,
                 )
                 self.assertEqual(page.count('class="research-detail"'), 3)
@@ -369,6 +369,17 @@ class StaticShowcaseTests(unittest.TestCase):
                 self.assertIn(f'class="header-cta" href="{contact}">{cta}</a>', page)
                 self.assertIn('class="rocsi-affiliation"', page)
                 self.assertIn('class="language-switch"', page)
+                self.assertEqual(page.count('class="rocsi-affiliation"'), 1)
+                self.assertIn('<aside class="rocsi-affiliation" aria-labelledby="rocsi-affiliation-title">', page)
+                self.assertIn('<h3 id="rocsi-affiliation-title">', page)
+                card_position = page.index('<aside class="rocsi-affiliation"')
+                footer_position = page.index('<footer id="console-footer">')
+                self.assertLess(page.index('id="research-limitations"'), card_position)
+                self.assertLess(card_position, footer_position)
+                self.assertNotIn('rocsi-affiliation', page[footer_position:page.index('</footer>', footer_position)])
+                self.assertIn('grid-template-columns:minmax(0,1fr) auto', page)
+                self.assertIn('background:linear-gradient(120deg,#17292c,#101c1f)', page)
+                self.assertIn('footer{border-top:1px solid #344446;margin-top:28px;', page)
                 self.assertNotIn("<iframe", page)
                 self.assertNotIn("cal.com", page)
                 self.assertEqual(
