@@ -451,7 +451,7 @@ class StaticShowcaseTests(unittest.TestCase):
                                   'id="tech-animation-status"', 'PROOF WORKFLOW', 'PROCESUL DOVEZII',
                                   '01 / NOIR', '02 / BARRETENBERG', '03 / OFFLINE'):
                     self.assertNotIn(duplicate, page)
-                self.assertTrue(page.index('id="mission-control"'
+                self.assertTrue(page.index('id="mission-control"')
                                 < page.index('id="tech-animation"')
                                 < page.index('id="use-cases-title"'))
                 self.assertEqual(
