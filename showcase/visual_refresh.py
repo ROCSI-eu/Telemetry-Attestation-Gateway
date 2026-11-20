@@ -870,84 +870,50 @@ def public_cinematic_motion(html: str) -> str:
     return html
 
 
-CONCEPT_VISUAL = """    <figure class="concept-cinema" id="concept-cinema" data-visibility="visible" aria-label="Conceptual illustration of private input becoming a limited-disclosure proof">
-      <div class="concept-cinema-top"><span>PRIVATE INFORMATION</span><span class="concept-live-dot">SELECTIVE VERIFICATION</span></div>
-      <svg class="concept-stage" viewBox="0 0 620 620" focusable="false" aria-hidden="true">
-        <defs>
-          <radialGradient id="cc-atmosphere"><stop stop-color="#2b6267" stop-opacity=".61"/><stop offset=".52" stop-color="#142d35" stop-opacity=".23"/><stop offset="1" stop-color="#070d11" stop-opacity="0"/></radialGradient>
-          <linearGradient id="cc-metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#a1c9c5"/><stop offset=".18" stop-color="#466c78"/><stop offset=".51" stop-color="#172e3a"/><stop offset=".82" stop-color="#0b1b25"/><stop offset="1" stop-color="#4e7175"/></linearGradient>
-          <linearGradient id="cc-metal-side" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#24434c"/><stop offset=".7" stop-color="#10212b"/><stop offset="1" stop-color="#071319"/></linearGradient>
-          <linearGradient id="cc-glass" x1=".15" y1="0" x2=".8" y2="1"><stop stop-color="#ddfaf1" stop-opacity=".37"/><stop offset=".21" stop-color="#66abb6" stop-opacity=".11"/><stop offset=".8" stop-color="#0a2734" stop-opacity=".87"/><stop offset="1" stop-color="#6cc7cf" stop-opacity=".18"/></linearGradient>
-          <linearGradient id="cc-private" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#81cfd7" stop-opacity="0"/><stop offset=".32" stop-color="#9de6e0"/><stop offset=".68" stop-color="#eee5ca"/><stop offset="1" stop-color="#81cfd7" stop-opacity="0"/></linearGradient>
-          <linearGradient id="cc-gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f3ddad"/><stop offset=".48" stop-color="#c7a36a"/><stop offset="1" stop-color="#684929"/></linearGradient>
-          <radialGradient id="cc-orb"><stop stop-color="#effef4"/><stop offset=".22" stop-color="#ade8d4"/><stop offset=".55" stop-color="#41958e"/><stop offset="1" stop-color="#245057" stop-opacity="0"/></radialGradient>
-          <filter id="cc-blur"><feGaussianBlur stdDeviation="12"/></filter>
-          <filter id="cc-soft"><feGaussianBlur stdDeviation="3"/></filter>
-          <filter id="cc-shadow" x="-40%" y="-60%" width="180%" height="230%"><feGaussianBlur stdDeviation="13"/></filter>
-          <clipPath id="cc-secret-clip"><rect x="148" y="161" width="324" height="202" rx="15"/></clipPath>
-        </defs>
-        <ellipse cx="310" cy="282" rx="278" ry="272" fill="url(#cc-atmosphere)"/>
-        <g opacity=".3" fill="none" stroke="#628a8c" stroke-width=".8">
-          <path d="M22 410L310 529L598 410M22 448L310 567L598 448M22 486L310 605L598 486"/>
-          <path d="M65 391l246 123M124 369l245 123M183 346l245 123M241 323l245 123M310 302l235 115"/>
-          <path d="M62 410l249 111m248-111L311 521"/>
-        </g>
-        <ellipse cx="310" cy="430" rx="214" ry="38" fill="#05090d" opacity=".8" filter="url(#cc-shadow)"/>
-        <g class="concept-device">
-          <path d="M108 137L308 77L515 138L475 165L147 165Z" fill="#d1efe6" opacity=".08"/>
-          <path d="M99 161L149 111L473 111L521 161L513 374L468 412L151 412L105 375Z" fill="url(#cc-metal-side)" stroke="#699096" stroke-width="2"/>
-          <path d="M99 161L149 111L473 111L521 161L471 174L145 174Z" fill="url(#cc-metal)" stroke="#779c9e" stroke-width="1.5"/>
-          <path d="M513 171L520 162L513 374L467 411L466 199Z" fill="#071722" stroke="#395763"/>
-          <path d="M104 164L148 173L149 396L105 375Z" fill="#173541" stroke="#527985"/>
-          <rect x="132" y="144" width="356" height="243" rx="20" fill="#091923" stroke="#6d9292" stroke-width="2"/>
-          <rect x="143" y="156" width="334" height="219" rx="16" fill="url(#cc-glass)" stroke="#79aeb4" stroke-opacity=".57"/>
-          <path d="M150 164H472" stroke="#f0fff4" stroke-opacity=".45" stroke-width="1.2"/>
-          <path d="M163 164L231 366" stroke="#e1f7f1" stroke-opacity=".1" stroke-width="24"/>
-          <g clip-path="url(#cc-secret-clip)">
-            <path d="M149 239H474M149 276H474M149 313H474" stroke="#7eb8bd" stroke-width="1" stroke-opacity=".14"/>
-            <path d="M191 160V366M245 160V366M300 160V366M355 160V366M409 160V366" stroke="#7eb8bd" stroke-width="1" stroke-opacity=".12"/>
-            <path d="M161 266L189 266L205 217L227 306L250 248L277 278L302 221L333 302L365 258L388 279L419 224L454 267" fill="none" stroke="#72d7d4" stroke-width="9" stroke-opacity=".24" filter="url(#cc-soft)"/>
-            <path class="concept-private-wave" d="M161 266L189 266L205 217L227 306L250 248L277 278L302 221L333 302L365 258L388 279L419 224L454 267" fill="none" stroke="url(#cc-private)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="390 320"/>
-            <rect class="concept-scan" x="143" y="171" width="334" height="13" fill="#a4e6dc" opacity=".19" filter="url(#cc-soft)"/>
-            <rect x="143" y="156" width="334" height="219" rx="16" fill="url(#cc-glass)" opacity=".24"/>
-            <g class="concept-privacy-shield">
-              <path d="M310 194l48 19v38c0 31-19 56-48 72-29-16-48-41-48-72v-38Z" fill="#081a20" fill-opacity=".83" stroke="#ebd1a0" stroke-width="2.5"/>
-              <path d="M310 204l37 15v31c0 23-14 45-37 58-23-13-37-35-37-58v-31Z" fill="none" stroke="#e4c08b" stroke-opacity=".42" stroke-width="1.5"/>
-              <rect x="293" y="243" width="34" height="27" rx="4" fill="url(#cc-gold)"/>
-              <path d="M300 243v-9a10 10 0 0 1 20 0v9" fill="none" stroke="#dfc393" stroke-width="4" stroke-linecap="round"/>
-              <circle cx="310" cy="254" r="3" fill="#112a31"/><path d="M310 254v7" stroke="#112a31" stroke-width="2"/>
-            </g>
-          </g>
-          <path d="M140 387h345" stroke="#b2ddd5" stroke-opacity=".42"/>
-          <g fill="#e8bf83"><circle cx="162" cy="403" r="2.5"/><circle cx="187" cy="403" r="2.5"/></g>
-          <path d="M400 403h45" stroke="#83b7b5" stroke-width="2" stroke-dasharray="7 6"/>
-          <path d="M125 177v64M498 178v66" stroke="#a3c7bc" stroke-width="1.5" opacity=".6"/>
-          <path d="M172 125H442" stroke="#d8eee2" stroke-opacity=".56"/>
-          <g stroke="#cddbcf" stroke-opacity=".34" stroke-width="1.5"><path d="M143 137h28m302 0h-28M143 378h28m302 0h-28"/></g>
-        </g>
-        <g class="concept-transfer">
-          <path d="M310 418V484" fill="none" stroke="#debe84" stroke-width="1.8" stroke-dasharray="5 8" opacity=".55"/>
-          <path d="M254 459L310 488L366 459" fill="none" stroke="#75bcb8" stroke-width="1.2" opacity=".55"/>
-          <circle class="concept-pulse concept-pulse-one" cx="310" cy="429" r="5" fill="#e8ca97"/>
-          <circle class="concept-pulse concept-pulse-two" cx="310" cy="429" r="4" fill="#9be8d9"/>
-          <circle class="concept-pulse concept-pulse-three" cx="310" cy="429" r="3" fill="#e8ca97"/>
-        </g>
-        <g class="concept-result">
-          <ellipse cx="310" cy="524" rx="120" ry="27" fill="#4f9d8d" opacity=".28" filter="url(#cc-blur)"/>
-          <path d="M239 491l71-29 71 29v69l-71 31-71-31Z" fill="#13272d" stroke="#7ebeb3" stroke-width="1.8"/>
-          <path d="M239 491l71 28 71-28-71-29Z" fill="url(#cc-metal)" stroke="#88bdb8" stroke-width="1"/>
-          <path d="M310 519v72" stroke="#67aea9" stroke-opacity=".58"/>
-          <circle cx="310" cy="509" r="26" fill="url(#cc-orb)" opacity=".85"/>
-          <circle class="concept-proof-ring" cx="310" cy="509" r="33" fill="none" stroke="#d6c18f" stroke-width="1.5"/>
-          <path d="m296 510 9 9 19-21" fill="none" stroke="#ebead7" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </g>
-      </svg>
-      <div class="concept-cinema-bottom"><span>PRIVATE VALUE <b>NOT EXPOSED</b></span><span>PUBLIC CLAIM <b>CHECKABLE</b></span></div>
+CONCEPT_VISUAL = """    <figure class="concept-cinema" id="concept-cinema" data-visibility="visible" aria-labelledby="concept-illustration-title">
+      <figcaption class="concept-cinema-heading" id="concept-illustration-title">
+        <span>VEHICLE SPEED · HYPOTHETICAL EXAMPLE</span>
+        <strong>THE IDEA, AT A GLANCE</strong>
+      </figcaption>
+      <div class="concept-stage">
+        <div class="concept-step concept-step-private">
+          <span class="concept-step-icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48" focusable="false"><rect x="8" y="18" width="32" height="24" rx="5"/><path d="M15 18v-5a9 9 0 0 1 18 0v5"/><circle cx="24" cy="30" r="2"/><path d="M24 32v4"/></svg>
+          </span>
+          <div class="concept-step-copy">
+            <span class="concept-step-label">01 / PRIVATE VALUE</span>
+            <strong>Speed: hidden</strong>
+            <p>The exact reading stays private.</p>
+          </div>
+        </div>
+        <div class="concept-flow" aria-hidden="true"><span class="concept-flow-track"><span class="concept-flow-dot"></span></span></div>
+        <div class="concept-step concept-step-rule">
+          <span class="concept-step-icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48" focusable="false"><rect x="7" y="8" width="34" height="32" rx="4"/><path d="M15 19h18M16 28l6 5 11-12"/></svg>
+          </span>
+          <div class="concept-step-copy">
+            <span class="concept-step-label">02 / PUBLIC RULE</span>
+            <strong>Speed ≤ speed limit</strong>
+            <p>The condition is known to everyone.</p>
+          </div>
+        </div>
+        <div class="concept-flow concept-flow-second" aria-hidden="true"><span class="concept-flow-track"><span class="concept-flow-dot"></span></span></div>
+        <div class="concept-step concept-step-result">
+          <span class="concept-step-icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48" focusable="false"><path d="M24 4 40 11v13c0 10-7 16-16 20C15 40 8 34 8 24V11Z"/><path d="m15 24 7 7 12-14"/></svg>
+          </span>
+          <div class="concept-step-copy">
+            <span class="concept-step-label">03 / VERIFIABLE ANSWER</span>
+            <strong>Within the limit: YES</strong>
+            <p>A proof could confirm this without revealing the speed.</p>
+          </div>
+        </div>
+      </div>
     </figure>
 """
 
 CONCEPT_CSS = """
-    /* Public-only cinematic privacy scene; dark industrial visual language is unchanged. */
+    /* Visitor-first concept: three readable, static states; only link dots animate. */
     .primer{display:grid;grid-template-columns:minmax(0,.98fr) minmax(0,1.02fr);column-gap:clamp(32px,4.1vw,72px);align-items:start}
     .primer .primer-visual,.primer .primer-copy{display:flex;flex-direction:column;align-items:stretch;min-width:0;gap:0}
     .primer .primer-visual{grid-column:1;grid-row:1}
@@ -956,33 +922,34 @@ CONCEPT_CSS = """
     .primer .primer-visual .concept-cinema{grid-column:auto;grid-row:auto;align-self:stretch;width:100%;min-width:0}
     .primer .primer-copy h2{grid-column:auto;grid-row:auto;margin:0 0 30px}
     .primer .primer-copy p{grid-column:auto;grid-row:auto;margin:8px 0 12px}
-    .concept-cinema{position:relative;isolation:isolate;overflow:hidden;margin:0;min-height:0;border:1px solid #355058;background:radial-gradient(ellipse at 50% 34%,#18313a 0%,#0b171d 56%,#080e12 100%);box-shadow:inset 0 0 70px #050b1099}
-    .concept-cinema:before{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 39px,#88b8b908 40px),repeating-linear-gradient(90deg,transparent 0 39px,#88b8b908 40px);z-index:0}
-    .concept-cinema:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,#0a121ad9,transparent 19%,transparent 78%,#081218e8);z-index:1}
-    .concept-stage{position:relative;z-index:1;display:block;width:100%;height:auto;min-height:340px;filter:drop-shadow(0 20px 28px #02090bd0)}
-    .concept-cinema-top,.concept-cinema-bottom{position:absolute;z-index:2;left:22px;right:22px;display:flex;justify-content:space-between;gap:16px;align-items:center;font-size:.6rem;line-height:1.5;font-weight:800;letter-spacing:.105em;color:#b9d2cd}
-    .concept-cinema-top{top:20px}    .concept-cinema-bottom{bottom:24px;align-items:flex-start}
-    .concept-cinema-bottom span{max-width:45%;display:flex;flex-direction:column;gap:4px}
-    .concept-cinema-bottom span:last-child{text-align:right}
-    .concept-cinema-bottom b{color:#eac997;font-size:.69rem}
-    .concept-live-dot{color:#e3c38c}.concept-live-dot:before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:#e6c589;box-shadow:0 0 12px #e6c589a1;margin-right:8px}
-    .concept-private-wave{animation:concept-wave 7.2s ease-in-out infinite alternate}
-    .concept-scan{animation:concept-scan 5.5s ease-in-out infinite}
-    .concept-privacy-shield{transform-origin:310px 258px;animation:concept-shield 5.5s ease-in-out infinite}
-    .concept-result{transform-origin:310px 518px;animation:concept-result 5.5s ease-in-out infinite}
-    .concept-proof-ring{transform-origin:310px 509px;animation:concept-ring 5.5s ease-in-out infinite}
-    .concept-pulse{animation:concept-packet 5.5s ease-in-out infinite;opacity:0}
-    .concept-pulse-two{animation-delay:1.55s}.concept-pulse-three{animation-delay:3.1s}
-    @keyframes concept-wave{0%{stroke-dashoffset:0;opacity:.35}60%{opacity:1}100%{stroke-dashoffset:-460;opacity:.45}}
-    @keyframes concept-scan{0%,100%{transform:translateY(0);opacity:0}15%{opacity:.3}65%{opacity:.14}90%{transform:translateY(175px);opacity:0}}
-    @keyframes concept-shield{0%,100%{filter:drop-shadow(0 0 2px #bca47755);transform:scale(.99)}50%{filter:drop-shadow(0 0 14px #d9ba83a6);transform:scale(1.025)}}
-    @keyframes concept-result{0%,28%,100%{opacity:.68;filter:brightness(.85)}55%,83%{opacity:1;filter:brightness(1.22)}}
-    @keyframes concept-ring{0%,28%,100%{opacity:.25;transform:scale(.85)}50%,85%{opacity:.86;transform:scale(1.14)}}
-    @keyframes concept-packet{0%,8%{opacity:0;transform:translateY(0)}18%{opacity:.95}64%{opacity:1;transform:translateY(70px)}75%,100%{opacity:0;transform:translateY(70px)}}
-    .concept-cinema[data-visibility="hidden"] .concept-private-wave,.concept-cinema[data-visibility="hidden"] .concept-scan,.concept-cinema[data-visibility="hidden"] .concept-privacy-shield,.concept-cinema[data-visibility="hidden"] .concept-result,.concept-cinema[data-visibility="hidden"] .concept-proof-ring,.concept-cinema[data-visibility="hidden"] .concept-pulse{animation-play-state:paused!important}
-    @media(prefers-reduced-motion:reduce){.concept-cinema .concept-private-wave,.concept-cinema .concept-scan,.concept-cinema .concept-privacy-shield,.concept-cinema .concept-result,.concept-cinema .concept-proof-ring,.concept-cinema .concept-pulse{animation:none!important}.concept-cinema .concept-result{opacity:1}.concept-cinema .concept-pulse{opacity:0}}
-    @media(max-width:750px){.primer{display:flex;flex-direction:column;gap:0}.primer .primer-visual{width:100%;order:0}.primer .primer-copy{width:100%;order:1}.primer .primer-visual .primer-kicker{margin-bottom:22px}.primer .primer-visual .concept-cinema{margin:0 0 34px}.concept-stage{min-height:0}}
-    @media(max-width:420px){.concept-cinema-top,.concept-cinema-bottom{left:13px;right:13px;font-size:.51rem}.concept-cinema-bottom{bottom:14px}}
+    .concept-cinema{position:relative;isolation:isolate;overflow:hidden;margin:0;padding:clamp(17px,2.2vw,30px);border:1px solid #3b5a60;background:radial-gradient(ellipse at 50% 42%,#1b3940 0%,#0c1b21 59%,#081217 100%);box-shadow:inset 0 0 55px #02090b9c;min-width:0}
+    .concept-cinema:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 47px,#76adae0b 48px),repeating-linear-gradient(90deg,transparent 0 47px,#76adae0b 48px);pointer-events:none}
+    .concept-cinema-heading{position:relative;z-index:1;display:flex;flex-direction:column;gap:8px;margin:0 0 24px}
+    .concept-cinema-heading>span{font-size:.67rem;font-weight:800;letter-spacing:.115em;line-height:1.45;color:#e2bd83}
+    .concept-cinema-heading>strong{font-size:clamp(1.13rem,1.7vw,1.45rem);letter-spacing:-.025em;line-height:1.3;color:#f1eee4}
+    .concept-stage{position:relative;z-index:1;display:flex;flex-direction:column;min-width:0;gap:0}
+    .concept-step{display:grid;grid-template-columns:58px minmax(0,1fr);gap:clamp(13px,1.4vw,20px);align-items:center;min-width:0;min-height:126px;padding:17px clamp(16px,2.3vw,26px);background:#10252ac9;border:1px solid #476770}
+    .concept-step-private{border-left:3px solid #7ed2d1}
+    .concept-step-rule{border-left:3px solid #ddc18a;background:#192c31d9}
+    .concept-step-result{border-left:3px solid #9ccfb5}
+    .concept-step-icon{display:grid;place-items:center;width:55px;height:55px;border:1px solid #65878b;background:#193841;color:#b8e0dc}
+    .concept-step-rule .concept-step-icon{border-color:#bba578;background:#32382f;color:#f1d49a}
+    .concept-step-result .concept-step-icon{border-color:#78a997;background:#17352f;color:#addbc4}
+    .concept-step-icon svg{display:block;width:35px;height:35px;fill:none;stroke:currentColor;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
+    .concept-step-copy{display:flex;flex-direction:column;align-items:flex-start;min-width:0;gap:6px}
+    .concept-step-label{color:#ddc291;font-weight:800;letter-spacing:.1em;font-size:.68rem;line-height:1.4}
+    .concept-step-copy strong{color:#f3efe5;font-size:clamp(1.05rem,1.8vw,1.3rem);line-height:1.3;letter-spacing:-.02em;overflow-wrap:anywhere}
+    .concept-step-copy p{color:#c8d5d1;line-height:1.55;font-size:.84rem;margin:0}
+    .concept-flow{display:flex;justify-content:center;height:43px;flex:none}
+    .concept-flow-track{position:relative;display:block;width:2px;height:100%;background:repeating-linear-gradient(to bottom,#7ca5a3 0 5px,transparent 5px 10px)}
+    .concept-flow-track:after{content:"";position:absolute;bottom:-1px;left:-4px;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #ddc18a}
+    .concept-flow-dot{position:absolute;top:0;left:-3px;width:8px;height:8px;border-radius:50%;background:#e8dbb4;box-shadow:0 0 12px #b7e1cf;animation:concept-flow 4.5s ease-in-out infinite}
+    .concept-flow-second .concept-flow-dot{animation-delay:-2.25s}
+    @keyframes concept-flow{0%,8%{top:0;opacity:0}20%{opacity:1}80%{opacity:1}100%{top:calc(100% - 9px);opacity:0}}
+    .concept-cinema[data-visibility="hidden"] .concept-flow-dot{animation-play-state:paused!important}
+    @media(prefers-reduced-motion:reduce){.concept-cinema .concept-flow-dot{animation:none!important;top:calc(50% - 4px);opacity:.8}}
+    @media(max-width:750px){.primer{display:flex;flex-direction:column;gap:0}.primer .primer-visual{width:100%;order:0}.primer .primer-copy{width:100%;order:1}.primer .primer-visual .primer-kicker{margin-bottom:22px}.primer .primer-visual .concept-cinema{margin:0 0 34px}}
+    @media(max-width:420px){.concept-cinema{padding:16px}.concept-cinema-heading{margin-bottom:20px}.concept-step{grid-template-columns:43px minmax(0,1fr);min-height:115px;gap:11px;padding:14px 12px}.concept-step-icon{width:42px;height:42px}.concept-step-icon svg{width:27px;height:27px}.concept-step-label{font-size:.61rem;letter-spacing:.06em}.concept-step-copy strong{font-size:1rem}.concept-step-copy p{font-size:.78rem}.concept-flow{height:34px}}
 """
 
 CONCEPT_VISIBILITY_JS = r"""

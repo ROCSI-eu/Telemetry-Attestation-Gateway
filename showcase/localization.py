@@ -336,15 +336,19 @@ RO_TEXT = {
     "Laboratory scenarios and recorded outcomes": "Scenarii de laborator și rezultate înregistrate",
     "These scenarios replay deterministic mocks, not cryptographic verification in the browser. The separately recorded offline-verifier outcome is labeled independently.": "Aceste scenarii redau simulări deterministe, nu verificări criptografice în browser. Rezultatul separat al verificatorului offline este etichetat independent.",
     "Limitations and assumptions": "Limite și ipoteze",
-    # TAG-CONCEPT-VISUAL-01: purely decorative, no real telemetry or browser proving.
-    "PRIVATE INFORMATION": "INFORMAȚII PRIVATE",
-    "ILLUSTRATION ONLY": "DOAR ILUSTRAȚIE",
-    "PRIVATE VALUE": "VALOARE PRIVATĂ",
-    "NOT EXPOSED": "NEDEZVĂLUITĂ",
-    "PUBLIC CLAIM": "CONDIȚIE PUBLICĂ",
-    "CHECKABLE": "VERIFICABILĂ",
-    "Conceptual animation only. No private measurement or proof is processed here.":
-        "Doar animație conceptuală. Aici nu sunt procesate măsurători private sau dovezi.",
+    # TAG-CONCEPT-CLARITY-01: visitor-facing, hypothetical, no real measurement.
+    "VEHICLE SPEED · HYPOTHETICAL EXAMPLE": "VITEZA UNUI VEHICUL · EXEMPLU IPOTETIC",
+    "THE IDEA, AT A GLANCE": "IDEA, DINTR-O PRIVIRE",
+    "01 / PRIVATE VALUE": "01 / VALOARE PRIVATĂ",
+    "Speed: hidden": "Viteză: ascunsă",
+    "The exact reading stays private.": "Valoarea exactă rămâne privată.",
+    "02 / PUBLIC RULE": "02 / REGULĂ PUBLICĂ",
+    "Speed ≤ speed limit": "Viteză ≤ limita admisă",
+    "The condition is known to everyone.": "Condiția este cunoscută tuturor.",
+    "03 / VERIFIABLE ANSWER": "03 / RĂSPUNS VERIFICABIL",
+    "Within the limit: YES": "Respectă limita: DA",
+    "A proof could confirm this without revealing the speed.":
+        "O dovadă ar putea confirma răspunsul fără divulgarea vitezei.",
     "MISSION PATTERNS · SELECT A ROUTE": "MODELE DE MISIUNE · ALEGE UN TRASEU",
     "MISSION ROUTE · THREE PATTERNS": "TRASEU DE MISIUNE · TREI MODELE",
     "Mission scenario · selected route": "Scenariu de misiune · traseu selectat",
@@ -434,7 +438,7 @@ RO_ARIA = {
     "Technical research panels": "Panouri de cercetare tehnică",
     "Published research version": "Versiunea publicată a cercetării",
     "Three stages of the offline proof experiment": "Trei etape ale experimentului de dovadă offline",
-    "Conceptual illustration of private input becoming a limited-disclosure proof": "Ilustrație conceptuală a transformării unei valori private într-o dovadă cu divulgare limitată",
+
     "Speed-limit verification example": "Exemplu de verificare a unei limite de viteză",
 }
 
