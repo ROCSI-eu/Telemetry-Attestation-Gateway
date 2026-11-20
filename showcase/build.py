@@ -13,6 +13,7 @@ import base64
 import hashlib
 from html import escape
 import json
+import os
 from pathlib import Path, PurePosixPath
 import re
 
@@ -443,6 +444,50 @@ def render_research_journal(html: str, journal: dict, language: str) -> str:
     return html.replace(JOURNAL_MARKER, markup, 1)
 
 
+
+RESEARCH_RELEASE_MARKER = "<!-- TAG_RESEARCH_RELEASE -->"
+OFFLINE_OUTCOME_MARKER = "<!-- TAG_OFFLINE_OUTCOME -->"
+SCENARIO_COUNT_MARKER = "<!-- TAG_SCENARIO_COUNT -->"
+
+
+def render_research_release(html: str, language: str, scenario_data: dict,
+                            verifier_data: dict, sha: str | None) -> str:
+    """Build-only digest from checked-in evidence; no browser polling or live proof."""
+    if language not in ("ro", "en"):
+        raise ValueError("unknown research release language")
+    for marker in (RESEARCH_RELEASE_MARKER, OFFLINE_OUTCOME_MARKER,
+                   SCENARIO_COUNT_MARKER):
+        if html.count(marker) != 1:
+            raise ValueError("research release marker changed: " + marker)
+    state = verifier_data["cryptographic"]
+    states = {
+        "VALID": ("Acceptată de verificatorul offline", "Accepted by offline verifier"),
+        "INVALID": ("Respinsă de verificatorul offline", "Rejected by offline verifier"),
+        "NOT_CHECKED": ("Verificare offline neefectuată", "Offline verification not performed"),
+    }
+    if state not in states:
+        raise ValueError("unsupported published offline-verifier state")
+    count = len(scenario_data["cases"])
+    if not 1 <= count <= 100:
+        raise ValueError("invalid published mock scenario count")
+    if sha is not None and not re.fullmatch(r"[0-9a-f]{40}", sha):
+        raise ValueError("invalid Pages source commit SHA")
+    en = language == "en"
+    if sha:
+        link = ("https://github.com/ROCSI-eu/Telemetry-Attestation-Gateway/"
+                "commit/" + sha)
+        release = (f'<a class="research-revision" href="{link}">'
+                   + ("Build commit " if en else "Commit publicat ")
+                   + sha[:10] + "</a>")
+    else:
+        release = ('<span class="research-revision-neutral">' +
+                   ("Git commit is shown on published Cloudflare builds"
+                    if en else "Commitul apare în versiunile publicate prin Cloudflare") +
+                   "</span>")
+    return (html.replace(RESEARCH_RELEASE_MARKER, release, 1)
+            .replace(OFFLINE_OUTCOME_MARKER, states[state][1 if en else 0], 1)
+            .replace(SCENARIO_COUNT_MARKER, str(count), 1))
+
 def build(out: Path) -> tuple[str, ...]:
     target = out.resolve()
     protected = (ROOT.resolve(), CONSOLE.parent.resolve(),
@@ -457,8 +502,15 @@ def build(out: Path) -> tuple[str, ...]:
         raise ValueError("placeholder favicon was not removed")
     html = inject_locale_js(html)
     journal = load_research_journal()
-    html_en = social_metadata(render_research_journal(html, journal, "en"), "en")
-    html_ro = social_metadata(render_research_journal(romanian_html(html), journal, "ro"), "ro")
+    scenarios = minimized_scenarios(json.loads(SCENARIOS.read_text(encoding="utf-8")))
+    authentic = minimized_verifier(json.loads(VERIFIER.read_text(encoding="utf-8")))
+    source_commit = os.environ.get("CF_PAGES_COMMIT_SHA") or None
+    html_en = social_metadata(render_research_release(
+        render_research_journal(html, journal, "en"), "en", scenarios,
+        authentic, source_commit), "en")
+    html_ro = social_metadata(render_research_release(
+        render_research_journal(romanian_html(html), journal, "ro"),
+        "ro", scenarios, authentic, source_commit), "ro")
     if security_headers(html_ro) != security_headers(html_en):
         raise ValueError("localized assets have mismatching CSP inline hashes")
     media = ROOT / "showcase/assets"
@@ -468,8 +520,6 @@ def build(out: Path) -> tuple[str, ...]:
         if (not payload.startswith(b"\x89PNG\r\n\x1a\n")
             or len(payload) > 450_000):
             raise ValueError("invalid or oversized PNG: " + name)
-    scenarios = minimized_scenarios(json.loads(SCENARIOS.read_text(encoding="utf-8")))
-    authentic = minimized_verifier(json.loads(VERIFIER.read_text(encoding="utf-8")))
     assets = {
         "ro/index.html": html_ro,
         "en/index.html": html_en,
