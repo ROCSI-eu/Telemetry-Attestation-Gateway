@@ -205,8 +205,8 @@ class StaticShowcaseTests(unittest.TestCase):
             ro = (target / "ro/index.html").read_text(encoding="utf-8")
             en = (target / "en/index.html").read_text(encoding="utf-8")
             for page, words in (
-                (ro, ("TRASEU SINTETIC", "Definirea condiției", "Verificare independentă")),
-                (en, ("SYNTHETIC ROUTE", "Define the rule", "Verify independently")),
+                (ro, ("TRASEU SINTETIC", "01 / CONDIȚIE", "03 / VERIFICARE")),
+                (en, ("SYNTHETIC ROUTE", "01 / CONDITION", "03 / CHECK")),
             ):
                 self.assertIn('class="hero-scene"', page)
                 self.assertIn('class="hero-vehicle"', page)
