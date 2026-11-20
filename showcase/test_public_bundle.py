@@ -13,7 +13,7 @@ import unittest
 from unittest.mock import patch
 
 from build import (
-    CASE_KEYS, CONSOLE, LABELS, SCENARIOS, VERIFIER, build,
+    CASE_KEYS, CONSOLE, LABELS, SCENARIOS, VERIFIER, JOURNAL, build, load_research_journal,
     minimized_scenarios, minimized_verifier, public_html, sha256_source,
 )
 
@@ -30,11 +30,11 @@ class StaticShowcaseTests(unittest.TestCase):
                 (ro, "Mai puține date expuse. O condiție verificabilă.",
                  "Poate un vehicul demonstra respectarea unei limite fără să dezvăluie viteza?",
                  "Unde ar putea conta această capacitate?",
-                 "Ce am demonstrat până acum?", SHARE["ro"]["title"]),
+                 "Din jurnalul de cercetare TAG", SHARE["ro"]["title"]),
                 (en, "Less data exposed. A condition that can be verified.",
                  "Can a vehicle prove it respects a speed limit without revealing its speed?",
                  "Where could this capability matter?",
-                 "What have we demonstrated so far?", SHARE["en"]["title"]),
+                 "From the TAG research journal", SHARE["en"]["title"]),
             ):
                 for value in (concept, how, applications, research):
                     self.assertIn(value, page)
@@ -86,6 +86,56 @@ class StaticShowcaseTests(unittest.TestCase):
                 re.search(r'<script>(.*?)</script>', ro, flags=re.S).group(1),
                 re.search(r'<script>(.*?)</script>', en, flags=re.S).group(1),
             )
+
+    def test_research_journal_is_bilingual_static_and_separates_open_question(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            target = Path(folder)
+            build(target)
+            for language, journal_heading, lesson, pending in (
+                ("ro", "Din jurnalul de cercetare TAG", "Ce am învățat",
+                 "Fluxul complet nu a fost încă demonstrat."),
+                ("en", "From the TAG research journal", "What we learned",
+                 "The complete end-to-end path has not yet been demonstrated."),
+            ):
+                page = (target / language / "index.html").read_text(encoding="utf-8")
+                self.assertIn(journal_heading, page)
+                self.assertEqual(page.count('class="research-entry"'), 2)
+                self.assertEqual(page.count('class="research-entry-insight"'), 2)
+                self.assertIn(lesson, page)
+                self.assertIn(pending, page)
+                self.assertIn('class="research-next-question"', page)
+                self.assertLess(page.index('class="research-journal"'),
+                                page.index('class="research-next-question"'))
+                self.assertLess(page.index('class="research-next-question"'),
+                                page.index('id="technical-evidence"'))
+                self.assertEqual(page.count('class="research-detail"'), 3)
+                self.assertNotIn("TAG_RESEARCH_JOURNAL", page)
+                self.assertEqual(set(re.findall(r'fetch\("([^"]+)"', page)),
+                                 {"/evidence-results.json", "/authentic-evidence.json"})
+            self.assertEqual(
+                re.search(r'<script>(.*?)</script>', (target / "ro/index.html").read_text(), flags=re.S).group(1),
+                re.search(r'<script>(.*?)</script>', (target / "en/index.html").read_text(), flags=re.S).group(1),
+            )
+
+    def test_journal_rejects_unapproved_claims_and_unsafe_evidence(self) -> None:
+        original = json.loads(JOURNAL.read_text(encoding="utf-8"))
+        altered = copy.deepcopy(original)
+        altered["entries"][0]["status"] = "production_validated"
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "journal.json"
+            path.write_text(json.dumps(altered), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "unapproved journal entry"):
+                load_research_journal(path)
+            altered = copy.deepcopy(original)
+            altered["entries"][0]["evidence_path"] = "../private.txt"
+            path.write_text(json.dumps(altered), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "invalid journal evidence reference"):
+                load_research_journal(path)
+            altered = copy.deepcopy(original)
+            altered["entries"][0]["ro"]["title"] = "<script>alert(1)</script>"
+            path.write_text(json.dumps(altered), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "unsafe public journal text"):
+                load_research_journal(path)
 
     def test_speed_limit_explainer_is_plain_language_bilingual_and_distinct_from_route(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
@@ -140,7 +190,7 @@ class StaticShowcaseTests(unittest.TestCase):
                 self.assertIn('class="hero-vehicle"', page)
                 self.assertIn('class="editorial-steps"', page)
                 self.assertIn('aria-hidden="true"', page)
-                self.assertIn('class="research-summary"', page)
+                self.assertIn('class="research-journal"', page)
                 self.assertIn('prefers-reduced-motion:reduce', page)
                 for item in words:
                     self.assertIn(item, page)

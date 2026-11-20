@@ -278,6 +278,8 @@ RO_TEXT = {
     "These are possible applications, not validated operational deployments.": "Acestea sunt aplicații posibile, nu implementări operaționale validate.",
     "04 / THE RESEARCH": "04 / CERCETAREA",
     "What have we demonstrated so far?": "Ce am demonstrat până acum?",
+    "From the TAG research journal": "Din jurnalul de cercetare TAG",
+    "What we tested in the lab, what we learned and what still needs to be demonstrated.": "Ce am testat în laborator, ce am învățat și ce mai trebuie demonstrat.",
     "TAG is experimental research. The independent results below are useful starting points, not a complete demonstration in a real-world system.": "TAG este cercetare experimentală. Rezultatele independente de mai jos sunt puncte de plecare, nu o demonstrație completă într-un sistem real.",
     "01 / CRYPTOGRAPHY": "01 / CRIPTOGRAFIE",
     "02 / SIMULATION": "02 / SIMULARE",
