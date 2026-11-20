@@ -310,8 +310,6 @@ RO_TEXT = {
     "PRIVACY-PRESERVING TELEMETRY": "TELEMETRIE CU PROTECȚIA DATELOR",
     "RESEARCH · DATA PRIVACY": "CERCETARE · CONFIDENȚIALITATEA DATELOR",
     "SYNTHETIC ROUTE": "TRASEU SINTETIC",
-    "The A–B–C markers illustrate a route, not a cryptographic proof.":
-        "Reperele A–B–C ilustrează un traseu, nu o dovadă criptografică.",
     "What if systems could demonstrate a condition without revealing the data behind it? TAG investigates this direction for telemetry through cryptographic research.": "Cum ar fi dacă un sistem ar putea demonstra respectarea unei condiții fără să dezvăluie datele din spatele ei? TAG cercetează această direcție pentru telemetrie prin metode criptografice.",
     "SELECTIVE VERIFICATION": "VERIFICARE SELECTIVĂ",
     "PROOF WORKFLOW": "PROCESUL DOVEZII",
