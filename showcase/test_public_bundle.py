@@ -214,19 +214,18 @@ class StaticShowcaseTests(unittest.TestCase):
             ro = (target / "ro/index.html").read_text(encoding="utf-8")
             en = (target / "en/index.html").read_text(encoding="utf-8")
             for page, words in (
-                (ro, ("TRASEU SINTETIC",
-                      "Reperele A–B–C ilustrează un traseu, nu o dovadă criptografică.",
-                      "Definirea condiției", "Verificare independentă")),
-                (en, ("SYNTHETIC ROUTE",
-                      "The A–B–C markers illustrate a route, not a cryptographic proof.",
-                      "Define the rule", "Verify independently")),
+                (ro, ("TRASEU SINTETIC", "Definirea condiției", "Verificare independentă")),
+                (en, ("SYNTHETIC ROUTE", "Define the rule", "Verify independently")),
             ):
                 self.assertIn('class="hero-scene"', page)
                 self.assertIn('class="hero-vehicle"', page)
                 self.assertIn('<svg class="hero-scene" viewBox="0 0 760 700" preserveAspectRatio="xMidYMid meet" focusable="false" aria-hidden="true">', page)
-                self.assertIn('class="hero-visual"', page)
-                self.assertIn('</div>\n      <p class="hero-art-caption">', page)
-                self.assertIn('.hero-art-caption{flex:none;margin:0;padding:16px 20px 17px;', page)
+                self.assertIn('class="hero-art"', page)
+                self.assertNotIn('class="hero-visual"', page)
+                self.assertNotIn('hero-art-caption', page)
+                self.assertNotIn('Reperele A–B–C ilustrează', page)
+                self.assertNotIn('The A–B–C markers illustrate', page)
+                self.assertNotIn('not a cryptographic proof', page)
                 self.assertNotIn('class="hero-art-index"', page)
                 self.assertNotIn('OBS / 02', page)
                 self.assertNotIn('ROUTE / SYN', page)
