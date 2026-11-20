@@ -49,7 +49,8 @@ class StaticShowcaseTests(unittest.TestCase):
                 self.assertEqual([page.index(marker) for marker in ordered],
                                  sorted(page.index(marker) for marker in ordered))
                 self.assertEqual(page.count('class="research-detail"'), 3)
-                self.assertEqual(page.count('class="editorial-steps"'), 1)
+                self.assertNotIn('class="editorial-steps"', page)
+                self.assertIn('class="editorial-proof-intro"', page)
                 self.assertIn('id="scope-proves"', page)
                 self.assertIn('id="scope-limits"', page)
                 self.assertIn('class="architecture-flow"', page)
@@ -222,7 +223,7 @@ class StaticShowcaseTests(unittest.TestCase):
                 self.assertNotIn('TRASEU / SINT', page)
                 self.assertNotIn('PRIVATE DATA · VERIFIABLE CONDITIONS', page)
                 self.assertNotIn('DATE PRIVATE · CONDIȚII VERIFICABILE', page)
-                self.assertIn('class="editorial-steps"', page)
+                self.assertNotIn('class="editorial-steps"', page)
                 self.assertIn('aria-hidden="true"', page)
                 self.assertIn('class="research-journal"', page)
                 self.assertIn('prefers-reduced-motion:reduce', page)
@@ -421,9 +422,9 @@ class StaticShowcaseTests(unittest.TestCase):
             build(target)
             ro = (target / "ro/index.html").read_text(encoding="utf-8")
             en = (target / "en/index.html").read_text(encoding="utf-8")
-            for page, headline in (
-                (ro, "PROCESUL DOVEZII"),
-                (en, "PROOF WORKFLOW"),
+            for page, headline, labels in (
+                (ro, "De la informație privată la rezultat verificabil", ("01 / CONDIȚIE", "02 / DOVADĂ", "03 / VERIFICARE")),
+                (en, "From private data to a verifiable result", ("01 / CONDITION", "02 / PROOF", "03 / CHECK")),
             ):
                 self.assertEqual(page.count('id="tech-animation"'), 1)
                 self.assertIn('id="tech-animation-svg"', page)
@@ -444,7 +445,13 @@ class StaticShowcaseTests(unittest.TestCase):
                 self.assertIn('animation:tech-cycle-three 15s', page)
                 self.assertIn('animation:none!important', page)
                 self.assertIn(headline, page)
-                self.assertTrue(page.index('id="mission-control"')
+                for label in labels:
+                    self.assertIn(label, page)
+                for duplicate in ('class="tech-animation-top"', 'class="tech-animation-caption"',
+                                  'id="tech-animation-status"', 'PROOF WORKFLOW', 'PROCESUL DOVEZII',
+                                  '01 / NOIR', '02 / BARRETENBERG', '03 / OFFLINE'):
+                    self.assertNotIn(duplicate, page)
+                self.assertTrue(page.index('id="mission-control"'
                                 < page.index('id="tech-animation"')
                                 < page.index('id="use-cases-title"'))
                 self.assertEqual(
@@ -452,12 +459,12 @@ class StaticShowcaseTests(unittest.TestCase):
                     {"/evidence-results.json", "/authentic-evidence.json"},
                 )
                 self.assertNotIn('type="module"', page)
-            self.assertIn('Condiție definită · dovadă pregătită · rezultat verificat', ro)
-            self.assertIn('Rule defined · proof prepared · result checked', en)
+            self.assertIn('TAG cercetează cum poate fi verificată o condiție', ro)
+            self.assertIn('TAG studies how a defined condition can be checked', en)
             script = re.search(r'<script>(.*?)</script>', en, flags=re.S).group(1)
             self.assertIn('const techObserver=new IntersectionObserver', script)
             self.assertIn('document.addEventListener("visibilitychange",syncTechAnimation)', script)
-            self.assertIn('motionPreference.addEventListener("change",syncTechAnimation)', script)
+            self.assertNotIn('const techStatus=$("tech-animation-status")', script)
             self.assertIn('techAnimation.dataset.started="true"', script)
             self.assertNotIn('techReplay', script)
             self.assertNotIn('techPause', script)
