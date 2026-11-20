@@ -68,7 +68,7 @@ before any merge, because merging may publish automatically.
 
 ### Focused acceptance
 
-Build the same 14 files using python3 showcase/build.py --out-dir LOCAL_QA_PATH.
+Build the same 15 files using python3 showcase/build.py --out-dir LOCAL_QA_PATH.
 Run python3 -m unittest discover -s showcase -p 'test_*.py' -v and
 python3 scripts/check_docs.py. In an isolated Chromium/Chrome session served
 over loopback, inspect RO and EN at 1440px, 375px and 320px. Confirm the exact
@@ -114,7 +114,7 @@ python3 -m unittest discover -s showcase -p 'test_*.py' -v
 \`\`\`
 
 Use a local static HTTP server in an authorized isolated QA environment to
-inspect the generated **14 files** (13 existing assets plus one Pages redirect configuration). The allowlisted package is:
+inspect the generated **15 files** (the existing 14 files plus the local ROCSI mark). The allowlisted package is:
 
 - \`ro/index.html\`: Romanian-default public page (**Centru de comandă și control**);
   \`en/index.html\`: English page (**Mission Control**). Both use the same
@@ -125,6 +125,11 @@ inspect the generated **14 files** (13 existing assets plus one Pages redirect c
   (synthetic A–B–C route and illustrative drone), separately translated captions.
 - \`favicon.svg\`, \`favicon.ico\`, \`apple-touch-icon.png\`: shared drone/radar
   site identity, without text or claims of live verification.
+- ROCSI symbol asset (assets/rocsi-mark.svg): the unmodified current blue/tricolor
+  mark from ROCSI-Website src/app/icon.svg at
+  85c5f0eadaa15666817a27c940358146c8c479dd, rendered locally in the TAG
+  header and ROCSI card. Distinct from TAG's browser favicon. It is ROCSI
+  organization branding; its inclusion is not a grant of trademark rights.
 - \`evidence-results.json\`: **strictly reconstructed** deterministic orchestration
   mock outcomes, never actual proof-verification evidence.
 - \`authentic-evidence.json\`: **strictly reconstructed** precomputed synthetic

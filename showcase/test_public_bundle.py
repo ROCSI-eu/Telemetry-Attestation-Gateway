@@ -369,6 +369,13 @@ class StaticShowcaseTests(unittest.TestCase):
                 self.assertIn(f'class="header-cta" href="{contact}">{cta}</a>', page)
                 self.assertIn('class="rocsi-affiliation"', page)
                 self.assertIn('class="language-switch"', page)
+                self.assertEqual(page.count('src="/assets/rocsi-mark.svg"'), 2)
+                self.assertIn('<img class="brand-rocsi-mark" src="/assets/rocsi-mark.svg" alt="" width="34" height="34"', page)
+                self.assertIn('<img class="rocsi-affiliation-mark" src="/assets/rocsi-mark.svg" alt="" width="60" height="60"', page)
+                self.assertIn('class="rocsi-affiliation-actions"', page)
+                self.assertIn('.brand-rocsi-mark{display:block;width:34px;height:34px;', page)
+                self.assertIn('.rocsi-affiliation-mark{display:block;width:60px;height:60px;', page)
+                self.assertIn('.rocsi-affiliation-mark{width:48px;height:48px}', page)
                 self.assertEqual(page.count('class="rocsi-affiliation"'), 1)
                 self.assertIn('<aside class="rocsi-affiliation" aria-labelledby="rocsi-affiliation-title">', page)
                 self.assertIn('<h3 id="rocsi-affiliation-title">', page)
@@ -528,13 +535,13 @@ class StaticShowcaseTests(unittest.TestCase):
                 re.search(r'<script>(.*?)</script>', en, flags=re.S).group(1),
             )
 
-    def test_frozen_bundle_has_only_fourteen_allowlisted_files(self) -> None:
+    def test_frozen_bundle_has_only_fifteen_allowlisted_files(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             target = Path(folder)
             self.assertEqual(set(build(target)), {
                 "ro/index.html", "en/index.html", "404.html", "en/404.html",
                 "evidence-results.json", "authentic-evidence.json", "_headers", "_redirects",
-                "robots.txt", "assets/favicon.svg", "assets/favicon.ico", "assets/apple-touch-icon.png",
+                "robots.txt", "assets/favicon.svg", "assets/rocsi-mark.svg", "assets/favicon.ico", "assets/apple-touch-icon.png",
                 "og/ro.png", "og/en.png",
             })
             html = (target / "ro/index.html").read_text(encoding="utf-8")
@@ -672,6 +679,13 @@ class StaticShowcaseTests(unittest.TestCase):
                 (target / "og/en.png").read_bytes()
             )
             self.assertIn('viewBox="0 0 64 64"', (target / "assets/favicon.svg").read_text())
+            rocsi_mark = (target / "assets/rocsi-mark.svg").read_text(encoding="utf-8")
+            self.assertIn('viewBox="0 0 64 64"', rocsi_mark)
+            self.assertIn('stroke="#ffd126"', rocsi_mark)
+            self.assertIn('stroke="#ef3340"', rocsi_mark)
+            self.assertIn('role="img" aria-label="ROCSI"', rocsi_mark)
+            self.assertNotIn("<script", rocsi_mark)
+            self.assertNotIn("href=", rocsi_mark)
             self.assertTrue((target / "assets/favicon.ico").read_bytes().startswith(b"\x00\x00\x01\x00"))
             self.assertTrue((target / "assets/apple-touch-icon.png").read_bytes().startswith(b"\x89PNG"))
             self.assertIn("img-src 'self' data:", (target / "_headers").read_text())

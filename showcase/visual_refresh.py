@@ -17,7 +17,8 @@ VISUAL_CSS = """
     a:focus-visible,button:focus-visible,select:focus-visible{outline-color:#f1d4a2}
     .wrap{max-width:1560px;padding:0 clamp(18px,5vw,92px) 88px}
     .site-header{display:flex;align-items:center;gap:30px;flex-wrap:wrap;min-height:94px;border-bottom:1px solid #3d4548}
-    .brand{display:flex;align-items:center;gap:15px;text-decoration:none;color:#f7f4eb;min-width:0}
+    .brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:#f7f4eb;min-width:0}
+    .brand-rocsi-mark{display:block;width:34px;height:34px;flex:none;object-fit:contain}
     .brand-signal{font-size:1.72rem;font-weight:900;letter-spacing:-.09em}
     .brand-detail{font-size:.66rem;letter-spacing:.13em;text-transform:uppercase;color:#c2c7c8;max-width:160px;line-height:1.5}
     .section-nav{display:flex;gap:clamp(12px,2vw,34px);flex-wrap:wrap;align-items:center;margin-left:auto}
@@ -101,10 +102,12 @@ VISUAL_CSS = """
     .rocsi-affiliation{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:20px 34px;margin:30px 0 0;padding:clamp(22px,2.8vw,36px);border:1px solid #4b6366;background:linear-gradient(120deg,#17292c,#101c1f)}
     .rocsi-affiliation h3{color:#f2e9d8;font-size:clamp(1.2rem,1.65vw,1.5rem);line-height:1.35;letter-spacing:-.02em;margin:0}
     .rocsi-affiliation p{margin:9px 0 0;color:#c1ccca;font-size:.94rem;line-height:1.65;max-width:66ch}
-    .rocsi-affiliation>a{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:11px 18px;border:1px solid #d7b77f;color:#efd5a7;font-size:.86rem;font-weight:750;text-decoration:none;text-align:center}
-    .rocsi-affiliation>a:hover{background:#d7b77f;color:#11191b}
-    .rocsi-affiliation>a:focus-visible{outline:2px solid #f1d4a2;outline-offset:3px}
-    @media(max-width:750px){.rocsi-affiliation{grid-template-columns:1fr;gap:18px}.rocsi-affiliation>a{justify-self:start}.header-status{max-width:100%;justify-content:flex-end}}
+    .rocsi-affiliation-actions{display:flex;align-items:center;justify-content:flex-end;gap:16px;min-width:0}
+    .rocsi-affiliation-mark{display:block;width:60px;height:60px;flex:none;object-fit:contain}
+    .rocsi-affiliation-actions>a{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:11px 18px;border:1px solid #d7b77f;color:#efd5a7;font-size:.86rem;font-weight:750;text-decoration:none;text-align:center}
+    .rocsi-affiliation-actions>a:hover{background:#d7b77f;color:#11191b}
+    .rocsi-affiliation-actions>a:focus-visible{outline:2px solid #f1d4a2;outline-offset:3px}
+    @media(max-width:750px){.rocsi-affiliation{grid-template-columns:1fr;gap:18px}.rocsi-affiliation-actions{justify-content:flex-start}.rocsi-affiliation-mark{width:48px;height:48px}.header-status{max-width:100%;justify-content:flex-end}}
     footer{border-top:1px solid #344446;margin-top:28px;padding:22px 0 8px;line-height:1.75;color:#c6cfcb;font-size:.87rem}
     .language-switch{border-color:#596567;border-radius:0}
     .language-switch a,.language-switch a[aria-current="page"]{border-radius:0}
@@ -113,7 +116,7 @@ VISUAL_CSS = """
     @media(max-width:750px){
       .wrap{padding:0 16px 60px}
       .site-header{gap:12px;min-height:70px}
-      .brand{gap:10px}.brand-detail{max-width:130px}
+      .brand{gap:9px}.brand-detail{max-width:130px}.brand-rocsi-mark{width:29px;height:29px}
       .header-status{margin-left:auto}
       .header-status .pill{display:none}
       .section-nav{gap:16px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:8px}
@@ -1113,7 +1116,7 @@ def redesign_public_html(html: str) -> str:
         raise ValueError("public introduction changed")
 
     header = f"""<header class="site-header">
-    <a class="brand" href="/" aria-label="TAG · ROCSI"><span class="brand-signal">TAG</span><span class="brand-detail">A ROCSI research initiative</span></a>
+    <a class="brand" href="/" aria-label="TAG · ROCSI"><span class="brand-signal">TAG</span><img class="brand-rocsi-mark" src="/assets/rocsi-mark.svg" alt="" width="34" height="34" decoding="async"><span class="brand-detail">A ROCSI research initiative</span></a>
     <nav class="section-nav" aria-label="Page sections">
       <a href="#principle">The Concept</a>
       <a href="#mission-control">How It Works</a>
@@ -1325,8 +1328,10 @@ def redesign_public_html(html: str) -> str:
         '<aside class="rocsi-affiliation" aria-labelledby="rocsi-affiliation-title">'
         '<div><h3 id="rocsi-affiliation-title">TAG is a research initiative of ROCSI.</h3>'
         '<p>Discover more of ROCSI\'s open research and explore collaboration opportunities.</p></div>'
+        '<div class="rocsi-affiliation-actions">'
+        '<img class="rocsi-affiliation-mark" src="/assets/rocsi-mark.svg" alt="" width="60" height="60" loading="lazy" decoding="async">'
         '<a href="https://rocsi.eu/en">Explore ROCSI</a>'
-        '</aside>\n' + footer_anchor,
+        '</div></aside>\n' + footer_anchor,
         1,
     )
     public_notice = '<div class="notice" role="note">EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION</div>\n'
