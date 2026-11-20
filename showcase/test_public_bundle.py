@@ -88,6 +88,42 @@ class StaticShowcaseTests(unittest.TestCase):
                 re.search(r'<script>(.*?)</script>', en, flags=re.S).group(1),
             )
 
+    def test_six_potential_application_cards_are_bilingual_and_accessible(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            target = Path(folder)
+            build(target)
+            for lang, headings in (
+                ("ro", (
+                    "Audit și verificare", "Sisteme autonome", "Schimb de informații",
+                    "Logistică și transport", "Monitorizare industrială",
+                    "Cercetare colaborativă",
+                )),
+                ("en", (
+                    "Audit and verification", "Autonomous systems",
+                    "Information exchange", "Logistics and transport",
+                    "Industrial monitoring", "Collaborative research",
+                )),
+            ):
+                page = (target / lang / "index.html").read_text(encoding="utf-8")
+                block = page.split('<section class="use-cases"', 1)[1].split('</section>', 1)[0]
+                self.assertEqual(block.count('<article class="use-case-card">'), 6)
+                self.assertEqual(block.count('class="use-case-icon-wrap"'), 6)
+                self.assertEqual(block.count('class="use-case-icon"'), 6)
+                self.assertEqual(block.count('viewBox="0 0 24 24"'), 6)
+                self.assertEqual(block.count('aria-hidden="true" focusable="false"'), 6)
+                self.assertEqual(block.count("<h3>"), 6)
+                self.assertEqual(block.count("<p>"), 6)  # one explanation per card
+                self.assertEqual(block.count('class="editorial-chapter-intro"'), 1)
+                for heading in headings:
+                    self.assertEqual(block.count("<h3>" + heading + "</h3>"), 1)
+                self.assertNotIn("<button", block)
+                self.assertNotIn("<script", block)
+                self.assertNotIn('href="', block)
+                self.assertIn("grid-template-columns:repeat(3,minmax(0,1fr))", page)
+                self.assertIn("grid-template-columns:repeat(2,minmax(0,1fr))", page)
+                self.assertIn(".use-cases-grid{grid-template-columns:1fr;gap:12px}", page)
+                self.assertIn('id="research-title"', page)
+
     def test_public_vertical_rhythm_and_single_separator_rules(self) -> None:
         # Presentation-only: keep one divider per chapter/accordion boundary.
         with tempfile.TemporaryDirectory() as folder:

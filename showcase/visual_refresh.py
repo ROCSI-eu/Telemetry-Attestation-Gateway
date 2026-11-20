@@ -73,13 +73,15 @@ VISUAL_CSS = """
     button{background:#dbbc88;color:#101617;border-radius:0}
     button:hover:not(:disabled){background:#efd6a7}
     .use-cases{padding:clamp(48px,5vw,76px) 0;margin:0;border-bottom:0}
-    .use-cases h2{font-size:clamp(2.2rem,4vw,4.5rem);line-height:1.08;letter-spacing:-.055em;max-width:18ch;margin-bottom:44px}
-    .use-cases-grid{gap:0;border-top:1px solid #465255}
-    .use-cases article{background:transparent;border:0;border-bottom:1px solid #465255;border-right:1px solid #465255;border-radius:0;padding:33px 25px 34px 0}
-    .use-cases article:not(:first-child){padding-left:25px}
-    .use-cases article:last-child{border-right:0}
-    .use-cases h3{color:#eee8da;font-size:1.3rem;letter-spacing:-.035em;margin-bottom:18px}
-    .use-cases p{color:#bfc8c7;font-size:.95rem;line-height:1.75}
+    .use-cases h2{font-size:clamp(2.2rem,4vw,4.5rem);line-height:1.08;letter-spacing:-.055em;max-width:18ch;margin-bottom:29px}
+    .use-cases>.editorial-chapter-intro{max-width:74ch;margin-bottom:30px}
+    .use-cases-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;align-items:stretch}
+    .use-cases .use-case-card{display:flex;flex-direction:column;align-items:flex-start;min-width:0;margin:0;padding:clamp(20px,2.15vw,29px);border:1px solid #41575a;background:linear-gradient(155deg,#142326,#0d181b);border-radius:0}
+    .use-case-icon-wrap{width:46px;height:46px;display:grid;place-items:center;flex:none;border:1px solid #4d7273;background:#192f32;margin-bottom:21px}
+    .use-case-icon{display:block;width:27px;height:27px;fill:none;stroke:#d9c18f;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    .use-cases .use-case-card h3{color:#eee8da;font-size:clamp(1.13rem,1.65vw,1.33rem);line-height:1.25;letter-spacing:-.025em;margin:0 0 12px}
+    .use-cases .use-case-card p{color:#c4cecb;font-size:.92rem;line-height:1.7;margin:0;max-width:43ch}
+    @media(max-width:1100px) and (min-width:751px){.use-cases-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
     .technical-evidence{padding:clamp(76px,9vw,140px) 0;border-bottom:1px solid #374245}
     .technical-evidence .section-display{max-width:none}
     .evidence-intro{color:#bfc7c6;max-width:68ch;line-height:1.7;margin:0 0 40px}
@@ -132,8 +134,9 @@ VISUAL_CSS = """
       .mission-layout{grid-template-columns:1fr}
       .mission-readout{border:1px solid #3f5558;border-top:0}
       .use-cases{padding:52px 0}
-      .use-cases-grid{grid-template-columns:1fr}
-      .use-cases article,.use-cases article:not(:first-child){border-right:0;padding:24px 0}
+      .use-cases-grid{grid-template-columns:1fr;gap:12px}
+      .use-cases .use-case-card{padding:22px}
+      .use-case-icon-wrap{margin-bottom:17px}
       .technical-evidence{padding:75px 0}
       .research-limits{padding:58px 0 0}
     }
@@ -1205,9 +1208,36 @@ def redesign_public_html(html: str) -> str:
     <h2 id="use-cases-title">Where could this capability matter?</h2>
     <p class="editorial-chapter-intro">Selective verification may help when a result needs to be demonstrated but sharing the entire dataset is undesirable.</p>
     <div class="use-cases-grid">
-      <article><h3>Audit and verification</h3><p>An organization could demonstrate that a defined condition was met without sharing the entire dataset used to evaluate it.</p></article>
-      <article><h3>Autonomous systems</h3><p>Aerial, ground and maritime vehicles could provide research contexts for verifying conditions about operational data.</p></article>
-      <article><h3>Information exchange</h3><p>Future systems could exchange verifiable results while reducing the amount of sensitive information they share.</p></article>
+      <article class="use-case-card">
+        <span class="use-case-icon-wrap"><svg class="use-case-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2 20 6v6c0 5-3 8-8 10-5-2-8-5-8-10V6z"/><path d="m8.5 12 2.4 2.4 4.7-4.9"/></svg></span>
+        <h3>Audit and verification</h3>
+        <p>An organization could demonstrate that an agreed condition was met without handing over its complete underlying dataset.</p>
+      </article>
+      <article class="use-case-card">
+        <span class="use-case-icon-wrap"><svg class="use-case-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="5" cy="5" r="3"/><circle cx="19" cy="5" r="3"/><circle cx="5" cy="19" r="3"/><circle cx="19" cy="19" r="3"/><path d="m7 7 3 3m7-3-3 3M7 17l3-3m7 3-3-3M9 10h6v4H9z"/></svg></span>
+        <h3>Autonomous systems</h3>
+        <p>A UAS or autonomous vehicle could report that a defined operational threshold was met without sharing its full telemetry record.</p>
+      </article>
+      <article class="use-case-card">
+        <span class="use-case-icon-wrap"><svg class="use-case-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 7h13m-4-4 4 4-4 4M17 17H4m4-4-4 4 4 4"/></svg></span>
+        <h3>Information exchange</h3>
+        <p>Two organizations could exchange the verifiable outcome of an agreed check while keeping private inputs at their source.</p>
+      </article>
+      <article class="use-case-card">
+        <span class="use-case-icon-wrap"><svg class="use-case-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 7 12 2l9 5v10l-9 5-9-5V7Z"/><path d="m3 7 9 5 9-5M12 12v10M8 4l9 5"/></svg></span>
+        <h3>Logistics and transport</h3>
+        <p>A temperature-sensitive shipment could support a check against an agreed limit without disclosing its entire sensor history.</p>
+      </article>
+      <article class="use-case-card">
+        <span class="use-case-icon-wrap"><svg class="use-case-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 18a8 8 0 1 1 16 0M12 14l4-4M8 19h8"/><circle cx="12" cy="14" r="1"/></svg></span>
+        <h3>Industrial monitoring</h3>
+        <p>An operator could demonstrate that a technical threshold was respected without exposing all measurements from its equipment.</p>
+      </article>
+      <article class="use-case-card">
+        <span class="use-case-icon-wrap"><svg class="use-case-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="8" cy="7" r="3"/><circle cx="17" cy="8" r="2.5"/><path d="M2 21v-3a6 6 0 0 1 12 0v3M14 15a5 5 0 0 1 8 4v2"/></svg></span>
+        <h3>Collaborative research</h3>
+        <p>Research teams could verify agreed properties of sensitive datasets without exchanging the raw records between them.</p>
+      </article>
     </div>
   </section>
 '''
