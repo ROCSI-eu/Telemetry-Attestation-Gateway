@@ -28,11 +28,11 @@ class StaticShowcaseTests(unittest.TestCase):
             en = (target / "en/index.html").read_text(encoding="utf-8")
             for page, concept, how, applications, research, title in (
                 (ro, "Mai puține date expuse. O condiție verificabilă.",
-                 "Poate un vehicul demonstra respectarea unei limite fără să dezvăluie viteza?",
+                 "De la măsurarea UAS la un rezultat verificabil.",
                  "Unde ar putea conta această capacitate?",
                  "Din jurnalul de cercetare TAG", SHARE["ro"]["title"]),
                 (en, "Less data exposed. A condition that can be verified.",
-                 "Can a vehicle prove it respects a speed limit without revealing its speed?",
+                 "From a UAS measurement to a verifiable result.",
                  "Where could this capability matter?",
                  "From the TAG research journal", SHARE["en"]["title"]),
             ):
@@ -547,7 +547,7 @@ class StaticShowcaseTests(unittest.TestCase):
             self.assertIn("Centru de comandă și control", html)
             self.assertIn("TELEMETRIE CU PROTECȚIA DATELOR", html)
             self.assertIn("telemetrie sintetică → normalizare → dovadă → verificare independentă → publicare opțională", html)
-            self.assertIn("TRASEU DE MISIUNE · TREI MODELE", html)
+            self.assertIn("ARHITECTURĂ ÎN CERCETARE", html)
             self.assertIn("Fără comenzi MAVLink, controlul navigației", html)
             # The banner is localized for visitors; immutable protocol labels
             # remain exact in the exported evidence contracts.

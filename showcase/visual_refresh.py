@@ -821,7 +821,9 @@ TECH_AUTO_SVG = r'''<svg id="tech-animation-svg" viewBox="0 0 900 240" focusable
           <text x="760" y="199">03 / OFFLINE</text>
         </g>
       </svg>'''
-MISSION_AUTO_JS = r'''// Public architecture has no route control, live data, or JS animation.
+MISSION_AUTO_JS = r'''// Architecture has CSS-only motion and no route controls.
+ // The separate technical illustration still needs the motion preference.
+ const motionPreference=window.matchMedia("(prefers-reduced-motion: reduce)");
 '''
 
 
