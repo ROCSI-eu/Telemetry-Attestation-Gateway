@@ -190,7 +190,7 @@ class StaticShowcaseTests(unittest.TestCase):
                 self.assertIn('class="hero-vehicle"', page)
                 self.assertIn('class="editorial-steps"', page)
                 self.assertIn('aria-hidden="true"', page)
-                self.assertIn('class="research-summary"', page)
+                self.assertIn('class="research-journal"', page)
                 self.assertIn('prefers-reduced-motion:reduce', page)
                 for item in words:
                     self.assertIn(item, page)
