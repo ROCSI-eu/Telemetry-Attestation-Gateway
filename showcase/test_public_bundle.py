@@ -112,7 +112,8 @@ class StaticShowcaseTests(unittest.TestCase):
                 self.assertEqual(block.count('viewBox="0 0 24 24"'), 6)
                 self.assertEqual(block.count('aria-hidden="true" focusable="false"'), 6)
                 self.assertEqual(block.count("<h3>"), 6)
-                self.assertEqual(block.count("<p>"), 7)  # section intro plus six explanations
+                self.assertEqual(block.count("<p>"), 6)  # one explanation per card
+                self.assertEqual(block.count('class="editorial-chapter-intro"'), 1)
                 for heading in headings:
                     self.assertEqual(block.count("<h3>" + heading + "</h3>"), 1)
                 self.assertNotIn("<button", block)
