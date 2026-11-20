@@ -235,7 +235,7 @@ class StaticShowcaseTests(unittest.TestCase):
             target = Path(folder)
             build(target)
             for language, journal_heading, lesson, pending in (
-                ("ro", "Din jurnalul de cercetare TAG", "Ce am învățat",
+                ("ro", "Din jurnalul de cercetare TAG", "Ce-am învățat",
                  "Fluxul complet nu a fost încă demonstrat."),
                 ("en", "From the TAG research journal", "What we learned",
                  "The complete end-to-end path has not yet been demonstrated."),
@@ -259,6 +259,36 @@ class StaticShowcaseTests(unittest.TestCase):
                 re.search(r'<script>(.*?)</script>', (target / "ro/index.html").read_text(), flags=re.S).group(1),
                 re.search(r'<script>(.*?)</script>', (target / "en/index.html").read_text(), flags=re.S).group(1),
             )
+
+    def test_romanian_editorial_copy_is_natural_without_changing_evidence(self) -> None:
+        from localization import RO_TEXT
+        with tempfile.TemporaryDirectory() as folder:
+            target = Path(folder)
+            build(target)
+            ro = (target / "ro/index.html").read_text(encoding="utf-8")
+            en = (target / "en/index.html").read_text(encoding="utf-8")
+            self.assertEqual(ro.count("<strong>Ce-am învățat:</strong>"), 2)
+            self.assertNotIn("Ce am învățat", ro)
+            self.assertIn("Ce-am testat în laborator, ce-am învățat", ro)
+            self.assertNotIn("Ce am testat în laborator, ce am învățat", ro)
+            self.assertIn("What we tested in the lab, what we learned", en)
+            for expected in (
+                "fără să transmită întregul set de date folosit la evaluare",
+                "transport de produse sensibile la temperatură",
+                "fără să-și transmită reciproc înregistrările brute",
+                "Noir definește condiția prin compararea",
+                "Integrarea lor completă rămâne de demonstrat",
+                "Înregistrarea originală nu a fost validată de clienți și nici în condiții comerciale",
+            ):
+                self.assertIn(expected, ro)
+            self.assertEqual(
+                RO_TEXT["What have we demonstrated so far?"],
+                "Ce-am demonstrat până acum?",
+            )
+            self.assertIn("PRECOMPUTED_GENUINE_SYNTHETIC_VERIFICATION", ro)
+            self.assertIn("A0_SYNTHETIC", ro)
+            self.assertEqual(ro.count('class="research-entry"'), 2)
+            self.assertEqual(ro.count('class="research-detail"'), 3)
 
     def test_journal_rejects_unapproved_claims_and_unsafe_evidence(self) -> None:
         original = json.loads(JOURNAL.read_text(encoding="utf-8"))
