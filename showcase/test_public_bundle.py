@@ -125,7 +125,7 @@ class StaticShowcaseTests(unittest.TestCase):
     def test_cloudflare_build_revision_and_evidence_digest_track_source(self) -> None:
         from unittest.mock import patch as mocked
         from build import render_research_release
-        sha = "1a" * 20
+        sha = "0123456789abcdeffedcba987654321001234567"
         with tempfile.TemporaryDirectory() as folder:
             target = Path(folder)
             with mocked.dict(os.environ, {"CF_PAGES_COMMIT_SHA": sha}):
