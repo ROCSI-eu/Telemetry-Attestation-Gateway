@@ -54,7 +54,7 @@ VISUAL_CSS = """
     .primer .primer-links{grid-column:2;display:flex;gap:12px 26px;font-size:.81rem;letter-spacing:.03em}
     .section-overline{margin:0 0 16px}
     .section-display{font-size:clamp(2.45rem,4.5vw,5.6rem);font-weight:780;line-height:1.07;letter-spacing:-.06em;margin:0 0 32px;max-width:14ch;text-wrap:balance}
-    .mission-control{background:transparent;border:0;border-bottom:1px solid #374245;box-shadow:none;border-radius:0;padding:clamp(76px,8vw,132px) 0;margin:0}
+    .mission-control{background:transparent;border:0;border-bottom:1px solid #374245;box-shadow:none;border-radius:0;padding:clamp(48px,5.2vw,76px) 0;margin:0}
     .mission-control .section-display{max-width:none}
     .mission-top{border-top:1px solid #536063;padding-top:24px;gap:30px;margin-bottom:24px}
     .mission-top h2{font-size:1.24rem;letter-spacing:-.025em;color:#efece4}
@@ -71,7 +71,7 @@ VISUAL_CSS = """
     .mission-actions select,select{background:#151d20;border-color:#758384;border-radius:0;color:#f3f0e9}
     button{background:#dbbc88;color:#101617;border-radius:0}
     button:hover:not(:disabled){background:#efd6a7}
-    .use-cases{padding:clamp(75px,8vw,130px) 0;margin:0;border-bottom:1px solid #374245}
+    .use-cases{padding:clamp(48px,5vw,76px) 0;margin:0;border-bottom:0}
     .use-cases h2{font-size:clamp(2.2rem,4vw,4.5rem);line-height:1.08;letter-spacing:-.055em;max-width:18ch;margin-bottom:44px}
     .use-cases-grid{gap:0;border-top:1px solid #465255}
     .use-cases article{background:transparent;border:0;border-bottom:1px solid #465255;border-right:1px solid #465255;border-radius:0;padding:33px 25px 34px 0}
@@ -92,7 +92,7 @@ VISUAL_CSS = """
     .status{border-radius:0}
     .small,dt{color:#b6c3c2}
     #authentic-panel{margin-top:12px}
-    .research-limits{padding:clamp(76px,9vw,140px) 0 10px}
+    .research-limits{padding:clamp(50px,5.5vw,82px) 0 0}
     .research-limits .section-display{max-width:none}
     .scope-disclosure{background:transparent;border:1px solid #556063;border-radius:0;margin:32px 0 0;padding:25px}
     .scope-disclosure summary{font-size:1.08rem;color:#e6c58f}
@@ -104,7 +104,7 @@ VISUAL_CSS = """
     .rocsi-affiliation>a{display:inline-flex;align-items:center;min-height:42px;flex-shrink:0;border-bottom:1px solid #dfbb83;color:#e9cc9b;font-weight:750;text-decoration:none}
     .rocsi-affiliation>a:hover{color:#fff}
     @media(max-width:750px){.rocsi-affiliation{flex-direction:column;align-items:flex-start;gap:6px}.rocsi-affiliation>a{align-self:flex-start}.header-status{max-width:100%;justify-content:flex-end}}
-    footer{border-top:1px solid #3d4548;padding-top:27px;line-height:1.7;color:#aeb7b6}
+    footer{border-top:0;padding-top:0;line-height:1.7;color:#aeb7b6}
     .language-switch{border-color:#596567;border-radius:0}
     .language-switch a,.language-switch a[aria-current="page"]{border-radius:0}
     .language-switch a[aria-current="page"]{background:#d9bd8a;color:#151918}
@@ -124,14 +124,14 @@ VISUAL_CSS = """
       .primer .primer-kicker{margin-bottom:24px}
       .primer h2{font-size:clamp(2.2rem,8vw,4rem)}
       .primer p{font-size:.95rem}
-      .mission-control{padding:75px 0}
+      .mission-control{padding:52px 0}
       .mission-layout{grid-template-columns:1fr}
       .mission-readout{border:1px solid #3f5558;border-top:0}
-      .use-cases{padding:75px 0}
+      .use-cases{padding:52px 0}
       .use-cases-grid{grid-template-columns:1fr}
       .use-cases article,.use-cases article:not(:first-child){border-right:0;padding:24px 0}
       .technical-evidence{padding:75px 0}
-      .research-limits{padding:75px 0}
+      .research-limits{padding:58px 0 0}
     }
     @media(max-width:420px){.brand-detail{font-size:.58rem}.section-nav{flex-wrap:wrap;overflow-x:visible;gap:7px 16px;padding-bottom:0}.section-nav a{white-space:normal;font-size:.69rem}.hero h1{font-size:clamp(2.75rem,12.2vw,3.3rem)}.hero-actions a{width:100%;text-align:center}.mission-actions select{min-width:0;width:100%}.mission-actions label{width:100%}.mission-actions{width:100%}.mission-actions button{flex:1}.hero-art{min-height:205px}}
 
@@ -152,7 +152,6 @@ VISUAL_CSS = """
     .section-overline{display:flex;align-items:center;gap:13px;line-height:1.4}
     .section-overline:before{content:"";display:inline-block;width:20px;height:2px;background:#e3be83;flex:none}
     .section-display{letter-spacing:-.065em;max-width:18ch}
-    .mission-control{padding-top:clamp(75px,8vw,125px);padding-bottom:clamp(82px,9vw,140px)}
     .mission-control .section-display{margin-bottom:42px}
     .mission-layout{grid-template-columns:minmax(0,2.15fr) minmax(245px,.65fr)}
     .mission-viewport{background:radial-gradient(ellipse at 53% 52%,#16404a,#0a1419 73%);box-shadow:inset 0 0 90px #0810128a}
@@ -1086,12 +1085,12 @@ EDITORIAL_CSS = """
     .research-entry-copy p{color:#c4ceca;line-height:1.7;font-size:.97rem;margin:0 0 13px}
     .research-entry-copy .research-entry-insight{padding-left:16px;margin:18px 0 0;border-left:2px solid #d7b77e;color:#e3e2da}
     .research-entry-insight strong{color:#eed7ae}
-    .research-next-question{margin:35px 0 75px;padding:26px clamp(18px,3vw,32px);border:1px solid #586165;background:#142023}
+    .research-next-question{margin:30px 0 46px;padding:26px clamp(18px,3vw,32px);border:1px solid #586165;background:#142023}
     .research-next-question span{font-size:.72rem;letter-spacing:.14em;font-weight:800;color:#e2bd83}
     .research-next-question h3{font-size:clamp(1.3rem,2.4vw,2rem);margin:12px 0;letter-spacing:-.03em}
     .research-next-question p{max-width:76ch;font-size:.95rem;line-height:1.7;color:#c7cfcb;margin:0}
-    .research-details{border-top:1px solid #526165;margin-top:28px}
-    .research-detail{border-bottom:1px solid #526165;padding:0;scroll-margin-top:25px}
+    .research-details{border-top:1px solid #526165;margin-top:0}
+    .research-detail{border-top:0;border-bottom:1px solid #526165;margin:0;padding:0;scroll-margin-top:25px}
     .research-detail>summary{cursor:pointer;list-style:none;position:relative;font-size:1.16rem;font-weight:720;padding:23px 45px 23px 0;color:#f1e7d5}
     .research-detail>summary::-webkit-details-marker{display:none}
     .research-detail>summary:after{content:'+';position:absolute;right:12px;top:20px;font-size:1.4rem;color:#e5bd7b}

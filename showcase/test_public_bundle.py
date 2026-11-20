@@ -87,6 +87,39 @@ class StaticShowcaseTests(unittest.TestCase):
                 re.search(r'<script>(.*?)</script>', en, flags=re.S).group(1),
             )
 
+    def test_public_vertical_rhythm_and_single_separator_rules(self) -> None:
+        # Presentation-only: keep one divider per chapter/accordion boundary.
+        with tempfile.TemporaryDirectory() as folder:
+            target = Path(folder)
+            build(target)
+            for language in ("ro", "en"):
+                page = (target / language / "index.html").read_text(encoding="utf-8")
+                self.assertIn(
+                    ".mission-control{background:transparent;border:0;border-bottom:1px solid #374245;"
+                    "box-shadow:none;border-radius:0;padding:clamp(48px,5.2vw,76px) 0",
+                    page,
+                )
+                self.assertIn(
+                    ".use-cases{padding:clamp(48px,5vw,76px) 0;margin:0;border-bottom:0}",
+                    page,
+                )
+                # A later legacy rule must not override the compact mission padding.
+                self.assertNotIn(".mission-control{padding-top:clamp(75px,8vw,125px)", page)
+                self.assertIn(".research-limits{padding:clamp(50px,5.5vw,82px) 0 0}", page)
+                self.assertIn(
+                    ".research-detail{border-top:0;border-bottom:1px solid #526165;"
+                    "margin:0;padding:0",
+                    page,
+                )
+                self.assertIn(".research-details{border-top:1px solid #526165;margin-top:0}", page)
+                self.assertIn(
+                    "footer{border-top:0;padding-top:0;line-height:1.7",
+                    page,
+                )
+                self.assertEqual(page.count('class="research-detail"'), 3)
+                self.assertEqual(page.count('class="research-entry"'), 2)
+                self.assertIn('class="rocsi-affiliation"', page)
+
     def test_research_journal_is_bilingual_static_and_separates_open_question(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             target = Path(folder)
