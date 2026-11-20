@@ -483,6 +483,7 @@ def build(out: Path) -> tuple[str, ...]:
         # X-Robots-Tag and HTML robots=noindex remain set for search indexing.
         "robots.txt": "User-agent: *\nAllow: /\n",
         "assets/favicon.svg": (media / "favicon.svg").read_bytes(),
+        "assets/rocsi-mark.svg": (media / "rocsi-mark.svg").read_bytes(),
         "assets/favicon.ico": (media / "favicon.ico").read_bytes(),
         "assets/apple-touch-icon.png": (media / "apple-touch-icon.png").read_bytes(),
         "og/ro.png": (media / "og/ro.png").read_bytes(),
