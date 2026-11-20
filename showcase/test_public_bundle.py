@@ -266,6 +266,37 @@ class StaticShowcaseTests(unittest.TestCase):
             self.assertIn("A0_SYNTHETIC", ro)
             self.assertIn("A0_SYNTHETIC", en)
 
+    def test_rocsi_affiliation_and_contact_links_are_bilingual_and_navigation_only(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            target = Path(folder)
+            build(target)
+            for lang, brand, contact, home, heading, cta in (
+                ("ro", "O inițiativă de cercetare ROCSI",
+                 "https://rocsi.eu/ro/contact", "https://rocsi.eu/ro",
+                 "TAG este o inițiativă de cercetare ROCSI.", "Programează o conversație"),
+                ("en", "A ROCSI research initiative",
+                 "https://rocsi.eu/en/contact", "https://rocsi.eu/en",
+                 "TAG is a research initiative of ROCSI.", "Start a conversation"),
+            ):
+                page = (target / lang / "index.html").read_text(encoding="utf-8")
+                self.assertIn(brand, page)
+                self.assertIn(heading, page)
+                self.assertEqual(page.count(f'href="{contact}"'), 1)
+                self.assertEqual(page.count(f'href="{home}"'), 1)
+                self.assertIn(f'class="header-cta" href="{contact}">{cta}</a>', page)
+                self.assertIn('class="rocsi-affiliation"', page)
+                self.assertIn('class="language-switch"', page)
+                self.assertNotIn("<iframe", page)
+                self.assertNotIn("cal.com", page)
+                self.assertEqual(
+                    set(re.findall(r'fetch\("([^"]+)"', page)),
+                    {"/evidence-results.json", "/authentic-evidence.json"},
+                )
+            self.assertEqual(
+                re.search(r'<script>(.*?)</script>', (target / "ro/index.html").read_text(), flags=re.S).group(1),
+                re.search(r'<script>(.*?)</script>', (target / "en/index.html").read_text(), flags=re.S).group(1),
+            )
+
     def test_unapproved_external_links_fail_closed(self) -> None:
         import visual_refresh
         source = CONSOLE.read_text(encoding="utf-8")
