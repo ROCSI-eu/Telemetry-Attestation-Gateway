@@ -19,10 +19,10 @@ jobs:
         run: python3 scripts/check_experiments.py
       - name: Verify public static showcase
         run: python3 -m unittest discover -s showcase -p 'test_*.py' -v
-      - name: Build and verify fourteen static assets
+      - name: Build and verify fifteen static assets
         run: |
           python3 showcase/build.py --out-dir "$RUNNER_TEMP/tag-showcase"
-          test "$(find "$RUNNER_TEMP/tag-showcase" -type f | wc -l)" -eq 14
+          test "$(find "$RUNNER_TEMP/tag-showcase" -type f | wc -l)" -eq 15
           test -f "$RUNNER_TEMP/tag-showcase/ro/index.html"
           test ! -e "$RUNNER_TEMP/tag-showcase/index.html"
           grep -Fxq "/ /ro/ 301" "$RUNNER_TEMP/tag-showcase/_redirects"
@@ -31,3 +31,4 @@ jobs:
           test -f "$RUNNER_TEMP/tag-showcase/_redirects"
           test -f "$RUNNER_TEMP/tag-showcase/og/ro.png"
           test -f "$RUNNER_TEMP/tag-showcase/og/en.png"
+          test -f "$RUNNER_TEMP/tag-showcase/assets/rocsi-mark.svg"
