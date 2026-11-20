@@ -510,7 +510,7 @@ def build(out: Path) -> tuple[str, ...]:
         authentic, source_commit), "en")
     html_ro = social_metadata(render_research_release(
         render_research_journal(romanian_html(html), journal, "ro"),
-        scenarios, authentic, source_commit), "ro")
+        "ro", scenarios, authentic, source_commit), "ro")
     if security_headers(html_ro) != security_headers(html_en):
         raise ValueError("localized assets have mismatching CSP inline hashes")
     media = ROOT / "showcase/assets"
