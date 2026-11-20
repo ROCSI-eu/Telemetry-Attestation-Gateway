@@ -398,7 +398,7 @@ def load_research_journal(path: Path = JOURNAL) -> dict:
         seen.add(item["id"])
         ref = item["evidence_path"]
         if type(ref) is not str or not re.fullmatch(
-            r"experiments/[a-z0-9-]+/(?:[a-z0-9-]+/)*[a-z0-9_.-]+\.(?:md|py)",
+            r"experiments/[a-z0-9-]+/(?:[a-z0-9-]+/)*[A-Za-z0-9_.-]+\.(?:md|py)",
             ref,
         ) or any(part in (".", "..") for part in PurePosixPath(ref).parts):
             raise ValueError("invalid journal evidence reference")
