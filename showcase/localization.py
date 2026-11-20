@@ -338,7 +338,7 @@ RO_TEXT = {
     "Limitations and assumptions": "Limite și ipoteze",
     # TAG-CONCEPT-CLARITY-01: visitor-facing, hypothetical, no real measurement.
     "VEHICLE SPEED · HYPOTHETICAL EXAMPLE": "VITEZA UNUI VEHICUL · EXEMPLU IPOTETIC",
-    "THE IDEA, AT A GLANCE": "IDEA, DINTR-O PRIVIRE",
+    "THE IDEA, AT A GLANCE": "IDEEA, DINTR-O PRIVIRE",
     "01 / PRIVATE VALUE": "01 / VALOARE PRIVATĂ",
     "Speed: hidden": "Viteză: ascunsă",
     "The exact reading stays private.": "Valoarea exactă rămâne privată.",
