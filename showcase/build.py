@@ -419,7 +419,7 @@ def render_research_journal(html: str, journal: dict, language: str) -> str:
         raise ValueError("journal insertion anchor or locale changed")
     en = language == "en"
     note = "LAB NOTE" if en else "NOTĂ DE LABORATOR"
-    lesson = "What we learned" if en else "Ce am învățat"
+    lesson = "What we learned" if en else "Ce-am învățat"
     items = []
     for i, item in enumerate(journal["entries"], 1):
         copy = item[language]

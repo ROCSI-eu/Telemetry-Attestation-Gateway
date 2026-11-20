@@ -140,7 +140,7 @@ RO_TEXT = {
     "Relying-party decision": "Decizia beneficiarului",
     "Browser cryptographic verification": "Verificare criptografică în browser",
     "Proof validity is not telemetry truth. One synthetic observation does not establish interval coverage, flight/safety, contractual, payment or regulatory compliance. The source record has no customer or commercial validation.":
-        "Validitatea dovezii nu garantează corectitudinea telemetriei. O observație sintetică nu demonstrează acoperirea unui interval sau a unui zbor, siguranța ori conformitatea contractuală, de plată sau reglementară. Înregistrarea sursă nu a fost validată de clienți sau comercial.",
+        "Validitatea dovezii nu garantează corectitudinea telemetriei. O observație sintetică nu demonstrează acoperirea unui interval sau a unui zbor, siguranța ori respectarea cerințelor contractuale, de plată sau de reglementare. Înregistrarea originală nu a fost validată de clienți și nici în condiții comerciale.",
     "Public static technology showcase. Experimental synthetic-only, precomputed results. No visitor execution, vehicle connection, telemetry upload, analytics, tracking, external fonts or proof jobs. The browser does not independently verify proofs.":
         "Demonstrație tehnologică publică, statică. Rezultate experimentale, exclusiv sintetice și precalculate. Fără execuții inițiate de vizitatori, conectare la vehicule, încărcare de telemetrie, analiză de trafic, urmărire, fonturi externe sau sarcini de generare a dovezilor. Browserul nu verifică independent dovezile.",
     # Public-only TAG visual narrative; immutable typed evidence remains untranslated.
@@ -267,7 +267,7 @@ RO_TEXT = {
     "Selective verification may help when a result needs to be demonstrated but sharing the entire dataset is undesirable.": "Verificarea selectivă ar putea fi utilă când trebuie demonstrat un rezultat, dar divulgarea integrală a datelor este nedorită.",
     "Audit and verification": "Audit și verificare",
     "An organization could demonstrate that an agreed condition was met without handing over its complete underlying dataset.":
-        "O organizație ar putea demonstra respectarea unei condiții convenite fără să predea întregul set de date care a stat la baza evaluării.",
+        "O organizație ar putea demonstra că a respectat o condiție convenită fără să transmită întregul set de date folosit la evaluare.",
     "Autonomous systems": "Sisteme autonome",
     "A UAS or autonomous vehicle could report that a defined operational threshold was met without sharing its full telemetry record.":
         "Un UAS sau un vehicul autonom ar putea confirma respectarea unui prag operațional definit fără să transmită întreaga telemetrie.",
@@ -276,18 +276,18 @@ RO_TEXT = {
         "Două organizații ar putea transmite rezultatul verificabil al unui control convenit, păstrând datele private la sursă.",
     "Logistics and transport": "Logistică și transport",
     "A temperature-sensitive shipment could support a check against an agreed limit without disclosing its entire sensor history.":
-        "Un transport sensibil la temperatură ar putea susține verificarea unei limite convenite fără divulgarea întregului istoric al senzorilor.",
+        "Pentru un transport de produse sensibile la temperatură, s-ar putea verifica respectarea unei limite convenite fără divulgarea întregului istoric al senzorilor.",
     "Industrial monitoring": "Monitorizare industrială",
     "An operator could demonstrate that a technical threshold was respected without exposing all measurements from its equipment.":
         "Un operator ar putea demonstra respectarea unui prag tehnic fără să expună toate măsurătorile echipamentelor.",
     "Collaborative research": "Cercetare colaborativă",
     "Research teams could verify agreed properties of sensitive datasets without exchanging the raw records between them.":
-        "Echipele de cercetare ar putea verifica proprietăți convenite ale unor seturi de date sensibile fără să schimbe între ele înregistrările brute.",
+        "Echipele de cercetare ar putea verifica proprietăți convenite ale unor seturi de date sensibile fără să-și transmită reciproc înregistrările brute.",
     "These are possible applications, not validated operational deployments.": "Acestea sunt aplicații posibile, nu implementări operaționale validate.",
     "04 / THE RESEARCH": "04 / CERCETAREA",
-    "What have we demonstrated so far?": "Ce am demonstrat până acum?",
+    "What have we demonstrated so far?": "Ce-am demonstrat până acum?",
     "From the TAG research journal": "Din jurnalul de cercetare TAG",
-    "What we tested in the lab, what we learned and what still needs to be demonstrated.": "Ce am testat în laborator, ce am învățat și ce mai trebuie demonstrat.",
+    "What we tested in the lab, what we learned and what still needs to be demonstrated.": "Ce-am testat în laborator, ce-am învățat și ce mai trebuie demonstrat.",
     "TAG is experimental research. The independent results below are useful starting points, not a complete demonstration in a real-world system.": "TAG este cercetare experimentală. Rezultatele independente de mai jos sunt puncte de plecare, nu o demonstrație completă într-un sistem real.",
     "01 / CRYPTOGRAPHY": "01 / CRIPTOGRAFIE",
     "02 / SIMULATION": "02 / SIMULARE",
@@ -305,11 +305,11 @@ RO_TEXT = {
     "How the proof works": "Cum funcționează dovada",
     "The rule, the proof and independent verification": "Condiția, dovada și verificarea independentă",
     "Define the condition": "Definim condiția",
-    "Noir describes a comparison between a private speed value and a public limit.": "Noir descrie comparația dintre o viteză privată și o limită publică.",
+    "Noir describes a comparison between a private speed value and a public limit.": "Noir definește condiția prin compararea unei valori private a vitezei cu o limită publică.",
     "Create the proof": "Generăm dovada",
     "Barretenberg uses the private witness to generate a proof of that condition.": "Barretenberg folosește martorul privat pentru a genera dovada condiției.",
     "Verify independently": "Verificăm independent",
-    "An offline verifier checks the proof with the expected verification key, without receiving the private speed.": "Un verificator offline examinează dovada cu cheia de verificare așteptată, fără să primească viteza privată.",
+    "An offline verifier checks the proof with the expected verification key, without receiving the private speed.": "Un verificator offline folosește cheia de verificare așteptată pentru a valida dovada, fără să primească valoarea privată a vitezei.",
     "Tool versions, full method and source documentation": "Versiuni, metodă completă și documentație",
     "Recorded laboratory evidence": "Rezultate înregistrate în laborator",
     "Separate offline verification from simulated orchestration": "Verificarea offline este distinctă de simularea orchestrării",
@@ -318,7 +318,7 @@ RO_TEXT = {
     "DETERMINISTIC SCENARIOS": "SCENARII DETERMINISTE",
     "recorded cases": "cazuri înregistrate",
     "These cases exercise orchestration, input changes and publication states. They do not constitute independently verified cryptographic proofs.": "Aceste cazuri testează orchestrarea, modificarea intrărilor și stările de publicare. Ele nu reprezintă dovezi criptografice verificate independent.",
-    "The current SITL observations and the offline ZKP result are distinct findings. The complete integration is still an open research question.": "Observațiile SITL și rezultatul ZKP offline sunt constatări separate. Integrarea completă rămâne o întrebare de cercetare.",
+    "The current SITL observations and the offline ZKP result are distinct findings. The complete integration is still an open research question.": "Observațiile SITL și rezultatul ZKP offline sunt constatări separate. Integrarea lor completă rămâne de demonstrat.",
     "Explore recorded scenarios and the full offline result": "Consultă scenariile și rezultatul offline complet",
     "The scenario controls replay static fixtures; their progress and publication indicators are not live operations.": "Controalele redau date statice; indicatorii de progres și publicare nu reprezintă operațiuni live.",
     "Limits and next validation steps": "Limite și validări necesare",
