@@ -214,13 +214,25 @@ class StaticShowcaseTests(unittest.TestCase):
             ro = (target / "ro/index.html").read_text(encoding="utf-8")
             en = (target / "en/index.html").read_text(encoding="utf-8")
             for page, words in (
-                (ro, ("TAG / CERCETAREA TELEMETRIEI", "DATE PRIVATE · CONDIȚII VERIFICABILE",
+                (ro, ("TRASEU SINTETIC",
+                      "Reperele A–B–C ilustrează un traseu, nu o dovadă criptografică.",
                       "Definirea condiției", "Verificare independentă")),
-                (en, ("TAG / TELEMETRY RESEARCH", "PRIVATE DATA · VERIFIABLE CONDITIONS",
+                (en, ("SYNTHETIC ROUTE",
+                      "The A–B–C markers illustrate a route, not a cryptographic proof.",
                       "Define the rule", "Verify independently")),
             ):
                 self.assertIn('class="hero-scene"', page)
                 self.assertIn('class="hero-vehicle"', page)
+                self.assertIn('<svg class="hero-scene" viewBox="0 0 760 700" preserveAspectRatio="xMidYMid meet" focusable="false" aria-hidden="true">', page)
+                self.assertIn('class="hero-visual"', page)
+                self.assertIn('</div>\n      <p class="hero-art-caption">', page)
+                self.assertIn('.hero-art-caption{flex:none;margin:0;padding:16px 20px 17px;', page)
+                self.assertNotIn('class="hero-art-index"', page)
+                self.assertNotIn('OBS / 02', page)
+                self.assertNotIn('ROUTE / SYN', page)
+                self.assertNotIn('TRASEU / SINT', page)
+                self.assertNotIn('PRIVATE DATA · VERIFIABLE CONDITIONS', page)
+                self.assertNotIn('DATE PRIVATE · CONDIȚII VERIFICABILE', page)
                 self.assertIn('class="editorial-steps"', page)
                 self.assertIn('aria-hidden="true"', page)
                 self.assertIn('class="research-journal"', page)
@@ -261,12 +273,9 @@ class StaticShowcaseTests(unittest.TestCase):
                 self.assertIn(".hero-vehicle,.hero-floor-shadow,.hero-sweep,.hero-route-flow,.hero-rotor-disc,.hero-beacon-pulse{animation:none!important;will-change:auto}", page)
                 self.assertIn("A0_SYNTHETIC", page)
                 self.assertIn("SYNTHETIC_ONLY", page)
-            # Romanian localization translates the route label and HTML-normalizes
-            # SVG element tag case; the geometric animation selectors stay aligned.
-            self.assertEqual(
-                scenes[0].casefold().replace("traseu / sint", "route / syn"),
-                scenes[1].casefold(),
-            )
+            # The illustration SVG now has no locale-specific callouts. Its
+            # geometric animation remains identical in both languages.
+            self.assertEqual(scenes[0].casefold(), scenes[1].casefold())
 
     def test_proof_tooling_is_bilingual_static_and_in_evidence_section(self) -> None:
         with tempfile.TemporaryDirectory() as folder:

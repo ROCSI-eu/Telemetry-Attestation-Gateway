@@ -31,7 +31,7 @@ VISUAL_CSS = """
     .header-status .pill{font-size:.62rem;letter-spacing:.07em;border-color:#555c5d;color:#c7cdcc;background:transparent}
     .hero{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(230px,.65fr);gap:5vw;align-items:stretch;min-height:clamp(520px,68vh,800px);padding:clamp(68px,9vw,155px) 0 clamp(58px,7vw,115px);border-bottom:1px solid #3d4548}
     .hero-content{display:flex;flex-direction:column;align-items:start;justify-content:center;min-width:0}
-    .hero-overline,.section-overline,.hero-art-label,.hero-art-caption{font-size:.69rem;letter-spacing:.2em;text-transform:uppercase;font-weight:800;color:#e3be83}
+    .hero-overline,.section-overline,.hero-art-label{font-size:.69rem;letter-spacing:.2em;text-transform:uppercase;font-weight:800;color:#e3be83}
     .hero h1{font-size:clamp(3.3rem,7.2vw,8.7rem);max-width:11ch;line-height:.99;letter-spacing:-.072em;font-weight:820;margin:22px 0 30px;text-wrap:balance}
     .hero .sub{font-size:clamp(.95rem,1.12vw,1.15rem);max-width:69ch;line-height:1.7;color:#c6ccca}
     .hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:35px}
@@ -43,8 +43,10 @@ VISUAL_CSS = """
     .hero-art:after{width:47%;border-color:#d9b77f;opacity:.8}
     .hero-art .hero-axis{position:absolute;left:12%;right:12%;top:50%;border-top:1px solid #a8b7ae;transform:rotate(-28deg)}
     .hero-art .hero-axis:after{content:"";position:absolute;right:0;top:-5px;width:9px;height:9px;background:#e5c18a;border-radius:50%}
-    .hero-art-label,.hero-art-caption{position:absolute;z-index:1;left:20px;color:#d4d7cf}
-    .hero-art-label{top:20px}.hero-art-caption{bottom:20px;color:#e3be83}
+    .hero-visual{display:flex;flex-direction:column;min-width:0}
+    .hero-art{flex:1}
+    .hero-art-label{position:absolute;z-index:1;left:20px;color:#d4d7cf}
+    .hero-art-label{top:20px}
     .notice{margin:25px 0 0;padding:14px 18px;background:transparent;border:1px solid #5b5c4e;border-left:3px solid #d9b77f;border-radius:0;color:#e7ded0;letter-spacing:.05em}
     .primer,.use-cases,.mission-control,.technical-evidence,.research-limits{scroll-margin-top:26px}
     .primer{background:transparent;border:0;border-bottom:1px solid #353f41;border-radius:0;margin:0;padding:clamp(75px,10vw,150px) 0;max-width:none;display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);column-gap:5vw}
@@ -149,10 +151,8 @@ VISUAL_CSS = """
     .hero-art:before{content:"";position:absolute;inset:0;border:0;border-radius:0;width:auto;aspect-ratio:auto;top:0;left:0;transform:none;opacity:.75;background:repeating-linear-gradient(0deg,transparent 0 65px,#3b5a6040 66px),repeating-linear-gradient(90deg,transparent 0 65px,#3b5a6040 66px)}
     .hero-art:after{content:"";position:absolute;inset:0;border:0;border-radius:0;width:auto;aspect-ratio:auto;top:0;left:0;transform:none;opacity:1;background:linear-gradient(180deg,#0c1418ae,transparent 17%,transparent 81%,#0b151bdc)}
     .hero-scene{display:block;position:absolute;inset:0;width:100%;height:100%;z-index:1}
-    .hero-art-label,.hero-art-caption,.hero-art-index{position:absolute;z-index:2;font-size:.65rem;letter-spacing:.16em;font-weight:800;text-transform:uppercase}
-    .hero-art-label{top:22px;left:22px}
-    .hero-art-index{top:22px;right:22px;color:#95b8b9}
-    .hero-art-caption{bottom:21px;left:22px;color:#e8c58b}
+    .hero-art-label{position:absolute;z-index:2;top:22px;left:22px;font-size:.69rem;letter-spacing:.13em}
+    .hero-art-caption{flex:none;margin:0;padding:16px 20px 17px;border:1px solid #355056;border-top:0;background:#0a181c;color:#e3e7e4;font-size:clamp(.82rem,1.12vw,.95rem);line-height:1.5;letter-spacing:0;text-transform:none;font-weight:500}
     .section-overline{display:flex;align-items:center;gap:13px;line-height:1.4}
     .section-overline:before{content:"";display:inline-block;width:20px;height:2px;background:#e3be83;flex:none}
     .section-display{letter-spacing:-.065em;max-width:18ch}
@@ -267,8 +267,8 @@ VISUAL_CSS = """
       .hero-actions{margin-top:21px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:8px}
       .hero-actions a{display:flex;align-items:center;justify-content:center;text-align:center;font-size:.72rem;letter-spacing:.01em;padding:12px 9px;line-height:1.35;min-height:47px}
       .hero-art{min-height:315px}
-      .hero-art-label,.hero-art-caption,.hero-art-index{font-size:.54rem}
-      .hero-art-label{top:16px;left:15px}.hero-art-index{top:16px;right:15px}.hero-art-caption{bottom:15px;left:15px}
+      .hero-art-label{top:16px;left:15px;font-size:.62rem}
+      .hero-art-caption{padding:14px 15px;font-size:.83rem;line-height:1.45}
       .section-display{font-size:clamp(2.45rem,8vw,3.9rem)}
       .mission-control .section-display{margin-bottom:27px}
       .mission-layout{grid-template-columns:minmax(0,1fr)}
@@ -386,7 +386,7 @@ VISUAL_CSS = """
 """
 
 
-HERO_SCENE_SVG = r'''<svg class="hero-scene" viewBox="0 0 760 700" preserveAspectRatio="xMidYMid meet" focusable="false">
+HERO_SCENE_SVG = r'''<svg class="hero-scene" viewBox="0 0 760 700" preserveAspectRatio="xMidYMid meet" focusable="false" aria-hidden="true">
         <defs>
           <radialGradient id="hero-ambient" cx="51%" cy="47%" r="67%">
             <stop stop-color="#224b54"/><stop offset=".44" stop-color="#102a33"/><stop offset="1" stop-color="#060d13"/>
@@ -556,12 +556,7 @@ HERO_SCENE_SVG = r'''<svg class="hero-scene" viewBox="0 0 760 700" preserveAspec
             </g>
           </g>
         </g>
-        <g fill="none" stroke="#bfd6d5" stroke-width="1" opacity=".43">
-          <path d="M465 374h105v35m-335 97H143v-34"/>
-        </g>
-        <g fill="#bed9da" font-family="Arial,Helvetica,sans-serif" font-size="12" letter-spacing="2.1">
-          <text x="578" y="425">OBS / 02</text><text x="116" y="461">ROUTE / SYN</text>
-        </g>
+        <!-- The route and A/B/C landmarks are intentionally self-explanatory; no internal instrument labels. -->
       </svg>'''
 
 
@@ -1132,11 +1127,12 @@ def redesign_public_html(html: str) -> str:
       <p class="sub">What if systems could demonstrate a condition without revealing the data behind it? TAG investigates this direction for telemetry through cryptographic research.</p>
       <div class="hero-actions"><a href="#principle">Explore the concept</a><a href="#mission-control">See the demonstration</a></div>
     </div>
-    <div class="hero-art" aria-hidden="true">
-      <span class="hero-art-label">TAG / TELEMETRY RESEARCH</span>
-      <span class="hero-art-index">A–B–C / 01</span>
+    <div class="hero-visual">
+      <div class="hero-art">
+        <span class="hero-art-label">SYNTHETIC ROUTE</span>
 {HERO_SCENE_SVG}
-      <span class="hero-art-caption">PRIVATE DATA · VERIFIABLE CONDITIONS</span>
+      </div>
+      <p class="hero-art-caption">The A–B–C markers illustrate a route, not a cryptographic proof.</p>
     </div>
   </section>"""
     html = html.replace(original_header.group(), header, 1)

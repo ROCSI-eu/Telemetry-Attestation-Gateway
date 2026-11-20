@@ -159,9 +159,6 @@ RO_TEXT = {
     "Explore the illustration": "Explorează ilustrația",
     "Review technical evidence": "Examinează dovezile tehnice",
     "TAG / SYNTHETIC OBSERVATION": "TAG / OBSERVAȚIE SINTETICĂ",
-    "A–B–C / 01": "A–B–C / 01",
-    "OBS / 02": "OBS / 02",
-    "ROUTE / SYN": "TRASEU / SINT",
     "A0 / SYNTHETIC · OBSERVATION ONLY": "A0 / SINTETIC · DOAR OBSERVAȚIE",
     "TAG explores verification without disclosing all telemetry. This public scene is synthetic and its separate verifier result was recorded offline; the browser neither connects to vehicles nor verifies proofs.":
         "TAG explorează verificarea fără divulgarea întregii telemetrii. Scena publică este sintetică, iar rezultatul verificatorului separat a fost înregistrat offline; browserul nu se conectează la vehicule și nu verifică dovezi.",
@@ -312,8 +309,9 @@ RO_TEXT = {
     # TAG-PRESENTATION-POLISH-01: visitor-facing copy, not immutable evidence labels.
     "PRIVACY-PRESERVING TELEMETRY": "TELEMETRIE CU PROTECȚIA DATELOR",
     "RESEARCH · DATA PRIVACY": "CERCETARE · CONFIDENȚIALITATEA DATELOR",
-    "TAG / TELEMETRY RESEARCH": "TAG / CERCETAREA TELEMETRIEI",
-    "PRIVATE DATA · VERIFIABLE CONDITIONS": "DATE PRIVATE · CONDIȚII VERIFICABILE",
+    "SYNTHETIC ROUTE": "TRASEU SINTETIC",
+    "The A–B–C markers illustrate a route, not a cryptographic proof.":
+        "Reperele A–B–C ilustrează un traseu, nu o dovadă criptografică.",
     "What if systems could demonstrate a condition without revealing the data behind it? TAG investigates this direction for telemetry through cryptographic research.": "Cum ar fi dacă un sistem ar putea demonstra respectarea unei condiții fără să dezvăluie datele din spatele ei? TAG cercetează această direcție pentru telemetrie prin metode criptografice.",
     "SELECTIVE VERIFICATION": "VERIFICARE SELECTIVĂ",
     "PROOF WORKFLOW": "PROCESUL DOVEZII",
