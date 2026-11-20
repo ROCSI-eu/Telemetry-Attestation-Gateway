@@ -152,7 +152,6 @@ VISUAL_CSS = """
     .section-overline{display:flex;align-items:center;gap:13px;line-height:1.4}
     .section-overline:before{content:"";display:inline-block;width:20px;height:2px;background:#e3be83;flex:none}
     .section-display{letter-spacing:-.065em;max-width:18ch}
-    .mission-control{padding-top:clamp(75px,8vw,125px);padding-bottom:clamp(82px,9vw,140px)}
     .mission-control .section-display{margin-bottom:42px}
     .mission-layout{grid-template-columns:minmax(0,2.15fr) minmax(245px,.65fr)}
     .mission-viewport{background:radial-gradient(ellipse at 53% 52%,#16404a,#0a1419 73%);box-shadow:inset 0 0 90px #0810128a}

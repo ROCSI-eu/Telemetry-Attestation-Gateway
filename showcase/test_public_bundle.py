@@ -103,6 +103,8 @@ class StaticShowcaseTests(unittest.TestCase):
                     ".use-cases{padding:clamp(48px,5vw,76px) 0;margin:0;border-bottom:0}",
                     page,
                 )
+                # A later legacy rule must not override the compact mission padding.
+                self.assertNotIn(".mission-control{padding-top:clamp(75px,8vw,125px)", page)
                 self.assertIn(".research-limits{padding:clamp(50px,5.5vw,82px) 0 0}", page)
                 self.assertIn(
                     ".research-detail{border-top:0;border-bottom:1px solid #526165;"
