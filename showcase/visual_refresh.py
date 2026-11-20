@@ -187,10 +187,10 @@ VISUAL_CSS = """
 
 
     /* TAG-AUTO-CINEMATIC-01: synthetic education, never a live proof status. */
-    .tech-animation{margin:22px 0 28px;padding:clamp(14px,2.4vw,24px);border:1px solid #45656b;background:radial-gradient(ellipse at 49% 15%,#183743,#0b171d 78%);min-width:0;overflow:hidden;isolation:isolate}
+    .tech-animation{margin:0;padding:clamp(12px,1.6vw,18px);border:1px solid #45656b;background:radial-gradient(ellipse at 49% 15%,#183743,#0b171d 78%);min-width:0;overflow:hidden;isolation:isolate}
     .tech-scene-scroll{max-width:100%;min-width:0;overflow:hidden}
     .tech-scene-scroll:focus-visible{outline:2px solid #e3c58e;outline-offset:3px}
-    .tech-animation svg{display:block;width:100%;height:auto;overflow:visible}
+    .tech-animation svg{display:block;width:100%;height:auto;max-width:1060px;margin:0 auto;overflow:visible}
     .tech-animation-top{display:flex;align-items:center;gap:12px;justify-content:space-between}
     .tech-animation-label{font-size:.68rem;font-weight:800;letter-spacing:.12em;color:#e2c58e;text-transform:uppercase}
     .tech-animation-caption{margin:8px 0 15px;color:#b8c9ca;font-size:.82rem;line-height:1.5}
@@ -227,7 +227,7 @@ VISUAL_CSS = """
     @keyframes tech-scan{0%{transform:translateX(-250px);opacity:0}5%{opacity:.35}25%{opacity:0;transform:translateX(55px)}100%{opacity:0;transform:translateX(55px)}}
     @keyframes tech-led{0%,100%{opacity:.52}50%{opacity:1}}
     @media(max-width:750px){
-      .tech-animation{padding:13px;margin:20px 0 26px}
+      .tech-animation{padding:10px;margin:0}
       .tech-scene-scroll{overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-width:thin;scrollbar-color:#719fa4 #112930}
       .tech-scene-scroll svg{width:820px;max-width:none}
     }
@@ -598,9 +598,9 @@ TECH_TOOLING = """  <section class="proof-tooling" aria-labelledby="proof-toolin
         <circle cx="805" cy="62" r="11" class="tech-public"/>
         <path d="m800 62 4 4 7-8" fill="none" stroke="#16303a" stroke-width="2.5"/>
         <g fill="#d0d8d6" font-family="Arial,Helvetica,sans-serif" font-weight="700" text-anchor="middle" font-size="17">
-          <text x="140" y="199">01 / NOIR</text>
-          <text x="450" y="199">02 / BARRETENBERG</text>
-          <text x="760" y="199">03 / OFFLINE</text>
+          <text x="140" y="199">01 / CONDITION</text>
+          <text x="450" y="199">02 / PROOF</text>
+          <text x="760" y="199">03 / CHECK</text>
         </g>
         <rect x="0" y="0" width="1" height="1" class="tech-end-signal"/>
       </svg>
@@ -667,17 +667,8 @@ function renderScenarioInterpretation(id,e){
 TECH_ANIMATION_JS = r"""
 // TAG-TECH-AUTO-01: continuous conceptual motion; never proof execution.
 const techAnimation=$("tech-animation");
-const techStatus=$("tech-animation-status");
-const techCopy=document.documentElement.lang==="ro"?{
-  playing:"Condiție · dovadă · verificare",
-  reduced:"Condiție · dovadă · verificare"
-}:{
-  playing:"Condition · proof · verification",
-  reduced:"Condition · proof · verification"
-};
 function syncTechAnimation(){
   techAnimation.dataset.visibility=document.hidden||techAnimation.dataset.inview!=="true"?"hidden":"visible";
-  techStatus.textContent=motionPreference.matches?techCopy.reduced:techCopy.playing;
 }
 const techObserver=new IntersectionObserver(entries=>{
   techAnimation.dataset.inview=String(entries[0].isIntersecting);
@@ -685,7 +676,6 @@ const techObserver=new IntersectionObserver(entries=>{
 },{threshold:.12});
 techObserver.observe(techAnimation);
 document.addEventListener("visibilitychange",syncTechAnimation);
-motionPreference.addEventListener("change",syncTechAnimation);
 techAnimation.dataset.started="true";
 techAnimation.dataset.inview="true";
 syncTechAnimation();
@@ -816,9 +806,9 @@ TECH_AUTO_SVG = r'''<svg id="tech-animation-svg" viewBox="0 0 900 240" focusable
         <circle cx="591" cy="118" r="8" class="tech-transfer tech-transfer-two"/>
         <rect class="tech-scan" x="16" y="32" width="160" height="169" rx="3"/>
         <g fill="#d4e0dc" font-family="Arial,Helvetica,sans-serif" font-weight="700" text-anchor="middle" font-size="15">
-          <text x="140" y="199">01 / NOIR</text>
-          <text x="450" y="199">02 / BARRETENBERG</text>
-          <text x="760" y="199">03 / OFFLINE</text>
+          <text x="140" y="199">01 / CONDITION</text>
+          <text x="450" y="199">02 / PROOF</text>
+          <text x="760" y="199">03 / CHECK</text>
         </g>
       </svg>'''
 MISSION_AUTO_JS = r'''// Architecture has CSS-only motion and no route controls.
@@ -1111,16 +1101,10 @@ EDITORIAL_CSS = """
     /* Editorial regrouping only: original visual system and motion remain intact. */
     .editorial-chapter-intro{max-width:74ch;color:#ccd3d0;line-height:1.74;margin:0 0 32px;font-size:1rem}
     .editorial-caveat{max-width:90ch;color:#c0c7c3;font-size:.86rem;line-height:1.75;margin:22px 0}
-    .editorial-process{padding:66px 0 28px;border-top:1px solid #425054;margin-top:56px}
-    .editorial-process h3,.research-secondary-title{font-size:clamp(1.8rem,3vw,3.1rem);line-height:1.15;letter-spacing:-.05em;margin:12px 0 30px}
-    .editorial-steps{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;padding:0;margin:0;border-top:1px solid #536063}
-    .editorial-steps li{padding:26px 22px 22px 0;border-right:1px solid #465255;min-width:0}
-    .editorial-steps li:not(:first-child){padding-left:22px}
-    .editorial-steps li:last-child{border-right:0}
-    .editorial-steps span{display:block;color:#dfbd86;font-size:.69rem;font-weight:800;letter-spacing:.15em;margin-bottom:12px}
-    .editorial-steps strong{display:block;font-size:1.2rem;color:#eee9dd;margin-bottom:12px}
-    .editorial-steps p{font-size:.9rem;color:#c0c9c6;line-height:1.75}
-    .editorial-proof-animation{margin:30px 0 0}
+    .editorial-process{padding:37px 0 0;border-top:1px solid #425054;margin-top:40px}
+    .editorial-process h3,.research-secondary-title{font-size:clamp(1.8rem,3vw,3.1rem);line-height:1.15;letter-spacing:-.05em;margin:12px 0 20px}
+    .editorial-proof-intro{color:#c0c9c6;font-size:.98rem;line-height:1.7;max-width:73ch;margin:0}
+    .editorial-proof-animation{margin:22px 0 0}
     .editorial-proof-animation .tech-animation{margin:0}
     .research-journal{list-style:none;padding:0;margin:24px 0 0;border-top:1px solid #536063}
     .research-entry{display:grid;grid-template-columns:minmax(145px,.31fr) minmax(0,1fr);gap:clamp(18px,4vw,64px);border-bottom:1px solid #445155;padding:30px 0 34px;min-width:0}
@@ -1146,7 +1130,7 @@ EDITORIAL_CSS = """
     .research-detail-body{padding:12px 0 35px;min-width:0}
     .research-detail .proof-tooling{margin:0}
     .research-detail .scope-disclosure{margin:0}
-    @media(max-width:750px){.editorial-steps{grid-template-columns:1fr}.editorial-steps li,.editorial-steps li:not(:first-child){padding:22px 0;border-right:0;border-bottom:1px solid #465255}.editorial-process{padding-top:45px}.research-entry{grid-template-columns:1fr;gap:11px;padding:25px 0}.research-entry-meta{flex-direction:row;flex-wrap:wrap;align-items:baseline;gap:8px 15px}.research-next-question{margin:27px 0 55px}}
+    @media(max-width:750px){.editorial-process{padding-top:27px}.research-entry{grid-template-columns:1fr;gap:11px;padding:25px 0}.research-entry-meta{flex-direction:row;flex-wrap:wrap;align-items:baseline;gap:8px 15px}.research-next-question{margin:27px 0 55px}}
 """
 
 def redesign_public_html(html: str) -> str:
@@ -1317,13 +1301,9 @@ def redesign_public_html(html: str) -> str:
             raise ValueError("mission route label drift: "+old)
         mission = mission.replace(old, new, 1)
     proof_explainer = '''    <div class="editorial-process" aria-labelledby="editorial-process-title">
-      <p class="section-overline">THE IDEA IN THREE STEPS</p>
-      <h3 id="editorial-process-title">How is a proof constructed?</h3>
-      <ol class="editorial-steps">
-        <li><span>01 / CONDITION</span><strong>Define the rule</strong><p>Compare a private speed value with a public limit.</p></li>
-        <li><span>02 / PROOF</span><strong>Generate the proof</strong><p>Use specialized cryptographic tools to prove the condition without disclosing the private value.</p></li>
-        <li><span>03 / CHECK</span><strong>Verify independently</strong><p>A verifier checks the proof using public inputs, without receiving the private speed.</p></li>
-      </ol>
+      <p class="section-overline">THE PROOF IN THREE STEPS</p>
+      <h3 id="editorial-process-title">From private data to a verifiable result</h3>
+      <p class="editorial-proof-intro">TAG studies how a defined condition can be checked without disclosing the underlying private value.</p>
     </div>
 '''
     last = mission.rfind('  </section>')
@@ -1439,6 +1419,15 @@ def redesign_public_html(html: str) -> str:
     if proof_end <= proof_start or previous.count('id="mission-pattern"') != 1:
         raise ValueError("public mission source unexpectedly changed")
     proof_explanation = previous[proof_start:proof_end]
+    # One public explanation: remove the duplicate heading, caption and status
+    # from the already-processed figure. Retain its animated three-stage SVG.
+    for obsolete in (
+        r'\s*<div class="tech-animation-top">.*?</div>\s*<p class="tech-animation-caption">.*?</p>',
+        r'\s*<figcaption class="tech-animation-status".*?</figcaption>',
+    ):
+        proof_explanation, removed = re.subn(obsolete, '', proof_explanation, count=1, flags=re.S)
+        if removed != 1:
+            raise ValueError("public proof figure duplicate copy changed")
     html = (html[:mission_start] + ARCHITECTURE_PUBLIC_HTML + proof_explanation
             + '  </section>\n' + html[mission_end:])
     html = html.replace("</script>", TECH_ANIMATION_JS + SCENARIO_INTERPRETATION_JS + CONCEPT_VISIBILITY_JS + "\n</script>", 1)

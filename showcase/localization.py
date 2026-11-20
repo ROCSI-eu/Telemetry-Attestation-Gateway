@@ -211,9 +211,6 @@ RO_TEXT = {
     "Combined SITL → 600 cm/s predicate → ZK: NO-GO / not demonstrated end to end. The speed predicate produced different outcomes across isolated SITL sessions; no SITL-derived ZK proof was generated or verified.":
         "Flux combinat SITL → predicat 600 cm/s → ZK: NO-GO / nedemonstrat integral. Predicatul de viteză a dat rezultate diferite între sesiuni SITL izolate; nicio dovadă ZK derivată din SITL nu a fost generată sau verificată.",
     # TAG-TECH-ANIMATION-01: static labels; the shared script translates controls.
-    "01 / NOIR": "01 / NOIR",
-    "02 / BARRETENBERG": "02 / BARRETENBERG",
-    "03 / OFFLINE": "03 / OFFLINE",
     "CONCEPTUAL ANIMATION / NOT A PROOF RUN": "ANIMAȚIE CONCEPTUALĂ / FĂRĂ GENERAREA DOVEZII",
     "Replay explanation": "Reia explicația",
     "Pause illustration": "Oprește animația",
@@ -252,8 +249,10 @@ RO_TEXT = {
     "02 / HOW IT WORKS": "02 / CUM FUNCȚIONEAZĂ",
     "From a private observation to a verifiable proof.": "De la o observație privată la o dovadă verificabilă.",
     "Explore a synthetic mission and see how a precise rule could be checked without exposing the private observation.": "Explorează o misiune sintetică și vezi cum ar putea fi verificată o regulă precisă fără expunerea observației private.",
-    "THE IDEA IN THREE STEPS": "IDEA ÎN TREI PAȘI",
-    "How is a proof constructed?": "Cum este construită o dovadă?",
+    "THE PROOF IN THREE STEPS": "DOVADA ÎN TREI ETAPE",
+    "From private data to a verifiable result": "De la informație privată la rezultat verificabil",
+    "TAG studies how a defined condition can be checked without disclosing the underlying private value.":
+        "TAG cercetează cum poate fi verificată o condiție fără divulgarea valorii private folosite la evaluare.",
     "01 / CONDITION": "01 / CONDIȚIE",
     "02 / PROOF": "02 / DOVADĂ",
     "03 / CHECK": "03 / VERIFICARE",
