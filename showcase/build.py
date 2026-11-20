@@ -25,6 +25,8 @@ SCENARIOS = ROOT / "experiments/integrated-cli-v0/evidence-results.json"
 PUBLIC_REFERENCE_URLS = frozenset({
     "https://www.noir-lang.org/docs/",
     "https://barretenberg.aztec.network/docs/",
+    "https://rocsi.eu/en",
+    "https://rocsi.eu/en/contact",
     "https://github.com/ROCSI-eu/Telemetry-Attestation-Gateway/tree/main/experiments/bounded-speed-proof-v0",
 })
 VERIFIER = ROOT / "experiments/web-console-v0/authentic-evidence.json"
@@ -304,7 +306,7 @@ def public_html(source: str) -> str:
         "WebSocket(", "EventSource(", "localStorage", "sessionStorage",
         "navigator.sendBeacon", "setInterval(", "<form",
     )
-    # Explicit documentation links are navigation only, never fetch targets.
+    # Explicit reference and parent-site links are navigation only, never fetch targets.
     # Strip only exact allowlisted href values for the existing fail-closed
     # external URL guard; any other URL (including in scripts) remains rejected.
     external_urls = re.findall(r'https?://[^\s"<>]+', html)

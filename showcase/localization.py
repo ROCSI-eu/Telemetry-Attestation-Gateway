@@ -328,6 +328,12 @@ RO_TEXT = {
     "03": "03",
     "TAG brings together research on privacy-preserving proofs and controlled observations from a vehicle simulator.": "TAG reunește cercetarea dovezilor care protejează datele și observațiile controlate dintr-un simulator de vehicule.",
     "TAG · Telemetry Attestation Gateway. Exploring verifiable conditions, selective disclosure and privacy-preserving telemetry.": "TAG · Telemetry Attestation Gateway. Cercetare despre condiții verificabile, divulgare selectivă și protecția datelor din telemetrie.",
+    # Public navigation-only links to the parent ROCSI initiative and its booking page.
+    "A ROCSI research initiative": "O inițiativă de cercetare ROCSI",
+    "Start a conversation": "Programează o conversație",
+    "TAG is a research initiative of ROCSI.": "TAG este o inițiativă de cercetare ROCSI.",
+    "Discover more of ROCSI's open research and explore collaboration opportunities.": "Descoperă cercetările deschise ROCSI și oportunitățile de colaborare.",
+    "Explore ROCSI": "Descoperă ROCSI",
     # TAG-SPEED-EXPLAIN-01: visitor-first speed example; exact evidence codes unchanged.
     "Can a vehicle prove it respects a speed limit without revealing its speed?": "Poate un vehicul demonstra respectarea unei limite fără să dezvăluie viteza?",
     "TAG researches how a cryptographic proof could confirm that a private speed value meets a public limit, while keeping the exact value confidential.": "TAG cercetează cum o dovadă criptografică ar putea confirma că o valoare privată a vitezei respectă o limită publică, fără divulgarea valorii exacte.",
@@ -401,6 +407,10 @@ class _Translator(HTMLParser):
         value = self.get_starttag_text()
         if tag == "html":
             value = value.replace('lang="en"', 'lang="ro"')
+        if tag == "a":
+            # Exactly the two approved, static parent-site navigation destinations.
+            value = value.replace('href="https://rocsi.eu/en/contact"', 'href="https://rocsi.eu/ro/contact"')
+            value = value.replace('href="https://rocsi.eu/en"', 'href="https://rocsi.eu/ro"')
         for en, ro in RO_ARIA.items():
             value = value.replace(f'aria-label="{en}"', f'aria-label="{ro}"')
         self.output.append(value)

@@ -24,6 +24,9 @@ VISUAL_CSS = """
     .section-nav a{text-decoration:none;font-size:.73rem;letter-spacing:.06em;color:#cbd0cf}
     .section-nav a:hover{color:#fff}
     .header-status{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .header-cta{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:9px 13px;border:1px solid #dfbb83;color:#f6e5c9;text-decoration:none;font-size:.74rem;font-weight:750;letter-spacing:.02em;line-height:1.3;text-align:center}
+    .header-cta:hover{background:#dfbb83;color:#121717}
+    .header-cta:focus-visible{outline:2px solid #f1d4a2;outline-offset:3px}
     .header-status .pill{font-size:.62rem;letter-spacing:.07em;border-color:#555c5d;color:#c7cdcc;background:transparent}
     .hero{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(230px,.65fr);gap:5vw;align-items:stretch;min-height:clamp(520px,68vh,800px);padding:clamp(68px,9vw,155px) 0 clamp(58px,7vw,115px);border-bottom:1px solid #3d4548}
     .hero-content{display:flex;flex-direction:column;align-items:start;justify-content:center;min-width:0}
@@ -95,6 +98,12 @@ VISUAL_CSS = """
     .scope-disclosure summary{font-size:1.08rem;color:#e6c58f}
     .scope article{border-radius:0;background:#141e21}
     .scope h2{color:#f2eee5}
+    .rocsi-affiliation{display:flex;align-items:center;justify-content:space-between;gap:18px 36px;padding:12px 0 25px;margin-bottom:20px;border-bottom:1px solid #3d4548}
+    .rocsi-affiliation strong{display:block;color:#f2e9d8;font-size:1.13rem;line-height:1.4}
+    .rocsi-affiliation p{margin:8px 0 0;color:#b8c3c1;font-size:.88rem;line-height:1.6;max-width:65ch}
+    .rocsi-affiliation>a{display:inline-flex;align-items:center;min-height:42px;flex-shrink:0;border-bottom:1px solid #dfbb83;color:#e9cc9b;font-weight:750;text-decoration:none}
+    .rocsi-affiliation>a:hover{color:#fff}
+    @media(max-width:750px){.rocsi-affiliation{flex-direction:column;align-items:flex-start;gap:6px}.rocsi-affiliation>a{align-self:flex-start}.header-status{max-width:100%;justify-content:flex-end}}
     footer{border-top:1px solid #3d4548;padding-top:27px;line-height:1.7;color:#aeb7b6}
     .language-switch{border-color:#596567;border-radius:0}
     .language-switch a,.language-switch a[aria-current="page"]{border-radius:0}
@@ -1092,14 +1101,14 @@ def redesign_public_html(html: str) -> str:
         raise ValueError("public introduction changed")
 
     header = f"""<header class="site-header">
-    <a class="brand" href="/" aria-label="TAG · ROCSI"><span class="brand-signal">TAG</span><span class="brand-detail">ROCSI / Telemetry Attestation Gateway</span></a>
+    <a class="brand" href="/" aria-label="TAG · ROCSI"><span class="brand-signal">TAG</span><span class="brand-detail">A ROCSI research initiative</span></a>
     <nav class="section-nav" aria-label="Page sections">
       <a href="#principle">The Concept</a>
       <a href="#mission-control">How It Works</a>
       <a href="#use-cases">Applications</a>
       <a href="#research">The Research</a>
     </nav>
-    <div class="header-status"><div class="pill" id="console-mode">PRIVACY-PRESERVING TELEMETRY</div></div>
+    <div class="header-status"><a class="header-cta" href="https://rocsi.eu/en/contact">Start a conversation</a><div class="pill" id="console-mode">PRIVACY-PRESERVING TELEMETRY</div></div>
   </header>
   <section class="hero" aria-labelledby="hero-title">
     <div class="hero-content">
@@ -1301,6 +1310,15 @@ def redesign_public_html(html: str) -> str:
     if html.count(footer_old) != 1:
         raise ValueError("public footer source changed")
     html = html.replace(footer_old, footer_new, 1)
+    footer_anchor = '<footer id="console-footer">'
+    if html.count(footer_anchor) != 1:
+        raise ValueError("public ROCSI affiliation footer anchor changed")
+    html = html.replace(footer_anchor, footer_anchor +
+        '<div class="rocsi-affiliation">'
+        '<div><strong>TAG is a research initiative of ROCSI.</strong>'
+        '<p>Discover more of ROCSI\'s open research and explore collaboration opportunities.</p></div>'
+        '<a href="https://rocsi.eu/en">Explore ROCSI</a>'
+        '</div>', 1)
     public_notice = '<div class="notice" role="note">EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION</div>\n'
     if html.count(public_notice) != 1:
         raise ValueError("public notice source changed")
