@@ -98,13 +98,14 @@ VISUAL_CSS = """
     .scope-disclosure summary{font-size:1.08rem;color:#e6c58f}
     .scope article{border-radius:0;background:#141e21}
     .scope h2{color:#f2eee5}
-    .rocsi-affiliation{display:flex;align-items:center;justify-content:space-between;gap:18px 36px;padding:12px 0 25px;margin-bottom:20px;border-bottom:1px solid #3d4548}
-    .rocsi-affiliation strong{display:block;color:#f2e9d8;font-size:1.13rem;line-height:1.4}
-    .rocsi-affiliation p{margin:8px 0 0;color:#b8c3c1;font-size:.88rem;line-height:1.6;max-width:65ch}
-    .rocsi-affiliation>a{display:inline-flex;align-items:center;min-height:42px;flex-shrink:0;border-bottom:1px solid #dfbb83;color:#e9cc9b;font-weight:750;text-decoration:none}
-    .rocsi-affiliation>a:hover{color:#fff}
-    @media(max-width:750px){.rocsi-affiliation{flex-direction:column;align-items:flex-start;gap:6px}.rocsi-affiliation>a{align-self:flex-start}.header-status{max-width:100%;justify-content:flex-end}}
-    footer{border-top:0;padding-top:0;line-height:1.7;color:#aeb7b6}
+    .rocsi-affiliation{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:20px 34px;margin:30px 0 0;padding:clamp(22px,2.8vw,36px);border:1px solid #4b6366;background:linear-gradient(120deg,#17292c,#101c1f)}
+    .rocsi-affiliation h3{color:#f2e9d8;font-size:clamp(1.2rem,1.65vw,1.5rem);line-height:1.35;letter-spacing:-.02em;margin:0}
+    .rocsi-affiliation p{margin:9px 0 0;color:#c1ccca;font-size:.94rem;line-height:1.65;max-width:66ch}
+    .rocsi-affiliation>a{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:11px 18px;border:1px solid #d7b77f;color:#efd5a7;font-size:.86rem;font-weight:750;text-decoration:none;text-align:center}
+    .rocsi-affiliation>a:hover{background:#d7b77f;color:#11191b}
+    .rocsi-affiliation>a:focus-visible{outline:2px solid #f1d4a2;outline-offset:3px}
+    @media(max-width:750px){.rocsi-affiliation{grid-template-columns:1fr;gap:18px}.rocsi-affiliation>a{justify-self:start}.header-status{max-width:100%;justify-content:flex-end}}
+    footer{border-top:1px solid #344446;margin-top:28px;padding:22px 0 8px;line-height:1.75;color:#c6cfcb;font-size:.87rem}
     .language-switch{border-color:#596567;border-radius:0}
     .language-switch a,.language-switch a[aria-current="page"]{border-radius:0}
     .language-switch a[aria-current="page"]{background:#d9bd8a;color:#151918}
@@ -1319,12 +1320,15 @@ def redesign_public_html(html: str) -> str:
     footer_anchor = '<footer id="console-footer">'
     if html.count(footer_anchor) != 1:
         raise ValueError("public ROCSI affiliation footer anchor changed")
-    html = html.replace(footer_anchor, footer_anchor +
-        '<div class="rocsi-affiliation">'
-        '<div><strong>TAG is a research initiative of ROCSI.</strong>'
+    html = html.replace(
+        footer_anchor,
+        '<aside class="rocsi-affiliation" aria-labelledby="rocsi-affiliation-title">'
+        '<div><h3 id="rocsi-affiliation-title">TAG is a research initiative of ROCSI.</h3>'
         '<p>Discover more of ROCSI\'s open research and explore collaboration opportunities.</p></div>'
         '<a href="https://rocsi.eu/en">Explore ROCSI</a>'
-        '</div>', 1)
+        '</aside>\n' + footer_anchor,
+        1,
+    )
     public_notice = '<div class="notice" role="note">EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION</div>\n'
     if html.count(public_notice) != 1:
         raise ValueError("public notice source changed")
