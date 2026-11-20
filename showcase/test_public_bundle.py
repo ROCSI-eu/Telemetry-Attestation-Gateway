@@ -28,11 +28,11 @@ class StaticShowcaseTests(unittest.TestCase):
             en = (target / "en/index.html").read_text(encoding="utf-8")
             for page, concept, how, applications, research, title in (
                 (ro, "Mai puține date expuse. O condiție verificabilă.",
-                 "Poate un vehicul demonstra respectarea unei limite fără să dezvăluie viteza?",
+                 "De la măsurarea UAS la un rezultat verificabil.",
                  "Unde ar putea conta această capacitate?",
                  "Din jurnalul de cercetare TAG", SHARE["ro"]["title"]),
                 (en, "Less data exposed. A condition that can be verified.",
-                 "Can a vehicle prove it respects a speed limit without revealing its speed?",
+                 "From a UAS measurement to a verifiable result.",
                  "Where could this capability matter?",
                  "From the TAG research journal", SHARE["en"]["title"]),
             ):
@@ -52,7 +52,7 @@ class StaticShowcaseTests(unittest.TestCase):
                 self.assertEqual(page.count('class="editorial-steps"'), 1)
                 self.assertIn('id="scope-proves"', page)
                 self.assertIn('id="scope-limits"', page)
-                self.assertIn('id="mission-pattern"', page)
+                self.assertIn('class="architecture-flow"', page)
                 self.assertIn("PRECOMPUTED_GENUINE_SYNTHETIC_VERIFICATION", page)
                 self.assertNotIn('class="notice" role="note"', page)
                 self.assertIn('id="concept-cinema" data-visibility="visible"', page)
@@ -170,42 +170,32 @@ class StaticShowcaseTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "unsafe public journal text"):
                 load_research_journal(path)
 
-    def test_speed_limit_explainer_is_plain_language_bilingual_and_distinct_from_route(self) -> None:
+    def test_architecture_replaces_route_selector_with_one_research_flow(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             target = Path(folder)
             build(target)
-            ro = (target / "ro/index.html").read_text(encoding="utf-8")
-            en = (target / "en/index.html").read_text(encoding="utf-8")
-            for page, phrases in (
-                (ro, ("EXEMPLUL LIMITEI DE VITEZĂ", "Ce ar putea confirma o dovadă?",
-                      "Valoarea exactă a vitezei", "Limita maximă admisă",
-                      "Viteza privată respectă limita publică", "O dovadă criptografică de tip ZKP",
-                      "Alege traseul", "Deplasare de la A la C · A–B–C")),
-                (en, ("THE SPEED-LIMIT EXAMPLE", "What could a proof confirm?",
-                      "The exact speed value", "The maximum permitted speed",
-                      "The private value is within the public limit", "A zero-knowledge proof",
-                      "Choose a route", "Travel from A to C · A–B–C")),
+            for lang, title, warning in (
+                ("ro", "De la măsurarea UAS la un rezultat verificabil.",
+                 "Integrarea UAS–TAG–C2 rămâne un obiectiv de cercetare."),
+                ("en", "From a UAS measurement to a verifiable result.",
+                 "The combined UAS–TAG–C2 flow remains a research objective."),
             ):
-                for phrase in phrases:
-                    self.assertIn(phrase, page)
-                sidebar = re.search(r'<aside class="mission-side".*?</aside>', page, flags=re.S)
-                self.assertIsNotNone(sidebar)
-                self.assertIn('class="mission-speed-facts"', sidebar.group())
-                self.assertEqual(sidebar.group().count('class="mission-speed-fact"'), 3)
-                self.assertNotIn('class="mission-concept-steps"', page)
-                self.assertNotIn('<li><span>01</span>Private observation</li>', page)
-                self.assertIn('id="mission-pattern"', page)
-                self.assertIn('id="mission-scene-status"', page)
-                self.assertIn('const routeDescriptions=', page)
-                for marker in ('pass:', 'hold:', 'return:'):
-                    self.assertIn(marker, page)
-                self.assertIn('data-scene="pass"', page)
-                self.assertIn('NO-GO', page)
+                page = (target / lang / "index.html").read_text(encoding="utf-8")
+                self.assertIn(title, page)
+                self.assertIn(warning, page)
+                self.assertIn('class="architecture-flow"', page)
+                self.assertEqual(page.count('class="architecture-node"'), 2)
+                self.assertEqual(page.count('class="architecture-node architecture-node-tag"'), 1)
+                self.assertEqual(page.count('class="architecture-link'), 2)
+                for obsolete in ('id="mission-pattern"', 'id="mission-scene-status"',
+                                 'class="mission-speed-example"', 'const routeDescriptions=',
+                                 'startMissionScene()', 'mission.dataset.scene='):
+                    self.assertNotIn(obsolete, page)
+                self.assertIn('id="editorial-process-title"', page)
+                self.assertIn('id="tech-animation"', page)
+                self.assertIn('id="laboratory-scenarios"', page)
                 self.assertIn('PRECOMPUTED_GENUINE_SYNTHETIC_VERIFICATION', page)
-            self.assertEqual(
-                re.search(r'<script>(.*?)</script>', ro, flags=re.S).group(1),
-                re.search(r'<script>(.*?)</script>', en, flags=re.S).group(1),
-            )
+                self.assertIn('NO-GO', page)
 
     def test_visual_final_remains_synthetic_bilingual_and_read_only(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
@@ -557,7 +547,7 @@ class StaticShowcaseTests(unittest.TestCase):
             self.assertIn("Centru de comandă și control", html)
             self.assertIn("TELEMETRIE CU PROTECȚIA DATELOR", html)
             self.assertIn("telemetrie sintetică → normalizare → dovadă → verificare independentă → publicare opțională", html)
-            self.assertIn("TRASEU DE MISIUNE · TREI MODELE", html)
+            self.assertIn("ARHITECTURĂ ÎN CERCETARE", html)
             self.assertIn("Fără comenzi MAVLink, controlul navigației", html)
             # The banner is localized for visitors; immutable protocol labels
             # remain exact in the exported evidence contracts.
@@ -638,8 +628,8 @@ class StaticShowcaseTests(unittest.TestCase):
             self.assertIn('<html lang="en">', en)
             self.assertIn('<h1 id="hero-title">Verifică o condiție. Păstrează restul privat.</h1>', ro)
             self.assertIn('<h1 id="hero-title">Verify the condition. Keep the rest private.</h1>', en)
-            self.assertIn('id="mission-pattern"', ro)
-            self.assertIn('id="mission-pattern"', en)
+            self.assertIn('class="architecture-flow"', ro)
+            self.assertIn('class="architecture-flow"', en)
             self.assertNotIn('id="mission-motion-toggle"', ro)
             self.assertNotIn('id="mission-replay"', en)
             self.assertIn('href="/ro/" hreflang="ro" lang="ro" aria-current="page"', ro)
@@ -754,33 +744,21 @@ class StaticShowcaseTests(unittest.TestCase):
     def test_motion_accessibility_and_no_backend_animation_coupling(self) -> None:
         html = public_html(CONSOLE.read_text(encoding="utf-8"))
         source = CONSOLE.read_text(encoding="utf-8")
-        # Local experiment retains manual controls; public HTML intentionally omits them.
         self.assertIn('id="mission-motion-toggle"', source)
         self.assertIn('id="mission-replay"', source)
-        self.assertNotIn('id="mission-motion-toggle"', html)
-        self.assertNotIn('id="mission-replay"', html)
-        self.assertIn('id="mission-pattern"', html)
-        self.assertIn('data-motion="playing" data-visibility="visible" data-scene="pass"', html)
-        self.assertIn('const missionObserver=new IntersectionObserver', html)
-        self.assertIn('document.addEventListener("visibilitychange",syncMissionMotion)', html)
-        self.assertIn('motionPreference.addEventListener("change",syncMissionMotion)', html)
-        self.assertIn('startMissionScene();', html)
-        self.assertIn('mission.dataset.scene=scene', html)
-        self.assertIn('mission.dataset.sceneStarted="true"', html)
-        for name in ('pass', 'hold', 'return'):
-            self.assertIn(f'data-scene="{name}"] .mission-craft', html)
-        for animation in ('mission-cinema-pass', 'mission-cinema-hold',
-                          'mission-cinema-return', 'mission-rotor-spin'):
-            self.assertIn('@keyframes '+animation, html)
-        self.assertIn('.mission-control .mission-craft{animation:none!important', html)
-        self.assertIn('class="mission-rotor-blades"', html)
-        self.assertIn('class="mission-radar-sector"', html)
-        self.assertIn('class="mission-route-energy"', html)
+        for obsolete in ('id="mission-pattern"', 'id="mission-replay"',
+                         'id="mission-motion-toggle"', 'id="mission-scene-status"',
+                         'const routeDescriptions=', 'startMissionScene();'):
+            self.assertNotIn(obsolete, html)
+        self.assertIn('class="architecture-panel"', html)
+        self.assertIn('architecture-packet', html)
+        self.assertIn('@keyframes architecture-packet-down', html)
+        self.assertIn('@media(prefers-reduced-motion:reduce){.architecture-link:after{animation:none!important', html)
+        script = re.search(r'<script>(.*?)</script>', html, flags=re.S).group(1)
+        self.assertNotIn("mission-pattern", script)
+        self.assertNotIn("mission-craft", script)
+        self.assertNotIn("setInterval(", script)
         self.assertIn('SYNTHETIC_ONLY', html)
-        motion = html.split("// Entirely predetermined illustrative geometry.", 1)[1].split("function render(e)", 1)[0]
-        for forbidden in ("fetch(", "execute(", "setInterval(", "WebSocket(", "renderOperator(",
-                          "mission-replay", "mission-motion-toggle"):
-            self.assertNotIn(forbidden, motion)
 
     def test_strict_csp_hashes_match_inline_code(self) -> None:
         with tempfile.TemporaryDirectory() as folder:

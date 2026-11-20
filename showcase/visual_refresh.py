@@ -821,42 +821,9 @@ TECH_AUTO_SVG = r'''<svg id="tech-animation-svg" viewBox="0 0 900 240" focusable
           <text x="760" y="199">03 / OFFLINE</text>
         </g>
       </svg>'''
-MISSION_AUTO_JS = r'''// Entirely predetermined illustrative geometry. PUBLIC-ONLY automatic playback.
-// No real telemetry, backend status, network, MAVLink, or evidence linkage.
-const mission=$("mission-control");
-const motionPreference=window.matchMedia("(prefers-reduced-motion: reduce)");
-const routeDescriptions=document.documentElement.lang==="ro"?{
-  pass:"A–B–C: vehiculul parcurge trei repere ale traseului.",
-  hold:"A–B: vehiculul se oprește la reperul B.",
-  return:"A–B–A: vehiculul revine la punctul de pornire."
-}:{
-  pass:"A–B–C: the vehicle travels through three route markers.",
-  hold:"A–B: the vehicle stops at marker B.",
-  return:"A–B–A: the vehicle returns to its starting point."
-};
-function syncMissionMotion(){
-  mission.dataset.visibility=document.hidden||mission.dataset.inview!=="true"?"hidden":"visible";
-  $("mission-scene-status").textContent=routeDescriptions[$("mission-pattern").value];
-}
-function startMissionScene(){
-  const scene=$("mission-pattern").value;
-  if(!["pass","hold","return"].includes(scene))return;
-  mission.dataset.sceneStarted="false";
-  mission.dataset.scene=scene;
-  void mission.offsetWidth; // Restart only the selected decorative CSS track.
-  mission.dataset.sceneStarted="true";
-  syncMissionMotion();
-}
-$("mission-pattern").addEventListener("change",startMissionScene);
-const missionObserver=new IntersectionObserver(entries=>{
-  mission.dataset.inview=String(entries[0].isIntersecting);
-  syncMissionMotion();
-},{threshold:.12});
-missionObserver.observe(mission);
-document.addEventListener("visibilitychange",syncMissionMotion);
-motionPreference.addEventListener("change",syncMissionMotion);
-mission.dataset.inview="true"; // Immediate automatic start; observer pauses offscreen.
-startMissionScene();
+MISSION_AUTO_JS = r'''// Architecture has CSS-only motion and no route controls.
+ // The separate technical illustration still needs the motion preference.
+ const motionPreference=window.matchMedia("(prefers-reduced-motion: reduce)");
 '''
 
 
@@ -1053,6 +1020,91 @@ MISSION_EXPLAIN_CSS = """
     .mission-speed-example>p.mission-speed-conclusion{color:#d7e2dd;margin:0;line-height:1.6;font-size:.87rem}
     .mission-scene-status{font-size:.8rem;line-height:1.5;color:#c4d4cf;margin-top:12px}
     @media(max-width:750px){.mission-speed-example{padding:22px}.mission-speed-facts .mission-speed-fact{padding:14px 0 12px}}
+"""
+
+
+ARCHITECTURE_PUBLIC_HTML = """  <section class="mission-control architecture-section" id="mission-control" aria-labelledby="architecture-title">
+    <p class="section-overline">02 / THE ARCHITECTURE</p>
+    <h2 class="section-display" id="architecture-title">From a UAS measurement to a verifiable result.</h2>
+    <p class="editorial-chapter-intro">A proposed architecture linking an uncrewed aircraft, a TAG cryptographic gateway and command-and-control.</p>
+    <div class="architecture-panel" aria-label="Proposed UAS to TAG to command-and-control information flow">
+      <p class="architecture-eyebrow">ARCHITECTURE UNDER RESEARCH</p>
+      <div class="architecture-flow">
+        <div class="architecture-node">
+          <svg viewBox="0 0 88 80" aria-hidden="true" focusable="false">
+            <g fill="none" stroke="#a7dfd9" stroke-width="2.6" stroke-linecap="round">
+              <path d="M23 27L38 39M65 27L50 39M23 59L38 45M65 59L50 45"/>
+              <circle cx="19" cy="23" r="10"/><circle cx="69" cy="23" r="10"/>
+              <circle cx="19" cy="63" r="10"/><circle cx="69" cy="63" r="10"/>
+              <path d="M35 35L44 29L53 35L55 46L44 53L33 46Z" fill="#183c48" stroke="#efcf94"/>
+              <circle cx="44" cy="42" r="3" fill="#e2c088"/>
+            </g>
+          </svg>
+          <strong>UAS</strong><span>Collects a private measurement</span>
+        </div>
+        <div class="architecture-link" aria-hidden="true"><span>Protected channel</span></div>
+        <div class="architecture-node architecture-node-tag">
+          <svg viewBox="0 0 88 80" aria-hidden="true" focusable="false">
+            <path d="M44 8L72 24V56L44 72L16 56V24Z" fill="#153641" stroke="#e5c58f" stroke-width="2.7"/>
+            <circle cx="44" cy="40" r="18" fill="none" stroke="#98d9d6" stroke-width="2"/>
+            <path d="M37 38V33a7 7 0 0 1 14 0v5M35 38h18v15H35Z" fill="#184857" stroke="#e6d4a8" stroke-width="2.2" stroke-linejoin="round"/>
+            <circle cx="44" cy="45" r="2.2" fill="#eed49b"/>
+          </svg>
+          <strong>TAG / ZKP</strong><span>Would prepare a verifiable proof</span>
+        </div>
+        <div class="architecture-link architecture-link-second" aria-hidden="true"><span>Verifiable result</span></div>
+        <div class="architecture-node">
+          <svg viewBox="0 0 88 80" aria-hidden="true" focusable="false">
+            <rect x="10" y="17" width="68" height="43" rx="3" fill="#123440" stroke="#a1d8d7" stroke-width="2.4"/>
+            <path d="M17 29H71M27 38l9 8 18-17" fill="none" stroke="#e4c790" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M44 61v9M28 70h32" fill="none" stroke="#a1d8d7" stroke-width="2.8" stroke-linecap="round"/>
+          </svg>
+          <strong>C2</strong><span>Would check the defined condition</span>
+        </div>
+      </div>
+    </div>
+    <p class="architecture-note">Secure communication protects the channel; a ZKP supports verification. The combined UAS–TAG–C2 flow remains a research objective.</p>
+"""
+
+
+ARCHITECTURE_CSS = """
+    /* Single concept animation: no route controls, network, crypto execution, or external assets. */
+    .architecture-section .section-display{max-width:20ch;font-size:clamp(2.1rem,4vw,4.2rem);line-height:1.08}
+    .architecture-section>.editorial-chapter-intro{max-width:74ch;margin-bottom:28px}
+    .architecture-panel{padding:clamp(18px,2.4vw,32px);border:1px solid #466168;background:radial-gradient(ellipse at 50% 35%,#183943 0,#0b1c22 62%,#081318 100%);overflow:hidden;position:relative;min-width:0}
+    .architecture-panel:before{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 61px,#80b3b50d 62px),repeating-linear-gradient(90deg,transparent 0 61px,#80b3b50d 62px)}
+    .architecture-eyebrow{position:relative;color:#e9c78e;font-size:.69rem;letter-spacing:.14em;font-weight:800;margin:0 0 30px}
+    .architecture-flow{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(50px,.38fr) minmax(0,1fr) minmax(50px,.38fr) minmax(0,1fr);gap:7px;align-items:center}
+    .architecture-node{display:flex;align-items:center;flex-direction:column;justify-content:center;text-align:center;min-width:0;min-height:215px;padding:17px 11px;border:1px solid #44636b;background:#0e252bcf}
+    .architecture-node svg{height:70px;width:79px;max-width:100%;margin-bottom:15px;flex:none;filter:drop-shadow(0 0 14px #57bdb433)}
+    .architecture-node strong{font-size:clamp(1.15rem,1.8vw,1.6rem);font-weight:800;color:#f4ecd9;line-height:1.15}
+    .architecture-node span{font-size:.83rem;line-height:1.5;color:#c5d4d0;margin-top:10px;max-width:23ch}
+    .architecture-node-tag{border-color:#be9a68;background:#203236}
+    .architecture-node-tag strong{color:#f1d19a}
+    .architecture-link{position:relative;height:2px;border-top:2px dashed #72acb1;align-self:center;min-width:0}
+    .architecture-link:before{content:"";position:absolute;right:-2px;top:-6px;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:7px solid #e4c590}
+    .architecture-link:after{content:"";position:absolute;left:0;top:-5px;width:7px;height:7px;border-radius:50%;background:#d9f6e8;box-shadow:0 0 11px #a7ede5;animation:architecture-packet 4.8s ease-in-out infinite}
+    .architecture-link-second:after{animation-delay:-2.4s}
+    .architecture-link span{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);color:#c4d9d6;font-size:.69rem;font-weight:650;line-height:1.4;text-align:center;width:120px;max-width:125%;pointer-events:none}
+    .architecture-note{margin:17px 0 0;color:#c2ccca;font-size:.86rem;line-height:1.65;max-width:92ch}
+    @keyframes architecture-packet{0%{left:0;opacity:0}12%{opacity:1}84%{opacity:1}100%{left:calc(100% - 7px);opacity:0}}
+    @media(max-width:750px){
+      .architecture-panel{padding:18px 16px 22px}
+      .architecture-eyebrow{margin-bottom:16px}
+      .architecture-flow{grid-template-columns:minmax(0,1fr);gap:0;max-width:410px;margin:0 auto}
+      .architecture-node{min-height:150px;padding:12px 17px}
+      .architecture-node svg{width:61px;height:55px;margin-bottom:8px}
+      .architecture-node strong{font-size:1.2rem}
+      .architecture-node span{margin-top:6px;font-size:.82rem}
+      .architecture-link{justify-self:center;width:2px;height:63px;min-height:63px;border-top:0;border-left:2px dashed #72acb1}
+      .architecture-link:before{right:auto;left:-5px;top:auto;bottom:-2px;border-top:7px solid #e4c590;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:0}
+      .architecture-link:after{left:-5px;top:0;animation:architecture-packet-down 4.8s ease-in-out infinite}
+      .architecture-link-second:after{animation-delay:-2.4s}
+      .architecture-link span{left:16px;bottom:auto;top:16px;transform:none;width:140px;max-width:none;text-align:left}
+      .architecture-note{font-size:.82rem}
+    }
+    @keyframes architecture-packet-down{0%{top:0;opacity:0}12%{opacity:1}84%{opacity:1}100%{top:calc(100% - 7px);opacity:0}}
+    @media(prefers-reduced-motion:reduce){.architecture-link:after{animation:none!important;opacity:.75;left:calc(50% - 3px)}}
 """
 
 EDITORIAL_CSS = """
@@ -1377,5 +1429,17 @@ def redesign_public_html(html: str) -> str:
         1,
     )
     html = public_cinematic_motion(html)
+    # The local console retains its scenarios. Public showcase presents one
+    # proposed UAS–TAG–C2 flow, preserving the separate proof explainer below.
+    mission_start = html.index('  <section class="mission-control"')
+    mission_end = html.index('  <section class="use-cases"', mission_start)
+    previous = html[mission_start:mission_end]
+    proof_start = previous.index('    <div class="editorial-process"')
+    proof_end = previous.rfind('  </section>')
+    if proof_end <= proof_start or previous.count('id="mission-pattern"') != 1:
+        raise ValueError("public mission source unexpectedly changed")
+    proof_explanation = previous[proof_start:proof_end]
+    html = (html[:mission_start] + ARCHITECTURE_PUBLIC_HTML + proof_explanation
+            + '  </section>\n' + html[mission_end:])
     html = html.replace("</script>", TECH_ANIMATION_JS + SCENARIO_INTERPRETATION_JS + CONCEPT_VISIBILITY_JS + "\n</script>", 1)
-    return html.replace("</style>", VISUAL_CSS + EDITORIAL_CSS + CONCEPT_CSS + MISSION_EXPLAIN_CSS + "  </style>", 1)
+    return html.replace("</style>", VISUAL_CSS + EDITORIAL_CSS + CONCEPT_CSS + MISSION_EXPLAIN_CSS + ARCHITECTURE_CSS + "  </style>", 1)
