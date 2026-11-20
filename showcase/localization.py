@@ -266,11 +266,23 @@ RO_TEXT = {
     "Where could this capability matter?": "Unde ar putea conta această capacitate?",
     "Selective verification may help when a result needs to be demonstrated but sharing the entire dataset is undesirable.": "Verificarea selectivă ar putea fi utilă când trebuie demonstrat un rezultat, dar divulgarea integrală a datelor este nedorită.",
     "Audit and verification": "Audit și verificare",
-    "An organization could demonstrate that a defined condition was met without sharing the entire dataset used to evaluate it.": "O organizație ar putea demonstra respectarea unei condiții fără să transmită întregul set de date utilizat pentru evaluare.",
+    "An organization could demonstrate that an agreed condition was met without handing over its complete underlying dataset.":
+        "O organizație ar putea demonstra respectarea unei condiții convenite fără să predea întregul set de date care a stat la baza evaluării.",
     "Autonomous systems": "Sisteme autonome",
-    "Aerial, ground and maritime vehicles could provide research contexts for verifying conditions about operational data.": "Vehiculele aeriene, terestre și maritime ar putea fi contexte de cercetare pentru verificarea unor condiții privind datele operaționale.",
+    "A UAS or autonomous vehicle could report that a defined operational threshold was met without sharing its full telemetry record.":
+        "Un UAS sau un vehicul autonom ar putea confirma respectarea unui prag operațional definit fără să transmită întreaga telemetrie.",
     "Information exchange": "Schimb de informații",
-    "Future systems could exchange verifiable results while reducing the amount of sensitive information they share.": "Sisteme viitoare ar putea schimba rezultate verificabile, reducând cantitatea de informații sensibile partajate.",
+    "Two organizations could exchange the verifiable outcome of an agreed check while keeping private inputs at their source.":
+        "Două organizații ar putea transmite rezultatul verificabil al unui control convenit, păstrând datele private la sursă.",
+    "Logistics and transport": "Logistică și transport",
+    "A temperature-sensitive shipment could support a check against an agreed limit without disclosing its entire sensor history.":
+        "Un transport sensibil la temperatură ar putea susține verificarea unei limite convenite fără divulgarea întregului istoric al senzorilor.",
+    "Industrial monitoring": "Monitorizare industrială",
+    "An operator could demonstrate that a technical threshold was respected without exposing all measurements from its equipment.":
+        "Un operator ar putea demonstra respectarea unui prag tehnic fără să expună toate măsurătorile echipamentelor.",
+    "Collaborative research": "Cercetare colaborativă",
+    "Research teams could verify agreed properties of sensitive datasets without exchanging the raw records between them.":
+        "Echipele de cercetare ar putea verifica proprietăți convenite ale unor seturi de date sensibile fără să schimbe între ele înregistrările brute.",
     "These are possible applications, not validated operational deployments.": "Acestea sunt aplicații posibile, nu implementări operaționale validate.",
     "04 / THE RESEARCH": "04 / CERCETAREA",
     "What have we demonstrated so far?": "Ce am demonstrat până acum?",
