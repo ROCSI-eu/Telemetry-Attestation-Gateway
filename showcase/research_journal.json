@@ -1,0 +1,51 @@
+{
+  "schema_version": "TAG_RESEARCH_JOURNAL_V1",
+  "entries": [
+    {
+      "id": "synthetic-proof-offline",
+      "status": "documented_synthetic",
+      "evidence_path": "experiments/bounded-speed-proof-v0/qube-offline-reproduction.md",
+      "ro": {
+        "field": "Criptografie · verificare offline",
+        "title": "O condiție verificată fără a divulga valoarea",
+        "result": "Într-un experiment separat, am generat o dovadă criptografică pe date sintetice. Verificatorul offline a acceptat dovada folosind cheia de verificare așteptată.",
+        "insight": "Putem verifica această condiție fără să furnizăm verificatorului valoarea privată. O dovadă validă nu certifică însă originea măsurătorii."
+      },
+      "en": {
+        "field": "Cryptography · offline verification",
+        "title": "Checking a condition without disclosing the value",
+        "result": "In a separate experiment, a cryptographic proof was generated from synthetic data. The offline verifier accepted the proof using the expected verification key.",
+        "insight": "The verifier can check this condition without receiving the private value. A valid proof does not establish the trustworthiness of the original measurement."
+      }
+    },
+    {
+      "id": "sitl-receive-only",
+      "status": "documented_synthetic",
+      "evidence_path": "experiments/integrated-cli-v0/README.md",
+      "ro": {
+        "field": "Simulare · observații sintetice",
+        "title": "Observații recepționate din simulator",
+        "result": "O sesiune izolată ArduPilot SITL a permis recepția și normalizarea a două observații sintetice printr-o interfață exclusiv pasivă.",
+        "insight": "Putem prelua aceste observații pentru analiză, fără comenzi către vehicul. Legătura lor cu o dovadă criptografică nu a fost încă demonstrată."
+      },
+      "en": {
+        "field": "Simulation · synthetic observations",
+        "title": "Receiving observations from the simulator",
+        "result": "An isolated ArduPilot SITL session received and normalized two synthetic observations through a receive-only interface.",
+        "insight": "The observations can be collected for analysis without sending vehicle commands. Connecting them to a cryptographic proof has not yet been demonstrated."
+      }
+    }
+  ],
+  "next_question": {
+    "ro": {
+      "label": "Întrebare deschisă",
+      "title": "Putem conecta cele două rezultate?",
+      "description": "Următorul obiectiv este integrarea observațiilor din simulator cu generarea și verificarea independentă a unei dovezi criptografice. Fluxul complet nu a fost încă demonstrat."
+    },
+    "en": {
+      "label": "Open research question",
+      "title": "Can we connect these two results?",
+      "description": "The next objective is to connect simulator observations with cryptographic proof generation and independent verification. The complete end-to-end path has not yet been demonstrated."
+    }
+  }
+}

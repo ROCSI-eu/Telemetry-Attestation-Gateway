@@ -81,6 +81,29 @@ reduced-motion fallback, and absence of animation playback buttons. The
 Noir/Barretenberg graphic scrolls horizontally on narrow screens. Reuse
 unaffected evidence. Localhost QA is not Production acceptance.
 
+## Research journal: accepted laboratory progress only
+
+The public research section reads `showcase/research_journal.json` **at build time**.
+It contains a limited, bilingual set of documented synthetic laboratory results,
+their plain-language takeaway and a repository evidence path, plus a separate
+unresolved research question. It does not ingest GitHub activity, execute experiments,
+or publish live/runtime telemetry.
+
+When a relevant laboratory finding has been verified and accepted for public
+presentation, update this file in **the same PR** as the corresponding research
+change. Write Romanian and English copy, report what was actually observed,
+state the limitation, and point `evidence_path` to the existing source in
+`experiments/`. Do not publish routine refactors, unfinished experiments,
+unverified claims or real/sensitive data. No invented dates or percentage
+progress. Review the wording and evidence before merge.
+
+A merge to `main` triggers the **existing** Cloudflare Pages automatic build
+when enabled. The build embeds the updated entries directly into RO/EN HTML;
+there is no CMS, external fetch, browser scripting, new output asset or extra
+deployment step. The strict schema/evidence-path check fails closed on invalid
+input. A commit that does not update the journal cannot magically create
+an entry, even when it deploys successfully.
+
 ## Build and scope
 
 From the repository root:

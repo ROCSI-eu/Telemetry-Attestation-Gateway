@@ -1067,17 +1067,29 @@ EDITORIAL_CSS = """
     .editorial-caveat{max-width:90ch;color:#c0c7c3;font-size:.86rem;line-height:1.75;margin:22px 0}
     .editorial-process{padding:66px 0 28px;border-top:1px solid #425054;margin-top:56px}
     .editorial-process h3,.research-secondary-title{font-size:clamp(1.8rem,3vw,3.1rem);line-height:1.15;letter-spacing:-.05em;margin:12px 0 30px}
-    .editorial-steps,.research-summary{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;padding:0;margin:0;border-top:1px solid #536063}
-    .editorial-steps li,.research-summary article{padding:26px 22px 22px 0;border-right:1px solid #465255;min-width:0}
-    .editorial-steps li:not(:first-child),.research-summary article:not(:first-child){padding-left:22px}
-    .editorial-steps li:last-child,.research-summary article:last-child{border-right:0}
-    .editorial-steps span,.research-summary span{display:block;color:#dfbd86;font-size:.69rem;font-weight:800;letter-spacing:.15em;margin-bottom:12px}
+    .editorial-steps{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;padding:0;margin:0;border-top:1px solid #536063}
+    .editorial-steps li{padding:26px 22px 22px 0;border-right:1px solid #465255;min-width:0}
+    .editorial-steps li:not(:first-child){padding-left:22px}
+    .editorial-steps li:last-child{border-right:0}
+    .editorial-steps span{display:block;color:#dfbd86;font-size:.69rem;font-weight:800;letter-spacing:.15em;margin-bottom:12px}
     .editorial-steps strong{display:block;font-size:1.2rem;color:#eee9dd;margin-bottom:12px}
-    .editorial-steps p,.research-summary p{font-size:.9rem;color:#c0c9c6;line-height:1.75}
+    .editorial-steps p{font-size:.9rem;color:#c0c9c6;line-height:1.75}
     .editorial-proof-animation{margin:30px 0 0}
     .editorial-proof-animation .tech-animation{margin:0}
-    .research-summary h3{font-size:1.28rem;line-height:1.25;color:#f0ebdf;margin:0 0 12px}
-    .editorial-next{font-size:.95rem;line-height:1.75;color:#e5d9c4;margin:30px 0 70px}
+    .research-journal{list-style:none;padding:0;margin:24px 0 0;border-top:1px solid #536063}
+    .research-entry{display:grid;grid-template-columns:minmax(145px,.31fr) minmax(0,1fr);gap:clamp(18px,4vw,64px);border-bottom:1px solid #445155;padding:30px 0 34px;min-width:0}
+    .research-entry-meta{display:flex;flex-direction:column;gap:12px}
+    .research-entry-number{color:#e2bf85;font-size:.73rem;font-weight:800;letter-spacing:.16em}
+    .research-entry-field{color:#bdc8c5;font-size:.77rem;line-height:1.45}
+    .research-entry-copy{min-width:0;max-width:78ch}
+    .research-entry-copy h3{font-size:clamp(1.45rem,2.4vw,2.25rem);line-height:1.19;letter-spacing:-.035em;color:#f2eddf;margin:0 0 16px}
+    .research-entry-copy p{color:#c4ceca;line-height:1.7;font-size:.97rem;margin:0 0 13px}
+    .research-entry-copy .research-entry-insight{padding-left:16px;margin:18px 0 0;border-left:2px solid #d7b77e;color:#e3e2da}
+    .research-entry-insight strong{color:#eed7ae}
+    .research-next-question{margin:35px 0 75px;padding:26px clamp(18px,3vw,32px);border:1px solid #586165;background:#142023}
+    .research-next-question span{font-size:.72rem;letter-spacing:.14em;font-weight:800;color:#e2bd83}
+    .research-next-question h3{font-size:clamp(1.3rem,2.4vw,2rem);margin:12px 0;letter-spacing:-.03em}
+    .research-next-question p{max-width:76ch;font-size:.95rem;line-height:1.7;color:#c7cfcb;margin:0}
     .research-details{border-top:1px solid #526165;margin-top:28px}
     .research-detail{border-bottom:1px solid #526165;padding:0;scroll-margin-top:25px}
     .research-detail>summary{cursor:pointer;list-style:none;position:relative;font-size:1.16rem;font-weight:720;padding:23px 45px 23px 0;color:#f1e7d5}
@@ -1088,7 +1100,7 @@ EDITORIAL_CSS = """
     .research-detail-body{padding:12px 0 35px;min-width:0}
     .research-detail .proof-tooling{margin:0}
     .research-detail .scope-disclosure{margin:0}
-    @media(max-width:750px){.editorial-steps,.research-summary{grid-template-columns:1fr}.editorial-steps li,.editorial-steps li:not(:first-child),.research-summary article,.research-summary article:not(:first-child){padding:22px 0;border-right:0;border-bottom:1px solid #465255}.editorial-process{padding-top:45px}.editorial-next{margin-bottom:50px}}
+    @media(max-width:750px){.editorial-steps{grid-template-columns:1fr}.editorial-steps li,.editorial-steps li:not(:first-child){padding:22px 0;border-right:0;border-bottom:1px solid #465255}.editorial-process{padding-top:45px}.research-entry{grid-template-columns:1fr;gap:11px;padding:25px 0}.research-entry-meta{flex-direction:row;flex-wrap:wrap;align-items:baseline;gap:8px 15px}.research-next-question{margin:27px 0 55px}}
 """
 
 def redesign_public_html(html: str) -> str:
@@ -1280,14 +1292,9 @@ def redesign_public_html(html: str) -> str:
         '    <p class="editorial-caveat">No MAVLink commands, navigation control, mission edits, or source assurance are provided by this static site.</p>\n  </details>', 1)
     research = '''  <section class="research-limits" id="research" aria-labelledby="research-title">
     <p class="section-overline">04 / THE RESEARCH</p>
-    <h2 class="section-display" id="research-title">What have we demonstrated so far?</h2>
-    <p class="editorial-chapter-intro">TAG brings together research on privacy-preserving proofs and controlled observations from a vehicle simulator.</p>
-    <div class="research-summary">
-      <article><span>01 / CRYPTOGRAPHY</span><h3>Synthetic proof</h3><p>A separate experiment recorded generation of a proof and its acceptance by an offline verifier using the expected verification key.</p></article>
-      <article><span>02 / SIMULATION</span><h3>Simulator observations</h3><p>An isolated ArduPilot SITL session received and normalized two synthetic observations through a receive-only interface.</p></article>
-      <article><span>03 / OPEN QUESTION</span><h3>End-to-end integration</h3><p>The full path from SITL observations to an independently verified cryptographic proof has not yet been demonstrated.</p></article>
-    </div>
-    <p class="editorial-next">Next: integrate the stages, evaluate trust in the data source, and test the method's limits in controlled conditions.</p>
+    <h2 class="section-display" id="research-title">From the TAG research journal</h2>
+    <p class="editorial-chapter-intro">What we tested in the lab, what we learned and what still needs to be demonstrated.</p>
+    <!-- TAG_RESEARCH_JOURNAL -->
     <h3 class="research-secondary-title">Explore the technical research</h3>
     <p class="editorial-chapter-intro">Detailed methods, recorded scenarios and limitations are available below for readers who want to go deeper.</p>
     <div class="research-details" aria-label="Technical research panels">

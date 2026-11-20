@@ -11,14 +11,17 @@ from __future__ import annotations
 import argparse
 import base64
 import hashlib
+from html import escape
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import re
 
 from localization import inject_locale_js, localize_404, romanian_html, social_metadata
 from visual_refresh import redesign_public_html
 
 ROOT = Path(__file__).resolve().parents[1]
+JOURNAL = ROOT / "showcase/research_journal.json"
+JOURNAL_MARKER = "<!-- TAG_RESEARCH_JOURNAL -->"
 CONSOLE = ROOT / "experiments/web-console-v0/index.html"
 SCENARIOS = ROOT / "experiments/integrated-cli-v0/evidence-results.json"
 # Static navigation only. The public bundle still rejects every other external URL.
@@ -366,6 +369,80 @@ def security_headers(html: str) -> str:
     )
 
 
+
+def load_research_journal(path: Path = JOURNAL) -> dict:
+    """Validate public-safe, bilingual accepted research summaries at build time."""
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    exact_fields(payload, {"schema_version", "entries", "next_question"}, "journal")
+    if payload["schema_version"] != "TAG_RESEARCH_JOURNAL_V1":
+        raise ValueError("unsupported journal schema")
+    entries = payload["entries"]
+    if type(entries) is not list or not 1 <= len(entries) <= 12:
+        raise ValueError("journal entry count invalid")
+    seen = set()
+
+    def fields(value: object, required: set[str], where: str) -> dict:
+        obj = exact_fields(value, required, where)
+        for key, text in obj.items():
+            if (type(text) is not str or not text or text != text.strip()
+                or len(text) > 420 or re.search(r'https?://|[<>]|\x00', text)):
+                raise ValueError("unsafe public journal text: " + where + "/" + key)
+        return obj
+
+    for item in entries:
+        exact_fields(item, {"id", "status", "evidence_path", "ro", "en"}, "entry")
+        if (type(item["id"]) is not str
+            or not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", item["id"])
+            or item["id"] in seen or item["status"] != "documented_synthetic"):
+            raise ValueError("invalid, duplicate or unapproved journal entry")
+        seen.add(item["id"])
+        ref = item["evidence_path"]
+        if type(ref) is not str or not re.fullmatch(
+            r"experiments/[a-z0-9-]+/(?:[a-z0-9-]+/)*[a-z0-9_.-]+\.(?:md|py)",
+            ref,
+        ) or any(part in (".", "..") for part in PurePosixPath(ref).parts):
+            raise ValueError("invalid journal evidence reference")
+        if not (ROOT / ref).is_file():
+            raise ValueError("journal evidence reference not found: " + ref)
+        for language in ("ro", "en"):
+            fields(item[language], {"field", "title", "result", "insight"}, item["id"] + "/" + language)
+    exact_fields(payload["next_question"], {"ro", "en"}, "next question")
+    for language in ("ro", "en"):
+        fields(payload["next_question"][language], {"label", "title", "description"}, "next/" + language)
+    return payload
+
+
+def render_research_journal(html: str, journal: dict, language: str) -> str:
+    """Inline verified editorial copy into the already-static page, never browser JS."""
+    if language not in ("ro", "en") or html.count(JOURNAL_MARKER) != 1:
+        raise ValueError("journal insertion anchor or locale changed")
+    en = language == "en"
+    note = "LAB NOTE" if en else "NOTĂ DE LABORATOR"
+    lesson = "What we learned" if en else "Ce am învățat"
+    items = []
+    for i, item in enumerate(journal["entries"], 1):
+        copy = item[language]
+        items.append(
+            '<li class="research-entry"><div class="research-entry-meta">'
+            f'<span class="research-entry-number">{i:02d} / {note}</span>'
+            f'<span class="research-entry-field">{escape(copy["field"])}</span>'
+            '</div><div class="research-entry-copy">'
+            f'<h3>{escape(copy["title"])}</h3>'
+            f'<p>{escape(copy["result"])}</p>'
+            f'<p class="research-entry-insight"><strong>{lesson}:</strong> '
+            f'{escape(copy["insight"])}</p></div></li>'
+        )
+    next_copy = journal["next_question"][language]
+    markup = ('<ol class="research-journal" aria-label="' +
+              ("Documented research notes" if en else "Note de cercetare documentate") + '">'
+              + "\n".join(items) + '</ol>'
+              '<aside class="research-next-question">'
+              f'<span>{escape(next_copy["label"])}</span>'
+              f'<h3>{escape(next_copy["title"])}</h3>'
+              f'<p>{escape(next_copy["description"])}</p></aside>')
+    return html.replace(JOURNAL_MARKER, markup, 1)
+
+
 def build(out: Path) -> tuple[str, ...]:
     target = out.resolve()
     protected = (ROOT.resolve(), CONSOLE.parent.resolve(),
@@ -379,8 +456,9 @@ def build(out: Path) -> tuple[str, ...]:
     if 'href="data:image/svg+xml,' in html:
         raise ValueError("placeholder favicon was not removed")
     html = inject_locale_js(html)
-    html_en = social_metadata(html, "en")
-    html_ro = social_metadata(romanian_html(html), "ro")
+    journal = load_research_journal()
+    html_en = social_metadata(render_research_journal(html, journal, "en"), "en")
+    html_ro = social_metadata(render_research_journal(romanian_html(html), journal, "ro"), "ro")
     if security_headers(html_ro) != security_headers(html_en):
         raise ValueError("localized assets have mismatching CSP inline hashes")
     media = ROOT / "showcase/assets"
