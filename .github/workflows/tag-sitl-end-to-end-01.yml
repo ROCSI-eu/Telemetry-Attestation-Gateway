@@ -1,0 +1,86 @@
+name: TAG SITL end-to-end 01 (temporary)
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/tag-sitl-end-to-end-01.yml
+      - experiments/sitl-receive-v0/sitl_ci_e2e.py
+
+permissions:
+  contents: read
+
+jobs:
+  sitl-real-to-zkp:
+    if: github.event.pull_request.draft == true && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Checkout exact PR source
+        uses: actions/checkout@v4
+      - name: Prepare pinned public build dependencies and Copter SITL
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(df -Pk "$RUNNER_TEMP" | awk 'NR==2 {print $4}')" -ge 6291456
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends build-essential git gawk libtool libxml2-dev libxslt1-dev python3-dev python3-setuptools python3-future python3-pexpect python3-empy python3-lxml python3-serial python3-numpy python3-psutil python3-jinja2 python3-pyparsing iproute2
+          git clone --quiet --depth 1 --branch Copter-4.7.1 https://github.com/ArduPilot/ardupilot.git "$RUNNER_TEMP/ardupilot"
+          test "$(git -C "$RUNNER_TEMP/ardupilot" rev-parse HEAD)" = dbe792162d06cab66c3475fd5556bf7a120f119e
+          git -C "$RUNNER_TEMP/ardupilot" submodule update --init --recursive --jobs 2 --quiet
+          test "$(git -C "$RUNNER_TEMP/ardupilot/modules/mavlink" rev-parse HEAD)" = 288b907c384a892c8519bfe271682424b1e1a3a0
+          (cd "$RUNNER_TEMP/ardupilot" && ./waf configure --board sitl >/dev/null 2>&1 && ./waf copter -j2 >/dev/null 2>&1)
+          test -x "$RUNNER_TEMP/ardupilot/build/sitl/bin/arducopter"
+          echo 'SITL source, MAVLink submodule and binary: PASS'
+      - name: Provision exact-hash Noir Barretenberg and public CRS
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/tag-sitl-crypto"
+          mkdir -p "$root/bin" "$root/crs" "$root/noir"
+          curl -fsSL --retry 0 -o "$root/nargo.tar.gz" https://github.com/noir-lang/noir/releases/download/v1.0.0-beta.26/nargo-x86_64-unknown-linux-gnu.tar.gz
+          echo "64048040befd55a987158b11137d8f38f9688f696db4d84910dd1bcf0442fb80  $root/nargo.tar.gz" | sha256sum -c -
+          curl -fsSL --retry 0 -o "$root/bb.tar.gz" https://github.com/AztecProtocol/barretenberg/releases/download/v5.2.0/barretenberg-amd64-linux.tar.gz
+          echo "17ab8476961728cdc5c69b6c4ff427c9092cef11d1e0b0166929a0417dfa7cfb  $root/bb.tar.gz" | sha256sum -c -
+          python3 - "$root" <<'PY'
+          import sys,tarfile,pathlib
+          root=pathlib.Path(sys.argv[1])
+          for name, destination in [('nargo','nargo'),('bb','bb-real')]:
+              with tarfile.open(root / (name+'.tar.gz'), 'r:gz') as archive:
+                  members=archive.getmembers()
+                  assert len(members)==1 and members[0].isfile() and members[0].name == name
+                  (root / 'bin' / destination).write_bytes(archive.extractfile(members[0]).read())
+                  (root / 'bin' / destination).chmod(0o700)
+          PY
+          "$root/bin/nargo" --version | grep -F '1.0.0-beta.26'
+          test "$("$root/bin/bb-real" --version)" = '5.2.0'
+          cp -a experiments/bounded-speed-proof-v0/noir/. "$root/noir/"
+          (cd "$root/noir" && "$root/bin/nargo" compile >/dev/null 2>&1)
+          "$root/bin/bb-real" write_vk -t noir-recursive -b "$root/noir/target/bounded_speed_proof_v0.json" -o "$root/noir/target" -c "$root/crs" >/dev/null 2>&1
+          echo "0e4eb3c0d0e64b43a67460d6e208f2f1070c805bd3c075413dee21a83e0c85b1  $root/noir/target/vk" | sha256sum -c -
+          echo "fad8203ae1fd103658d4bb33b2b4cf126a28352b5de4684737cff23cc15fb94b  $root/crs/bn254_g1_compressed.dat" | sha256sum -c -
+          cat > "$root/bin/bb" <<'SH'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          if [[ "$1" == '--version' ]]; then exec "$TAG_BB_REAL" --version; fi
+          operation=$1; shift
+          exec "$TAG_BB_REAL" "$operation" "$@" -c "$TAG_CRS_DIR"
+          SH
+          chmod 700 "$root/bin/bb"
+          printf 'TAG_BB_REAL=%s\nTAG_CRS_DIR=%s\nTAG_TOOL_BIN=%s\n' "$root/bin/bb-real" "$root/crs" "$root/bin" >> "$GITHUB_ENV"
+          echo 'Pinned crypto toolchain, VK and public CRS: PASS'
+      - name: One isolated real SITL to authentic ZKP execution
+        shell: bash
+        run: |
+          set -euo pipefail
+          uid=$(id -u); gid=$(id -g)
+          sudo unshare --net -- bash -euo pipefail -c '
+            ip link set lo up
+            exec setpriv --reuid="$1" --regid="$2" --clear-groups \
+              env PATH="$3" HOME="$8" TAG_BB_REAL="$4" TAG_CRS_DIR="$5" \
+              TAG_SITL_BIN="$6" TAG_ARDUPILOT_ROOT="$7" RUNNER_TEMP="$8" \
+              TMPDIR="$8" \
+              timeout --signal=TERM --kill-after=10s 120s \
+              /usr/bin/python3 "$9"
+          ' bash "$uid" "$gid" "$TAG_TOOL_BIN:$PATH" "$TAG_BB_REAL" "$TAG_CRS_DIR" \
+            "$RUNNER_TEMP/ardupilot/build/sitl/bin/arducopter" "$RUNNER_TEMP/ardupilot" "$RUNNER_TEMP" \
+            "$GITHUB_WORKSPACE/experiments/sitl-receive-v0/sitl_ci_e2e.py"
