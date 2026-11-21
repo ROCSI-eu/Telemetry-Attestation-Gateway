@@ -122,7 +122,7 @@ inspect the generated **15 files** (the existing 14 files plus the local ROCSI m
 - \`404.html\` and \`en/404.html\`: localized inert not-found pages with
   experimental markings and return links, preventing Pages' implicit SPA fallback.
 - \`og/ro.png\`, \`og/en.png\`: pre-rendered 1200×630, same graphic composition
-  (synthetic A–B–C route and illustrative drone), separately translated captions.
+  (synthetic A–B–C route, illustrative quadcopter and data/rule/result stages), separately translated captions.
 - \`favicon.svg\`, \`favicon.ico\`, \`apple-touch-icon.png\`: shared drone/radar
   site identity, without text or claims of live verification.
 - ROCSI symbol asset (assets/rocsi-mark.svg): the unmodified current blue/tricolor
@@ -185,14 +185,15 @@ is needed under any of these options.
   locale/title/description/image, Twitter card and image-alt text, plus
   \`canonical\` and \`hreflang\` alternates. WhatsApp and other crawlers can
   read these without JavaScript. The images use absolute
-  \`https://tag.rocsi.eu/og/{ro,en}.png\` URLs.
+  \`https://tag.rocsi.eu/og/{ro,en}.png?v=20261121\` URLs, versioned to refresh social previews.
 - Type enums (\`VALID\`, \`INVALID\`, \`A0_SYNTHETIC\`, experimental boundary
   markers) remain evidence-backed immutable values. Romanian translates UI
   labels and display statuses, but never changes underlying JSON, policy
   predicates or cryptographic results.
-- The social graphics and drone/radar site icon are **original synthetic art**
-  authored for this project with \`showcase/render_social_assets.py\` (Pillow
-  needed only for optional artist-side re-rendering). Cloudflare's
+- The social graphics are original synthetic vector-style art rendered deterministically
+  with \`node showcase/social_og_builder.mjs\` (Node used only for optional author-side re-rendering).
+  The independent legacy favicon renderer remains \`showcase/render_social_assets.py\`
+  (Pillow needed only when re-authoring icons). Cloudflare's
   \`python3 showcase/build.py --out-dir dist\` has no Pillow or external build
   dependency. No stock, vendor, participant or operational imagery is used.
 - Social platforms may cache previews. A changed picture becomes visible only

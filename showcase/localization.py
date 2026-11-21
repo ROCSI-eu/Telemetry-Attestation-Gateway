@@ -610,7 +610,7 @@ def social_metadata(html: str, language: str) -> str:
         raise ValueError("unsupported social locale")
     meta = SHARE[language]
     url = ORIGIN + ("/ro/" if language == "ro" else "/en/")
-    image_url = ORIGIN + ("/og/ro.png" if language == "ro" else "/og/en.png")
+    image_url = ORIGIN + ("/og/ro.png" if language == "ro" else "/og/en.png") + "?v=20261121"
     oglocale = "ro_RO" if language == "ro" else "en_US"
     altlocale = "en_US" if language == "ro" else "ro_RO"
     def attr(s: str) -> str:

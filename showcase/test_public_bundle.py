@@ -742,7 +742,7 @@ class StaticShowcaseTests(unittest.TestCase):
             html = (target / "ro/index.html").read_text(encoding="utf-8")
             self.assertIn('<link rel="canonical" href="https://tag.rocsi.eu/ro/">', html)
             self.assertIn('<link rel="alternate" hreflang="ro" href="https://tag.rocsi.eu/ro/">', html)
-            self.assertIn('<meta property="og:image" content="https://tag.rocsi.eu/og/ro.png">', html)
+            self.assertIn('<meta property="og:image" content="https://tag.rocsi.eu/og/ro.png?v=20261121">', html)
 
     def test_cloudflare_pages_404_is_static_and_has_no_execution_surface(self) -> None:
         # A root 404.html prevents Cloudflare Pages' implicit SPA fallback.
@@ -791,7 +791,7 @@ class StaticShowcaseTests(unittest.TestCase):
                 ("ro", ro, "ro_RO"), ("en", en, "en_US")
             ):
                 from localization import SHARE, ORIGIN
-                image = ORIGIN + "/og/" + language + ".png"
+                image = ORIGIN + "/og/" + language + ".png?v=20261121"
                 self.assertIn(f'<meta property="og:locale" content="{locale}">', page)
                 self.assertIn(f'<meta property="og:image" content="{image}">', page)
                 self.assertIn(f'<meta name="twitter:image" content="{image}">', page)

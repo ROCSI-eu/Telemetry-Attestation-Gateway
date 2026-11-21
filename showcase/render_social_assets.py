@@ -161,4 +161,4 @@ def draw_icon():
     print("icon files",[(x.name,x.stat().st_size) for x in ROOT.iterdir() if x.is_file()])
 
 if __name__=="__main__":
-    draw_social("ro");draw_social("en");draw_icon()
+    draw_icon()  # Social OG PNGs are owned by social_og_builder.mjs
