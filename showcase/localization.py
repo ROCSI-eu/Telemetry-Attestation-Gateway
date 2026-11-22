@@ -199,17 +199,18 @@ RO_TEXT = {
     "Noir documentation": "Documentație Noir",
     "Barretenberg documentation": "Documentație Barretenberg",
     "TAG experimental implementation": "Implementarea experimentală TAG",
+    "Integrated SITL-to-ZKP CI evidence": "Dovada CI pentru fluxul SITL–ZKP integrat",
     "A cryptographically valid proof does not establish telemetry truth, trusted sensors or time, whole-flight coverage, safety or legal compliance. This public page shows recorded synthetic outcomes: the browser neither generates nor verifies a proof.":
         "O dovadă criptografică validă nu confirmă corectitudinea telemetriei, încrederea în senzori ori timp, acoperirea întregului zbor, siguranța sau conformitatea legală. Pagina publică afișează rezultate sintetice înregistrate: browserul nu generează și nu verifică dovezi.",
     # TAG-MISSION-CONTROL-EVIDENCE-01: static bilingual evidence checkpoint.
-    "SITL and offline proof: distinct evidence":
-        "SITL și dovada offline: rezultate distincte",
+    "SITL to ZKP: an integrated synthetic result":
+        "SITL → ZKP: rezultat sintetic integrat",
     "Local ArduPilot Copter 4.7.1 SITL (TAG #86): PASS for isolated, receive-only MAVLink2 intake of two GLOBAL_POSITION_INT observations and TAG normalization. This does not establish telemetry truth.":
         "ArduPilot Copter 4.7.1 SITL local (TAG #86): PASS pentru recepția izolată, exclusiv pasivă, a două observații MAVLink2 GLOBAL_POSITION_INT și normalizarea TAG. Aceasta nu atestă corectitudinea telemetriei.",
     "Independent synthetic ZK checkpoint (14 November 2026): historical Qube evidence records proof generation and offline verifier VALID with the pinned verification key. This proof was separate from the SITL observations.":
         "Checkpoint ZK sintetic independent (14 noiembrie 2026): dovezile istorice Qube consemnează generarea unei dovezi și rezultatul VALID al verificatorului offline cu cheia de verificare fixată. Dovada este separată de observațiile SITL.",
-    "Combined SITL → 600 cm/s predicate → ZK: NO-GO / not demonstrated end to end. The speed predicate produced different outcomes across isolated SITL sessions; no SITL-derived ZK proof was generated or verified.":
-        "Flux combinat SITL → predicat 600 cm/s → ZK: NO-GO / nedemonstrat integral. Predicatul de viteză a dat rezultate diferite între sesiuni SITL izolate; nicio dovadă ZK derivată din SITL nu a fost generată sau verificată.",
+    "Integrated ArduPilot Copter 4.7.1 SITL → MAVLink2 → TAG normalization → 600 cm/s predicate → Noir/Barretenberg proof → separate verifier: PASS on 22 November 2026 (GitHub Actions #44995909866). Two synthetic observations; proof GENERATED; both checks VALID. Source UNSIGNED; no commands, publication or operational validation.":
+        "Flux integrat ArduPilot Copter 4.7.1 SITL → MAVLink2 → normalizare TAG → condiție 600 cm/s → dovadă Noir/Barretenberg → verificator separat: PASS pe 22 noiembrie 2026 (GitHub Actions #44995909866). Două observații sintetice; dovadă GENERATED; ambele verificări VALID. Sursa UNSIGNED; fără comenzi, publicare sau validare operațională.",
     # TAG-TECH-ANIMATION-01: static labels; the shared script translates controls.
     "CONCEPTUAL ANIMATION / NOT A PROOF RUN": "ANIMAȚIE CONCEPTUALĂ / FĂRĂ GENERAREA DOVEZII",
     "Replay explanation": "Reia explicația",
@@ -318,7 +319,7 @@ RO_TEXT = {
     "DETERMINISTIC SCENARIOS": "SCENARII DETERMINISTE",
     "recorded cases": "cazuri înregistrate",
     "These cases exercise orchestration, input changes and publication states. They do not constitute independently verified cryptographic proofs.": "Aceste cazuri testează orchestrarea, modificarea intrărilor și stările de publicare. Ele nu reprezintă dovezi criptografice verificate independent.",
-    "The current SITL observations and the offline ZKP result are distinct findings. The complete integration is still an open research question.": "Observațiile SITL și rezultatul ZKP offline sunt constatări separate. Integrarea lor completă rămâne de demonstrat.",
+    "A separate isolated GitHub Actions run has now generated and independently verified a synthetic SITL-derived ZKP. The cases below remain static mock replays, not live proof execution in the browser.": "O execuție izolată GitHub Actions a generat și a verificat independent o dovadă ZKP sintetică pornind de la observații SITL. Cazurile de mai jos sunt în continuare simulări statice, nu generări live de dovezi în browser.",
     "Explore recorded scenarios and the full offline result": "Consultă scenariile și rezultatul offline complet",
     "The scenario controls replay static fixtures; their progress and publication indicators are not live operations.": "Controalele redau date statice; indicatorii de progres și publicare nu reprezintă operațiuni live.",
     "Limits and next validation steps": "Limite și validări necesare",
@@ -326,7 +327,7 @@ RO_TEXT = {
     "Source and time": "Sursa și timpul",
     "A valid proof alone does not establish who produced a measurement or whether its time is trustworthy.": "O dovadă validă nu stabilește singură originea măsurării sau încrederea în timpul asociat.",
     "Coverage and integration": "Acoperire și integrare",
-    "The research has not yet demonstrated one continuous SITL-to-ZKP evidence chain or whole-mission coverage.": "Cercetarea nu a demonstrat încă un flux continuu SITL–ZKP sau acoperirea întregii misiuni.",
+    "One bounded two-observation SITL-to-ZKP run passed; whole-mission coverage, source authentication and trusted time remain unproven.": "Un test SITL–ZKP limitat la două observații a trecut; acoperirea întregii misiuni, autentificarea sursei și timpul de încredere rămân nedemonstrate.",
     "Operational use": "Utilizare operațională",
     "Safety, policy acceptance, customer decisions and production readiness require separate validation.": "Siguranța, acceptarea politicilor, deciziile beneficiarului și pregătirea pentru producție necesită validări separate.",
     "Full experimental boundaries and assurance fields": "Toate limitele experimentale și câmpurile de asigurare",

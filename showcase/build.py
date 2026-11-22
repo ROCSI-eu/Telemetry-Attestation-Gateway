@@ -32,6 +32,7 @@ PUBLIC_REFERENCE_URLS = frozenset({
     "https://rocsi.eu/en",
     "https://rocsi.eu/en/contact",
     "https://github.com/ROCSI-eu/Telemetry-Attestation-Gateway/tree/main/experiments/bounded-speed-proof-v0",
+    "https://github.com/ROCSI-eu/Telemetry-Attestation-Gateway/actions/runs/44995909866",
 })
 VERIFIER = ROOT / "experiments/web-console-v0/authentic-evidence.json"
 LABELS = [

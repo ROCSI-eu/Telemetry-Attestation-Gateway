@@ -97,8 +97,8 @@ class StaticShowcaseTests(unittest.TestCase):
             self.assertEqual(en.count('class="concept-step-icon"'), 3)
             self.assertEqual(ro.count('viewBox="0 0 48 48"'), 3)
             self.assertEqual(en.count('viewBox="0 0 48 48"'), 3)
-            self.assertIn("nu a fost încă demonstrat", ro)
-            self.assertIn("has not yet been demonstrated", en)
+            self.assertIn("Din simulator până la o dovadă verificată", ro)
+            self.assertIn("From simulator observations to a verified proof", en)
             self.assertEqual(
                 re.search(r'<script>(.*?)</script>', ro, flags=re.S).group(1),
                 re.search(r'<script>(.*?)</script>', en, flags=re.S).group(1),
@@ -227,7 +227,7 @@ class StaticShowcaseTests(unittest.TestCase):
                     page,
                 )
                 self.assertEqual(page.count('class="research-detail"'), 3)
-                self.assertEqual(page.count('class="research-entry"'), 2)
+                self.assertEqual(page.count('class="research-entry"'), 3)
                 self.assertIn('class="rocsi-affiliation"', page)
 
     def test_research_journal_is_bilingual_static_and_separates_open_question(self) -> None:
@@ -236,14 +236,14 @@ class StaticShowcaseTests(unittest.TestCase):
             build(target)
             for language, journal_heading, lesson, pending in (
                 ("ro", "Din jurnalul de cercetare TAG", "Ce-am învățat",
-                 "Fluxul complet nu a fost încă demonstrat."),
+                 "Autentificarea originii, timpul de încredere, acoperirea unui interval și utilizarea reală rămân de cercetat."),
                 ("en", "From the TAG research journal", "What we learned",
-                 "The complete end-to-end path has not yet been demonstrated."),
+                 "Source authentication, trusted time, interval coverage and real-world use remain open research questions."),
             ):
                 page = (target / language / "index.html").read_text(encoding="utf-8")
                 self.assertIn(journal_heading, page)
-                self.assertEqual(page.count('class="research-entry"'), 2)
-                self.assertEqual(page.count('class="research-entry-insight"'), 2)
+                self.assertEqual(page.count('class="research-entry"'), 3)
+                self.assertEqual(page.count('class="research-entry-insight"'), 3)
                 self.assertIn(lesson, page)
                 self.assertIn(pending, page)
                 self.assertIn('class="research-next-question"', page)
@@ -267,7 +267,7 @@ class StaticShowcaseTests(unittest.TestCase):
             build(target)
             ro = (target / "ro/index.html").read_text(encoding="utf-8")
             en = (target / "en/index.html").read_text(encoding="utf-8")
-            self.assertEqual(ro.count("<strong>Ce-am învățat:</strong>"), 2)
+            self.assertEqual(ro.count("<strong>Ce-am învățat:</strong>"), 3)
             self.assertNotIn("Ce am învățat", ro)
             self.assertIn("Ce-am testat în laborator, ce-am învățat", ro)
             self.assertNotIn("Ce am testat în laborator, ce am învățat", ro)
@@ -277,7 +277,7 @@ class StaticShowcaseTests(unittest.TestCase):
                 "transport de produse sensibile la temperatură",
                 "fără să-și transmită reciproc înregistrările brute",
                 "Noir definește condiția prin compararea",
-                "Integrarea lor completă rămâne de demonstrat",
+                "O execuție izolată GitHub Actions a generat",
                 "Înregistrarea originală nu a fost validată de clienți și nici în condiții comerciale",
             ):
                 self.assertIn(expected, ro)
@@ -287,7 +287,7 @@ class StaticShowcaseTests(unittest.TestCase):
             )
             self.assertIn("PRECOMPUTED_GENUINE_SYNTHETIC_VERIFICATION", ro)
             self.assertIn("A0_SYNTHETIC", ro)
-            self.assertEqual(ro.count('class="research-entry"'), 2)
+            self.assertEqual(ro.count('class="research-entry"'), 3)
             self.assertEqual(ro.count('class="research-detail"'), 3)
 
     def test_journal_rejects_unapproved_claims_and_unsafe_evidence(self) -> None:
@@ -335,7 +335,7 @@ class StaticShowcaseTests(unittest.TestCase):
                 self.assertIn('id="tech-animation"', page)
                 self.assertIn('id="laboratory-scenarios"', page)
                 self.assertIn('PRECOMPUTED_GENUINE_SYNTHETIC_VERIFICATION', page)
-                self.assertIn('NO-GO', page)
+                self.assertIn('actions/runs/44995909866', page)
 
     def test_visual_final_remains_synthetic_bilingual_and_read_only(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
@@ -416,6 +416,7 @@ class StaticShowcaseTests(unittest.TestCase):
                 'https://www.noir-lang.org/docs/',
                 'https://barretenberg.aztec.network/docs/',
                 'https://github.com/ROCSI-eu/Telemetry-Attestation-Gateway/tree/main/experiments/bounded-speed-proof-v0',
+                'https://github.com/ROCSI-eu/Telemetry-Attestation-Gateway/actions/runs/44995909866',
             )
             for page, title, define, verify, boundary in (
                 (ro, "Cum sunt folosite Noir și Barretenberg în TAG",
@@ -459,10 +460,10 @@ class StaticShowcaseTests(unittest.TestCase):
             ro = (target / "ro/index.html").read_text(encoding="utf-8")
             en = (target / "en/index.html").read_text(encoding="utf-8")
             for page, heading, sitl, proof, incomplete in (
-                (ro, "SITL și dovada offline: rezultate distincte", "normalizarea TAG", "rezultatul VALID",
-                 "nedemonstrat integral"),
-                (en, "SITL and offline proof: distinct evidence", "TAG normalization", "offline verifier VALID",
-                 "not demonstrated end to end"),
+                (ro, "SITL → ZKP: rezultat sintetic integrat", "normalizarea TAG", "rezultatul VALID",
+                 "ambele verificări VALID"),
+                (en, "SITL to ZKP: an integrated synthetic result", "TAG normalization", "offline verifier VALID",
+                 "both checks VALID"),
             ):
                 section = re.search(
                     r'<aside class="proof-evidence-checkpoint".*?</aside>', page,
@@ -476,7 +477,7 @@ class StaticShowcaseTests(unittest.TestCase):
                 self.assertIn(incomplete, checkpoint)
                 self.assertEqual(checkpoint.count("<p>"), 3)
                 self.assertIn("PASS", checkpoint)
-                self.assertIn("NO-GO", checkpoint)
+                self.assertNotIn("NO-GO", checkpoint)
                 self.assertIn("600 cm/s", checkpoint)
                 self.assertIn("SITL", checkpoint)
                 self.assertLess(page.index('id="technical-evidence"'),
