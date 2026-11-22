@@ -61,11 +61,11 @@ def run_once() -> dict[str, object]:
         state = session / "sitl-state"
         state.mkdir(mode=0o700)
         params = state / "synthetic.parm"
-        params.write_text("SERIAL0_PROTOCOL 2\nSR0_POSITION 5\n", encoding="utf-8")
+        params.write_text("MAV3_POSITION 10\n", encoding="utf-8")
         command = [str(sim), "--model", "+", "--speedup", "1",
                    "--home", "-35.362938,149.165085,584,353",
                    "--defaults", f"{defaults},{params}",
-                   "--serial0", "udpclient:127.0.0.1:14550"]
+                   "--serial0", "none",\n                   "--serial2", "udpclient:127.0.0.1:14550"]
         proc = subprocess.Popen(command, cwd=state, stdin=subprocess.DEVNULL,
                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                                 start_new_session=True)
