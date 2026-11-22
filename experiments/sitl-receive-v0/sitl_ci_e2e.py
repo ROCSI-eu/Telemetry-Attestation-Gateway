@@ -65,7 +65,8 @@ def run_once() -> dict[str, object]:
         command = [str(sim), "--model", "+", "--speedup", "1",
                    "--home", "-35.362938,149.165085,584,353",
                    "--defaults", f"{defaults},{params}",
-                   "--serial0", "none",\n                   "--serial2", "udpclient:127.0.0.1:14550"]
+                   "--serial0", "none",
+                   "--serial2", "udpclient:127.0.0.1:14550"]
         proc = subprocess.Popen(command, cwd=state, stdin=subprocess.DEVNULL,
                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                                 start_new_session=True)
