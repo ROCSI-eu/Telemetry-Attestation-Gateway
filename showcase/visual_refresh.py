@@ -616,15 +616,16 @@ TECH_TOOLING = """  <section class="proof-tooling" aria-labelledby="proof-toolin
       <li><span>03 / VERIFY</span><strong>Offline verifier</strong><p>A separately invoked verifier reconstructs public inputs from canonical CBOR and checks the proof with the expected verification key, without the private speed.</p></li>
     </ol>
     <aside class="proof-evidence-checkpoint" aria-labelledby="proof-evidence-checkpoint-title">
-      <h4 id="proof-evidence-checkpoint-title">SITL and offline proof: distinct evidence</h4>
+      <h4 id="proof-evidence-checkpoint-title">SITL to ZKP: an integrated synthetic result</h4>
       <p>Local ArduPilot Copter 4.7.1 SITL (TAG #86): PASS for isolated, receive-only MAVLink2 intake of two GLOBAL_POSITION_INT observations and TAG normalization. This does not establish telemetry truth.</p>
       <p>Independent synthetic ZK checkpoint (14 November 2026): historical Qube evidence records proof generation and offline verifier VALID with the pinned verification key. This proof was separate from the SITL observations.</p>
-      <p>Combined SITL → 600 cm/s predicate → ZK: NO-GO / not demonstrated end to end. The speed predicate produced different outcomes across isolated SITL sessions; no SITL-derived ZK proof was generated or verified.</p>
+      <p>Integrated ArduPilot Copter 4.7.1 SITL → MAVLink2 → TAG normalization → 600 cm/s predicate → Noir/Barretenberg proof → separate verifier: PASS on 22 November 2026 (GitHub Actions #44995909866). Two synthetic observations; proof GENERATED; both checks VALID. Source UNSIGNED; no commands, publication or operational validation.</p>
     </aside>
     <nav class="proof-tooling-links" aria-label="Tool documentation and TAG implementation">
       <a href="https://www.noir-lang.org/docs/">Noir documentation</a>
       <a href="https://barretenberg.aztec.network/docs/">Barretenberg documentation</a>
       <a href="https://github.com/ROCSI-eu/Telemetry-Attestation-Gateway/tree/main/experiments/bounded-speed-proof-v0">TAG experimental implementation</a>
+      <a href="https://github.com/ROCSI-eu/Telemetry-Attestation-Gateway/actions/runs/44995909866">Integrated SITL-to-ZKP CI evidence</a>
     </nav>
     <p class="proof-tooling-boundary">A cryptographically valid proof does not establish telemetry truth, trusted sensors or time, whole-flight coverage, safety or legal compliance. This public page shows recorded synthetic outcomes: the browser neither generates nor verifies a proof.</p>
   </section>
@@ -1371,7 +1372,7 @@ def redesign_public_html(html: str) -> str:
             <article><span>INDEPENDENT OFFLINE EXPERIMENT</span><h4><!-- TAG_OFFLINE_OUTCOME --></h4><p>The recorded verifier result is from a separate experiment with synthetic data. No cryptographic verification happens on this page.</p></article>
             <article><span>DETERMINISTIC SCENARIOS</span><h4><!-- TAG_SCENARIO_COUNT --> recorded cases</h4><p>These cases exercise orchestration, input changes and publication states. They do not constitute independently verified cryptographic proofs.</p></article>
           </div>
-          <p class="research-method-boundary">The current SITL observations and the offline ZKP result are distinct findings. The complete integration is still an open research question.</p>
+          <p class="research-method-boundary">A separate isolated GitHub Actions run has now generated and independently verified a synthetic SITL-derived ZKP. The cases below remain static mock replays, not live proof execution in the browser.</p>
           <details class="research-archive">
             <summary>Explore recorded scenarios and the full offline result</summary>
             <div class="research-archive-body"><p class="editorial-caveat">The scenario controls replay static fixtures; their progress and publication indicators are not live operations.</p>
@@ -1384,7 +1385,7 @@ def redesign_public_html(html: str) -> str:
         <div class="research-detail-body">
           <div class="research-simple-grid research-boundaries">
             <article><h4>Source and time</h4><p>A valid proof alone does not establish who produced a measurement or whether its time is trustworthy.</p></article>
-            <article><h4>Coverage and integration</h4><p>The research has not yet demonstrated one continuous SITL-to-ZKP evidence chain or whole-mission coverage.</p></article>
+            <article><h4>Coverage and integration</h4><p>One bounded two-observation SITL-to-ZKP run passed; whole-mission coverage, source authentication and trusted time remain unproven.</p></article>
             <article><h4>Operational use</h4><p>Safety, policy acceptance, customer decisions and production readiness require separate validation.</p></article>
           </div>
           <details class="research-archive">

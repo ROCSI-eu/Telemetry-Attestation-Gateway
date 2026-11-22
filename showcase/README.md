@@ -19,8 +19,8 @@ The visitor-facing editorial sequence is **Hero → The Concept → How It Works
 Potential Applications → The Research**, in RO and EN. The proof-stage illustration
 is kept alongside the synthetic mission scene; detailed tools, laboratory scenario
 replays and limitations are contained in expandable technical panels under Research.
-Mock orchestration, offline-verifier evidence and unproven integrated SITL→ZK remain
-explicitly distinct.
+Mock orchestration, the separately recorded offline-verifier replay and the
+now verified synthetic SITL→ZKP GitHub Actions experiment remain explicitly distinct.
 The visitor-facing chapters are a concise research presentation, not a
 development status dashboard. The public GitHub-style experimental banner is
 removed; the original boundary labels remain in the immutable evidence JSON
@@ -257,3 +257,20 @@ allowing comparisons with the newest GitHub source. Local offline builds without
 this variable show a neutral explanation instead of inventing a SHA. A successful
 GitHub merge or provider deployment check is **not** by itself proof that the
 custom domain already serves the new HTML; confirm RO/EN acceptance separately.
+
+## SITL-to-ZKP integrated synthetic evidence (22 November 2026)
+
+GitHub Actions run #44995909866 at TAG PR #167 HEAD
+`215d9ec5b6739f599f96d57ef311f64c0a97fa42` returned SUCCESS for a
+single bounded synthetic ArduPilot Copter 4.7.1 SITL -> two receive-only
+MAVLink2 observations -> TAG normalization -> real Noir/Barretenberg proof
+-> separately invoked verifier VALID. The run reports `UNSIGNED` source,
+`DISABLED` publication, `NONE` command path and successful cleanup.
+
+This update records the accepted finding in the RO/EN research journal, the
+technical evidence panel and limits. The public HTML remains a static
+presentation: its mock replays and earlier offline-only evidence are not the
+2026-11-22 integrated execution. See the historical execution evidence at
+`https://github.com/ROCSI-eu/Telemetry-Attestation-Gateway/actions/runs/44995909866`.
+A valid synthetic proof does not authenticate telemetry, establish trusted
+timing or cover a whole flight. No production/operational use is authorized.
