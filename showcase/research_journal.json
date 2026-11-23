@@ -38,18 +38,18 @@
     {
       "id": "sitl-zkp-integrated",
       "status": "documented_synthetic",
-      "evidence_path": "experiments/sitl-receive-v0/sitl_ci_e2e.py",
+      "evidence_path": "experiments/sitl-receive-v0/qube-parity-evidence-20261123.md",
       "ro": {
         "field": "Simulare · dovadă criptografică",
         "title": "Din simulator până la o dovadă verificată",
-        "result": "Pe 22 noiembrie 2026, un job GitHub Actions izolat a primit două observații sintetice de la ArduPilot Copter 4.7.1 SITL, le-a normalizat și a generat o dovadă Noir/Barretenberg pentru limita publică de 600 cm/s. Verificarea într-un proces separat a rezultat VALID.",
-        "insight": "Am demonstrat un flux sintetic integrat, nu autenticitatea telemetriei. Sursa rămâne UNSIGNED; nu există comenzi către vehicul, publicare sau validare operațională."
+        "result": "Pe 22 noiembrie 2026 (GitHub Actions) și pe 23 noiembrie 2026 (Qube Dev1), ArduPilot Copter 4.7.1 SITL a furnizat câte două observații sintetice MAVLink2 pentru normalizare și o dovadă Noir/Barretenberg privind limita publică de 600 cm/s. În ambele execuții, verificarea integrată și cea separată au rezultat VALID.",
+        "insight": "Două medii au confirmat reproductibilitatea fluxului sintetic, nu autenticitatea sursei (UNSIGNED), timpul de încredere sau acoperirea întregii misiuni. Fără comenzi către vehicul, publicare sau autorizare operațională."
       },
       "en": {
         "field": "Simulation · cryptographic proof",
         "title": "From simulator observations to a verified proof",
-        "result": "On 22 November 2026, an isolated GitHub Actions job received two synthetic observations from ArduPilot Copter 4.7.1 SITL, normalized them and generated a Noir/Barretenberg proof against a public 600 cm/s speed limit. Verification in a separate process returned VALID.",
-        "insight": "This demonstrates one integrated synthetic run, not telemetry authenticity. The source remains UNSIGNED; there are no vehicle commands, publication or operational validation."
+        "result": "On 22 November 2026 (GitHub Actions) and 23 November 2026 (Qube Dev1), ArduPilot Copter 4.7.1 SITL supplied two synthetic MAVLink2 observations per run for normalization and a Noir/Barretenberg proof against a public 600 cm/s speed limit. Integrated and separate-process verification returned VALID in both runs.",
+        "insight": "Two environments confirmed reproducibility of the synthetic flow, not source authenticity (UNSIGNED), trusted time or whole-mission coverage. No vehicle commands, publication or operational authorization."
       }
     }
   ],
