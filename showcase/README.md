@@ -12,6 +12,22 @@ reason to recheck Cloudflare dashboard settings. Verify the served SHA afterward
 It is not a validated product, live verifier or customer workflow. Issue #88
 remains independent of serving immutable static assets.
 
+## PUBLIC-UX-SIMPLIFICATION-01 — current public experience (23 November 2026)
+
+The public visitor page is a short, bilingual, automatically animated
+**telemetry → cryptographic proof → independent verification** explanation.
+It shows three previously confirmed synthetic SITL/ZKP/verification findings
+and states the source-authenticity, timing and browser-JSON limitations plainly.
+No scenario selectors, replay buttons, extensible technical panels, typed status
+codes, public JSON replay or JavaScript execution are delivered to visitors.
+There is one secondary GitHub research/documentation link. Technical experiments,
+strict fixture validators and the private local console remain in the source
+repository unchanged. Existing Cloudflare Pages build, RO/EN paths, noindex and
+CSP remain; no deployment is authorized by this code-only Draft.
+
+The historical visual-refresh implementation notes below describe the superseded
+interactive presentation, not the current public visitor journey.
+
 ## TAG-VISUAL-REFRESH-01 — public presentation layer
 
 The visual refresh changes the **static public showcase only**, without changing

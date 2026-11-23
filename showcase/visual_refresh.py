@@ -1493,3 +1493,154 @@ def redesign_public_html(html: str) -> str:
             + '  </section>\n' + html[mission_end:])
     html = html.replace("</script>", TECH_ANIMATION_JS + SCENARIO_INTERPRETATION_JS + CONCEPT_VISIBILITY_JS + "\n</script>", 1)
     return html.replace("</style>", VISUAL_CSS + EDITORIAL_CSS + CONCEPT_CSS + MISSION_EXPLAIN_CSS + ARCHITECTURE_CSS + "  </style>", 1)
+
+PUBLIC_THEME_CSS = """
+    :root{font:16px/1.5 Arial,Helvetica,system-ui,sans-serif;color:#f1f0eb;background:#0a0d0e}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}
+    body{margin:0;min-height:100vh;background:radial-gradient(circle at 88% 4%,#243037 0,transparent 27%),#0a0d0e;color:#f1f0eb}
+    a{color:#e7c58e}a:focus-visible{outline:3px solid #f1d4a2;outline-offset:4px}
+    .wrap{max-width:1560px;margin:auto;padding:0 clamp(18px,5vw,92px) 68px}
+    .site-header{display:flex;align-items:center;gap:20px;flex-wrap:wrap;min-height:94px;border-bottom:1px solid #3d4548;padding:16px 0}
+    .brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:#f7f4eb;min-width:0}
+    .brand-rocsi-mark{display:block;width:34px;height:34px;flex:none;object-fit:contain}
+    .brand-signal{font-size:1.72rem;font-weight:900;letter-spacing:-.09em}
+    .brand-detail{font-size:.66rem;letter-spacing:.11em;text-transform:uppercase;color:#c2c7c8;max-width:160px;line-height:1.45}
+    .section-nav{display:flex;align-items:center;flex-wrap:wrap;gap:22px;margin-left:auto}
+    .section-nav a{text-decoration:none;font-size:.75rem;letter-spacing:.04em;color:#cbd0cf}
+    .section-nav a:hover{color:#fff}
+    .header-status{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .header-cta{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:9px 13px;border:1px solid #dfbb83;color:#f6e5c9;text-decoration:none;font-size:.74rem;font-weight:750;text-align:center}
+    .header-cta:hover{background:#dfbb83;color:#121717}
+    .pill{font-size:.62rem;letter-spacing:.07em;border:1px solid #555c5d;border-radius:99px;padding:6px 12px;color:#c7cdcc}
+    .hero{display:grid;grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr);gap:clamp(22px,4vw,66px);align-items:stretch;min-height:clamp(560px,75vh,780px);padding:clamp(48px,6vw,82px) 0 clamp(48px,7vw,96px);border-bottom:1px solid #3d4548}
+    .hero-content{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;min-width:0}
+    .hero-overline,.section-overline,.hero-art-label{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;font-weight:800;color:#e3be83}
+    .hero h1{font-size:clamp(3.3rem,6.3vw,7.1rem);max-width:11ch;line-height:.98;letter-spacing:-.065em;font-weight:820;margin:22px 0 26px;text-wrap:balance}
+    .hero .sub{max-width:57ch;color:#d4d8d6;font-size:clamp(.97rem,1.1vw,1.1rem);line-height:1.68}
+    .hero-actions{margin-top:25px;display:flex;gap:12px;flex-wrap:wrap}
+    .hero-actions a{display:inline-flex;align-items:center;justify-content:center;padding:14px 18px;background:#e5c18a;border:1px solid #e5c18a;color:#111617;text-decoration:none;font-size:.81rem;font-weight:750}
+    .hero-actions a:hover{background:#f0d9ad}
+    .hero-art{position:relative;overflow:hidden;isolation:isolate;min-height:clamp(400px,47vw,680px);border:1px solid #355056;background:radial-gradient(ellipse at 58% 53%,#203e47 0,#0d1a20 53%,#0b1216 88%)}
+    .hero-art-label{position:absolute;z-index:2;top:22px;left:22px;color:#d4d7cf}
+    .hero-scene{display:block;position:absolute;inset:0;width:100%;height:100%;overflow:hidden}
+    .hero-vehicle{animation:public-hover 10s ease-in-out infinite}
+    .hero-sweep{transform-origin:385px 350px;animation:public-radar 20s linear infinite}
+    .hero-route-flow{animation:public-route 11s linear infinite}
+    .hero-rotor-disc{transform-box:fill-box;transform-origin:center;animation:public-rotor .3s linear infinite}
+    .hero-beacon-pulse{transform-box:fill-box;transform-origin:center;animation:public-beacon 5s ease-out infinite}
+    @keyframes public-hover{0%,100%{transform:translate(389px,350px)}50%{transform:translate(389px,341px)}}
+    @keyframes public-radar{to{transform:rotate(360deg)}}
+    @keyframes public-route{to{stroke-dashoffset:-390}}
+    @keyframes public-rotor{to{transform:rotate(360deg)}}
+    @keyframes public-beacon{0%,100%{opacity:.2;transform:scale(.9)}50%{opacity:.7;transform:scale(1.2)}}
+    .primer{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(25px,4vw,68px);padding:clamp(54px,7vw,110px) 0;border-bottom:1px solid #3d4548;scroll-margin-top:25px}
+    .primer h2{font-size:clamp(2.05rem,3.75vw,4.65rem);line-height:1.08;letter-spacing:-.055em;color:#f7f4eb;text-wrap:balance}
+    .primer .primer-copy p{color:#c7cdcb;line-height:1.73;font-size:.98rem}
+    .primer .primer-example{padding-left:17px;border-left:2px solid #d8b67b;color:#eee7d9}
+    .section-display{font-size:clamp(2.15rem,4.2vw,4.9rem);font-weight:780;line-height:1.09;letter-spacing:-.055em;margin:0 0 27px;text-wrap:balance}
+    .rocsi-affiliation{display:flex;align-items:center;flex-wrap:wrap;gap:18px 28px;margin:clamp(40px,6vw,72px) 0;padding:27px 0;border-top:1px solid #3d4548;border-bottom:1px solid #3d4548}
+    .rocsi-affiliation-mark{display:block;width:60px;height:60px;flex:none}
+    .rocsi-affiliation-copy{flex:1;min-width:210px}.rocsi-affiliation h3{font-size:1.18rem;margin:0 0 7px}
+    .rocsi-affiliation p{margin:0;color:#c6d0cd;font-size:.9rem;line-height:1.6}
+    .rocsi-affiliation-actions a{color:#e4c58e;text-decoration:underline;text-underline-offset:5px;font-weight:700;font-size:.87rem}
+    footer{font-size:.76rem;color:#aebdb7;line-height:1.6}
+    @media(max-width:1100px){.section-nav{order:3;flex-basis:100%;margin-left:0}.hero{min-height:0}}
+    @media(max-width:750px){html{scroll-behavior:auto}.wrap{padding:0 18px 44px}.site-header{min-height:0;gap:12px 18px}.section-nav{gap:12px 18px}.header-status .pill{display:none}.hero{grid-template-columns:1fr;gap:24px;padding:40px 0 55px}.hero h1{font-size:clamp(2.8rem,10.8vw,4.6rem);margin:13px 0 18px}.hero .sub{font-size:.94rem}.hero-art{min-height:300px}.primer{padding:54px 0}.rocsi-affiliation{align-items:flex-start}}
+    @media(max-width:420px){.brand-detail{font-size:.58rem}.section-nav{gap:9px 16px}.section-nav a{font-size:.7rem}.header-cta{font-size:.7rem}.hero h1{font-size:clamp(2.6rem,12vw,3.3rem)}.hero-art{min-height:245px}.hero-art-label{top:14px;left:13px;font-size:.61rem}.hero-actions a{width:100%}}
+    @media(prefers-reduced-motion:reduce){.hero-scene *{animation:none!important}}
+"""
+
+# TAG / PUBLIC-UX-SIMPLIFICATION-01: public-only static editorial surface.
+# Reuse the already-drawn hero and concept, but do not ship the replay UI,
+# technical archives, precomputed JSON clients, controls, or browser scripts.
+PUBLIC_SIMPLE_CSS = """
+    .section-nav{gap:clamp(12px,2vw,28px)}
+    .hero-actions a{min-width:185px;text-align:center}
+    .public-demo{padding:clamp(48px,7vw,92px) 0;border-top:1px solid #415256;scroll-margin-top:30px}
+    .public-demo .section-display{max-width:23ch}
+    .public-demo-lead{max-width:70ch;font-size:clamp(1rem,1.35vw,1.15rem);line-height:1.7;color:#d5dcd7;margin:16px 0 33px}
+    .public-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;list-style:none;padding:0;margin:0}
+    .public-step{min-width:0;min-height:224px;padding:clamp(20px,2.7vw,32px);border:1px solid #466168;background:#102329;animation:public-phase 20s linear infinite}
+    .public-step:nth-child(2){animation-delay:-13.33s}
+    .public-step:nth-child(3){animation-delay:-6.67s}
+    .public-step small{color:#e4c58e;font-size:.7rem;font-weight:800;letter-spacing:.15em}
+    .public-step h3{font-size:clamp(1.3rem,2.15vw,2.1rem);line-height:1.16;letter-spacing:-.03em;margin:23px 0 13px;color:#f7f0e2}
+    .public-step p{font-size:.94rem;line-height:1.63;color:#c8d4d0;margin:0}
+    @keyframes public-phase{0%,30%{border-color:#e5c18a;background:#1e3335;box-shadow:inset 0 3px 0 #e5c18a}33%,100%{border-color:#466168;background:#102329;box-shadow:none}}
+    .public-outcomes{padding:clamp(35px,5vw,65px) 0 30px;border-top:1px solid #415256;scroll-margin-top:30px}
+    .public-outcomes h2{font-size:clamp(1.8rem,3vw,3rem);max-width:24ch}
+    .public-results{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:30px 0}
+    .public-result{padding:24px;border-left:3px solid #b5d8cd;background:#17282c}
+    .public-result strong{display:block;color:#ebd1a4;font-size:1.12rem;margin-bottom:10px}
+    .public-result p{margin:0;color:#ccd7d0;line-height:1.6;font-size:.9rem}
+    .public-limits{max-width:83ch;padding:20px 24px;border:1px solid #586165;background:#111e21;line-height:1.7;color:#c7d2cc}
+    .public-limits strong{color:#f1dfbd}
+    .public-documentation{margin:24px 0 0}
+    .public-documentation a{color:#eed09a;text-underline-offset:5px;font-weight:700}
+    @media(max-width:750px){.public-steps,.public-results{grid-template-columns:1fr}.public-step{min-height:0}.public-step h3{margin:12px 0}.public-demo{padding-top:48px}.public-result{padding:19px}}
+    @media(prefers-reduced-motion:reduce){.public-step{animation:none!important}.hero-scene *,.concept-cinema *{animation:none!important}}
+"""
+
+
+def simplify_public_html(html: str) -> str:
+    """Replace the visitor body at known static landmarks; fail closed on drift."""
+    def unique(pattern: str, label: str) -> str:
+        matches = re.findall(pattern, html, flags=re.S)
+        if len(matches) != 1:
+            raise ValueError("public simplification anchor changed: " + label)
+        return matches[0]
+
+    if html.count('<body>') != 1 or html.count('</body>') != 1:
+        raise ValueError("unexpected public document shape")
+    header = unique(r'<header class="site-header">.*?</header>', "header")
+    hero = unique(r'<section class="hero".*?</section>', "hero")
+    intro = unique(r'<section class="primer".*?</section>', "concept")
+    affiliation = unique(r'<aside class="rocsi-affiliation".*?</aside>', "ROCSI affiliation")
+    if header.count('<nav class="section-nav"') != 1 or hero.count('class="hero-actions"') != 1:
+        raise ValueError("unexpected public navigation")
+    header = re.sub(r'<nav class="section-nav".*?</nav>',
+        '<nav class="section-nav" aria-label="Page sections">'
+        '<a href="#principle">The Concept</a><a href="#demonstration">The Demonstration</a>'
+        '<a href="#results">Results</a></nav>', header, count=1, flags=re.S)
+    hero = re.sub(r'<div class="hero-actions">.*?</div>',
+        '<div class="hero-actions"><a href="#demonstration">See the demonstration</a></div>',
+        hero, count=1, flags=re.S)
+    # Retain the original artwork and the original explanation of the private value.
+    demo = '''<section class="public-demo" id="demonstration" aria-labelledby="demo-title">
+      <p class="section-overline">THE DEMONSTRATION</p>
+      <h2 class="section-display" id="demo-title">Telemetry → cryptographic proof → verification</h2>
+      <p class="public-demo-lead">We check whether a condition is met without revealing the data behind it. This twenty-second visual sequence illustrates the idea automatically; it is not a live computation.</p>
+      <ol class="public-steps" aria-label="Three stages of the conceptual verification flow">
+        <li class="public-step"><small>01 / TELEMETRY</small><h3>Receive observations</h3><p>A simulator produces synthetic observations. The exact value need not be shown to the verifier.</p></li>
+        <li class="public-step"><small>02 / CRYPTOGRAPHIC PROOF</small><h3>Generate a proof</h3><p>A zero-knowledge proof supports a defined condition using the private input.</p></li>
+        <li class="public-step"><small>03 / VERIFICATION</small><h3>Check independently</h3><p>A verifier checks the proof without needing the private measurement.</p></li>
+      </ol>
+    </section>
+    <section class="public-outcomes" id="results" aria-labelledby="results-title">
+      <p class="section-overline">DOCUMENTED EXPERIMENTAL RESULTS</p>
+      <h2 id="results-title">Three steps confirmed in synthetic laboratory tests</h2>
+      <div class="public-results">
+        <article class="public-result"><strong>SITL observations received</strong><p>Simulator observations reached the experimental processing flow.</p></article>
+        <article class="public-result"><strong>ZKP generated</strong><p>A cryptographic proof was generated for the bounded synthetic test.</p></article>
+        <article class="public-result"><strong>Independent verification passed</strong><p>The generated proof was successfully checked offline in GitHub Actions.</p></article>
+      </div>
+      <p class="public-limits"><strong>Experimental and synthetic only.</strong> The tests confirm an isolated end-to-end research path, not authentic flight telemetry. A valid proof does not authenticate its source, timestamp or the full mission. The published illustration and JSON recordings are not independently authenticated by this website. No live vehicle, proving, verification or operational authorization is provided.</p>
+      <p class="public-documentation"><a href="https://github.com/ROCSI-eu/Telemetry-Attestation-Gateway">Technical documentation and research evidence on GitHub</a></p>
+    </section>'''
+    prefix = html.split('<body>', 1)[0]
+    if prefix.count('</style>') != 1 or prefix.count('<style>') != 1:
+        raise ValueError("public stylesheet structure changed")
+    # Discard the superseded console stylesheet too: dead selectors and
+    # technical panel styles must not be published merely because their DOM is gone.
+    prefix = re.sub(r'<style>.*?</style>',
+                    '<style>' + PUBLIC_THEME_CSS + CONCEPT_CSS + PUBLIC_SIMPLE_CSS + '</style>',
+                    prefix, count=1, flags=re.S)
+    footer = '<footer id="console-footer">EXPERIMENTAL · SYNTHETIC ONLY · NOT VALIDATION OR PRODUCTION AUTHORIZATION. TAG is a ROCSI research project.</footer>'
+    result = (prefix + '<body>\n<main class="wrap">\n' + header + '\n' + hero + '\n'
+              + intro + '\n' + demo + '\n' + affiliation + '\n' + footer
+              + '\n</main>\n</body>\n</html>')
+    if any(token in result for token in ('<script', '<details', '<select', '<button',
+                                         'id="scenario"', 'id="authentic-panel"',
+                                         'A0_SYNTHETIC')):
+        raise ValueError("technical replay leaked into simplified public page")
+    return result
