@@ -68,19 +68,64 @@ jobs:
           chmod 700 "$root/bin/bb"
           printf 'TAG_BB_REAL=%s\nTAG_CRS_DIR=%s\nTAG_TOOL_BIN=%s\n' "$root/bin/bb-real" "$root/crs" "$root/bin" >> "$GITHUB_ENV"
           echo 'Pinned crypto toolchain, VK and public CRS: PASS'
-      - name: One isolated real SITL to authentic ZKP execution
+      - name: One isolated real SITL to ZKP and private console acceptance
         shell: bash
         run: |
           set -euo pipefail
+          umask 077
+          # Runner-local only. No upload, artifact retention, or public endpoint.
+          private_root=$(mktemp -d "$RUNNER_TEMP/tag-sitl-console-e2e-XXXXXXXX")
+          trap 'rm -rf -- "$private_root"' EXIT
+          mkdir -m 0700 "$private_root/record"
           uid=$(id -u); gid=$(id -g)
           sudo unshare --net -- bash -euo pipefail -c '
             ip link set lo up
             exec setpriv --reuid="$1" --regid="$2" --clear-groups \
               env PATH="$3" HOME="$8" TAG_BB_REAL="$4" TAG_CRS_DIR="$5" \
               TAG_SITL_BIN="$6" TAG_ARDUPILOT_ROOT="$7" RUNNER_TEMP="$8" \
-              TMPDIR="$8" \
+              TMPDIR="$8" PYTHONDONTWRITEBYTECODE=1 \
               timeout --signal=TERM --kill-after=10s 120s \
-              /usr/bin/python3 "$9"
+              /usr/bin/python3 "$9" --record-dir "${10}/record"
           ' bash "$uid" "$gid" "$TAG_TOOL_BIN:$PATH" "$TAG_BB_REAL" "$TAG_CRS_DIR" \
             "$RUNNER_TEMP/ardupilot/build/sitl/bin/arducopter" "$RUNNER_TEMP/ardupilot" "$RUNNER_TEMP" \
-            "$GITHUB_WORKSPACE/experiments/sitl-receive-v0/sitl_ci_e2e.py"
+            "$GITHUB_WORKSPACE/experiments/sitl-receive-v0/sitl_ci_e2e.py" "$private_root"
+          # Static import, no HTTP listener and no new proving. Never log record bytes.
+          /usr/bin/python3 - "$GITHUB_WORKSPACE" "$private_root" <<'PY'
+          from pathlib import Path
+          import sys
+
+          repo = Path(sys.argv[1])
+          private_root = Path(sys.argv[2])
+          sys.path.insert(0, str(repo / "experiments" / "web-console-v0"))
+          import sitl_record
+          import refresh_local_console
+          import run_private_preview
+
+          def require(ok):
+              if not ok:
+                  raise ValueError("rejected")
+
+          try:
+              record_dir = private_root / "record"
+              raw = sitl_record.read_private(record_dir)
+              recorded = sitl_record.parse_record(raw)
+              require(recorded["separate_process_crypto"] == "VALID")
+              require(recorded["integrated_crypto"] == "VALID")
+              require(recorded["cleanup"] == "PASS")
+              require(recorded["source_trust"] in ("UNSIGNED", "UNKNOWN"))
+              require(recorded["record_authenticated"] is False)
+              require(recorded["browser_verified"] is False)
+              session = private_root / "console"
+              refresh_local_console.refresh(None, session, sitl_record_dir=record_dir)
+              assets = run_private_preview.approved_assets(session)
+              route = "/web-console-v0/sitl-record.json"
+              require(set(assets) == set(run_private_preview.ROUTES) | {route})
+              require(assets[route][0] == raw)
+              html = assets["/web-console-v0/"][0]
+              require(b'id="sitl-record-panel"' in html)
+              require(b'fetch("sitl-record.json"' in html)
+              require(b"UNAUTHENTICATED_LOCAL_SELF_REPORT" in html)
+          except Exception:
+              raise SystemExit("SITL_RECORD_TO_LOCAL_CONSOLE_GATE_FAILED") from None
+          print("EXPERIMENTAL SYNTHETIC_ONLY A0_SYNTHETIC: real SITL -> separate ZKP verifier -> private 0600 record -> frozen local console route: PASS; JSON unauthenticated; no browser run")
+          PY
