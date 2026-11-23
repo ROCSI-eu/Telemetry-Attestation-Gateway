@@ -4,7 +4,58 @@
 
 **Status:** experimental local UI increment for #87, not public hosting or an accepted product/operator console.
 
-This is a dependency-free, responsive **local** browser presentation of two separately labeled recorded sources: (1) deterministic orchestration **mock** evidence from `../integrated-cli-v0/evidence-results.json` and (2) a precomputed genuine synthetic verifier replay in `authentic-evidence.json`, exported after an isolated, pinned Noir/Barretenberg verifier run. **The browser does not verify cryptographic proofs and cannot independently authenticate a JSON replay.** The mock source is never promoted into the authentic source. No background jobs, live MAVLink, browser-to-Qube/MCP connection, raw telemetry, witness material, keys, private speed or persistent browser storage.
+This is a dependency-free, responsive **local** browser presentation of two separately labeled default recorded sources (plus an opt-in private SITL self-report): (1) deterministic orchestration **mock** evidence from `../integrated-cli-v0/evidence-results.json` and (2) a precomputed genuine synthetic verifier replay in `authentic-evidence.json`, exported after an isolated, pinned Noir/Barretenberg verifier run. **The browser does not verify cryptographic proofs and cannot independently authenticate a JSON replay.** The mock source is never promoted into the authentic source. No background jobs, live MAVLink, browser-to-Qube/MCP connection, raw telemetry, witness material, keys, private speed or persistent browser storage.
+
+## Opt-in SITL end-to-end recorded self-report (local only)
+
+**EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION.**
+
+This is an optional *third*, separate, minimized source. The existing active
+operator result, deterministic mock, and precomputed offline verifier replay
+retain their original meanings. The SITL record is an **unauthenticated local
+JSON self-report**, not proof bytes, a signed receipt, an independent
+attestation, or cryptographic verification performed by the browser.
+Strict schema checking rejects incompatible/expanded records; it **does not
+establish provenance**. Nothing changes TAG #88 persistent service, its
+two short-circuit scenarios, or the public static showcase.
+
+After a *separately authorized* real synthetic SITL run, the existing
+`experiments/sitl-receive-v0/sitl_ci_e2e.py` supports the optional
+`--record-dir /absolute/private/empty-directory` argument. The directory
+must already exist, be owned by the invoking user, have mode 0700 and be
+empty. The script emits exactly one 0600 allowlisted result only **after**
+real SITL intake, genuine proof generation, integrated verification,
+independent separate-process verification and clean simulator/temporary
+workspace teardown all PASS. Any failed gate prevents a record. Existing
+runs without this opt-in argument are unchanged. Do not run SITL merely
+to exercise UI tests.
+
+To *later* inspect a recorded result in a distinct, disposable loopback
+browser session without starting SITL or a prover:
+
+```sh
+python3 experiments/web-console-v0/run_private_preview.py \
+  --sitl-record-dir /absolute/private/sitl-record \
+  --private-parent /absolute/private/existing-runtime-parent --seconds 30
+```
+
+This reuses `refresh_local_console.py`, which copies the checked-in,
+historical verifier replay as a **separate** precomputed source while
+adding only the validated SITL self-report. A new private session is
+required for every SITL record. No arbitrary JSON is promoted to authenticated
+evidence. The only additional HTTP route is the allowlisted
+`/web-console-v0/sitl-record.json`, present **only** in this disposable
+private preview mode and absent from the existing persistent bridge.
+Its bytes are frozen and prevalidated before the loopback listener opens.
+The Mission Control *Backend truth* fields remain NOT_OBSERVED unless an
+independently authenticated active CLI call supplies an accepted final result.
+A malformed or absent record cannot display VALID.
+
+Offline tests may exercise the record contract with **synthetic in-memory
+test values only**. They cannot establish that this new path actually
+worked with a live SITL run; that integration acceptance remains separately
+gated. No raw telemetry, speed, position, witness, proof, VK, token, key,
+identity or private path is exported.
 
 ## Mission Control visual scene (#87, Proposed, code-only)
 

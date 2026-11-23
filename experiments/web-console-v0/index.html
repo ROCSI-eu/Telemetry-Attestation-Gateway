@@ -57,6 +57,7 @@
     .operator-step span{display:block;color:#a8bed0;font-size:.69rem}
     .operator-meta{color:#aad5e4;font-size:.78rem;margin:8px 0}
     @media(max-width:620px){.operator-grid{grid-template-columns:1fr}.operator-flow{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    #sitl-record-panel[hidden]{display:none}
     .status[data-tone="good"]{background:#194c43;color:#abffdb}.status[data-tone="warn"]{background:#654527;color:#ffdb9f}
     dl{display:grid;grid-template-columns:1fr auto;gap:9px;margin:0;font-size:.85rem}dt{color:#b2c7d6}dd{margin:0;font-weight:700;text-align:right;overflow-wrap:anywhere;max-width:170px}
     hr{border:0;border-top:1px solid #2d445c;margin:20px 0}
@@ -246,6 +247,28 @@
       <p class="small" id="operator-basis">—</p>
     </div>
     <p class="small">A CLI-reported synthetic proof VALID does not establish telemetry truth, trustworthy source, continuous coverage, policy acceptance, safety, compliance or a beneficiary decision. The browser cannot independently authenticate the returned JSON. Restart the short-lived local bridge for another run.</p>
+  </section>
+  <section class="card" id="sitl-record-panel" aria-labelledby="sitl-record-title" hidden>
+    <div class="eyebrow">Recorded local synthetic SITL · unauthenticated replay · NOT LIVE</div>
+    <h2 id="sitl-record-title">SITL end-to-end · recorded self-report</h2>
+    <p class="small">Only a minimized record emitted by the local SITL script after its separate-process verifier and cleanup gates is eligible for this local panel. The browser cannot authenticate the source of this JSON, reverify the proof, or establish that the recording was produced by that script. A structurally valid record is NOT an authenticated attestation. This panel never updates the active CLI Backend truth readout or the separate mock and offline verifier panels.</p>
+    <dl>
+      <dt>Record provenance</dt><dd>UNAUTHENTICATED_LOCAL_SELF_REPORT</dd>
+      <dt>Source</dt><dd id="sitl-source">NOT_OBSERVED</dd>
+      <dt>Received observations</dt><dd id="sitl-observations">NOT_OBSERVED</dd>
+      <dt>Normalization</dt><dd id="sitl-normalization">NOT_OBSERVED</dd>
+      <dt>Source trust</dt><dd id="sitl-trust">NOT_EVALUATED</dd>
+      <dt>Bounded-speed predicate (600 cm/s public maximum)</dt><dd id="sitl-claim">NOT_OBSERVED</dd>
+      <dt>Proof generation</dt><dd id="sitl-proof">NOT_OBSERVED</dd>
+      <dt>Integrated verifier</dt><dd id="sitl-integrated">NOT_OBSERVED</dd>
+      <dt>Separate-process verifier</dt><dd id="sitl-independent">NOT_OBSERVED</dd>
+      <dt>Cleanup</dt><dd id="sitl-cleanup">NOT_OBSERVED</dd>
+      <dt>Publication</dt><dd id="sitl-publication">NOT_PERFORMED</dd>
+      <dt>Relying-party decision</dt><dd>NOT_MADE</dd>
+      <dt>Browser cryptographic verification</dt><dd>NOT_PERFORMED</dd>
+      <dt>Record authentication</dt><dd>NOT_PERFORMED</dd>
+    </dl>
+    <p class="small">EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION. A VALID self-reported verifier status is not telemetry truth. No trusted source, trusted time, interval coverage, live vehicle, command path, policy evaluation, operational authorization or proof material is provided.</p>
   </section>
   <div class="layout">
     <section class="card" aria-labelledby="scenario-title">
@@ -481,6 +504,43 @@ async function initializeAuthentic() {
 // Progressive enhancement: the shared page remains a recorded-only console
 // unless the separate authenticated, local one-shot CLI bridge is present.
 const OPERATOR_LABELS=["EXPERIMENTAL","SYNTHETIC_ONLY","A0_SYNTHETIC","NOT VALIDATION OR PRODUCTION AUTHORIZATION"];
+// Optional private SITL self-report. The JSON is structurally checked but NOT
+// authenticated; it never updates the observed CLI result or the other panels.
+async function initializeSITLRecord() {
+  const panel=$("sitl-record-panel");
+  panel.hidden=true;
+  try {
+    const response=await fetch("sitl-record.json",{cache:"no-store"});
+    if(!response.ok)return;
+    const e=await response.json();
+    const fixed={
+      schema_version:"TAG_RECORDED_SYNTHETIC_SITL_V1_EXPERIMENTAL",
+      evidence_kind:"SITL_E2E_RECORDED_SELF_REPORT",source:"Copter_4.7.1_synthetic_SITL",
+      observations:2,normalization:"NORMALIZED",claim:"SATISFIED",
+      public_maximum_cm_s:600,proof_generation:"GENERATED",
+      integrated_crypto:"VALID",separate_process_crypto:"VALID",
+      assurance:"A0_SYNTHETIC",policy:"NOT_EVALUATED",freshness:"NOT_EVALUATED",
+      revocation:"NOT_EVALUATED",replay:"NOT_EVALUATED",
+      publication:"DISABLED",relying_party_decision:"NOT_MADE",command_path:"NONE",
+      cleanup:"PASS",record_authenticated:false,browser_verified:false,
+      proof_validity_is_telemetry_truth:false
+    };
+    const keys=Object.keys(fixed).concat(["labels","source_trust"]);
+    if(!e||typeof e!=="object"||Array.isArray(e)
+      ||Object.keys(e).length!==keys.length||!keys.every(k=>Object.hasOwn(e,k))
+      ||JSON.stringify(e.labels)!==JSON.stringify(OPERATOR_LABELS)
+      ||!["UNSIGNED","UNKNOWN"].includes(e.source_trust)
+      ||!Object.entries(fixed).every(([k,v])=>e[k]===v))return;
+    for(const [id,key] of [
+      ["sitl-source","source"],["sitl-observations","observations"],
+      ["sitl-normalization","normalization"],["sitl-trust","source_trust"],
+      ["sitl-claim","claim"],["sitl-proof","proof_generation"],
+      ["sitl-integrated","integrated_crypto"],["sitl-independent","separate_process_crypto"],
+      ["sitl-cleanup","cleanup"],["sitl-publication","publication"]
+    ])setText(id,e[key]);
+    panel.hidden=false;
+  }catch(_) {panel.hidden=true;}
+}
 const OPERATOR_KEYS=["schema_version","labels","state","scenario","source","source_trust","claim","proof_generation","verification_input","cryptographic","assurance","policy","freshness","revocation","replay","publication","relying_party_decision","command_path","restricted_fields_disclosed","browser_verified","proof_validity_is_telemetry_truth"];
 const OPERATOR_CASES={
   over_limit:["NORMALIZED","NOT_EVALUATED","NOT_SATISFIED","NOT_ATTEMPTED","NOT_CHECKED","NOT_CHECKED"],
@@ -578,6 +638,7 @@ $("operator-run").addEventListener("click",async()=>{
     if(persistentOperator)$("operator-run").disabled=false;
   }
 });
+initializeSITLRecord();
 $("authentic-reload").addEventListener("click",initializeAuthentic);
 initialize();
 initializeAuthentic();
