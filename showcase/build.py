@@ -17,8 +17,8 @@ import os
 from pathlib import Path, PurePosixPath
 import re
 
-from localization import inject_locale_js, localize_404, romanian_html, social_metadata
-from visual_refresh import redesign_public_html
+from localization import localize_404, romanian_html, social_metadata
+from visual_refresh import redesign_public_html, simplify_public_html
 
 ROOT = Path(__file__).resolve().parents[1]
 JOURNAL = ROOT / "showcase/research_journal.json"
@@ -27,12 +27,9 @@ CONSOLE = ROOT / "experiments/web-console-v0/index.html"
 SCENARIOS = ROOT / "experiments/integrated-cli-v0/evidence-results.json"
 # Static navigation only. The public bundle still rejects every other external URL.
 PUBLIC_REFERENCE_URLS = frozenset({
-    "https://www.noir-lang.org/docs/",
-    "https://barretenberg.aztec.network/docs/",
     "https://rocsi.eu/en",
     "https://rocsi.eu/en/contact",
-    "https://github.com/ROCSI-eu/Telemetry-Attestation-Gateway/tree/main/experiments/bounded-speed-proof-v0",
-    "https://github.com/ROCSI-eu/Telemetry-Attestation-Gateway/actions/runs/44995909866",
+    "https://github.com/ROCSI-eu/Telemetry-Attestation-Gateway",
 })
 VERIFIER = ROOT / "experiments/web-console-v0/authentic-evidence.json"
 LABELS = [
@@ -303,7 +300,7 @@ def public_html(source: str) -> str:
         "No visitor execution, vehicle connection, telemetry upload, analytics, tracking, "
         "external fonts or proof jobs. The browser does not independently verify proofs.",
     )
-    html = redesign_public_html(html)
+    html = simplify_public_html(redesign_public_html(html))
     forbidden = (
         "operator-panel", "operator-token", "operator-run", "operator-capabilities",
         "initializeOperator", "OPERATOR_KEYS", "X-TAG-Local-Token",
@@ -326,12 +323,12 @@ def public_html(source: str) -> str:
         guarded_html = guarded_html.replace(href, 'href="#reference"', 1)
     if any(token in guarded_html for token in forbidden):
         raise ValueError("public HTML retains restricted local/external feature")
-    if html.count('<script>') != 1 or html.count('<style>') != 1:
+    if html.count('<script>') != 0 or html.count('<style>') != 1:
         raise ValueError("unexpected HTML script/style surface")
     if re.search(r'\sstyle="', html):
         raise ValueError("inline style attribute incompatible with strict CSP")
-    if not all(label in html for label in LABELS):
-        raise ValueError("missing experimental label in public HTML")
+    if "EXPERIMENTAL" not in html or "SYNTHETIC ONLY" not in html:
+        raise ValueError("missing plain-language experimental boundary")
     return html
 
 
@@ -344,15 +341,15 @@ def sha256_source(text: str) -> str:
 def security_headers(html: str) -> str:
     style = re.search(r"<style>(.*?)</style>", html, flags=re.S)
     script = re.search(r"<script>(.*?)</script>", html, flags=re.S)
-    if not style or not script:
-        raise ValueError("inline content missing for CSP")
+    if not style or script:
+        raise ValueError("unexpected public inline content for CSP")
     csp = "; ".join((
         "default-src 'none'",
-        "script-src " + sha256_source(script.group(1)),
+        "script-src 'none'",
         "style-src " + sha256_source(style.group(1)),
         "style-src-attr 'none'",
         "img-src 'self' data:",
-        "connect-src 'self'",
+        "connect-src 'none'",
         "base-uri 'none'",
         "form-action 'none'",
         "frame-ancestors 'none'",
@@ -501,17 +498,13 @@ def build(out: Path) -> tuple[str, ...]:
                   "", html, count=1)
     if 'href="data:image/svg+xml,' in html:
         raise ValueError("placeholder favicon was not removed")
-    html = inject_locale_js(html)
-    journal = load_research_journal()
-    scenarios = minimized_scenarios(json.loads(SCENARIOS.read_text(encoding="utf-8")))
-    authentic = minimized_verifier(json.loads(VERIFIER.read_text(encoding="utf-8")))
-    source_commit = os.environ.get("CF_PAGES_COMMIT_SHA") or None
-    html_en = social_metadata(render_research_release(
-        render_research_journal(html, journal, "en"), "en", scenarios,
-        authentic, source_commit), "en")
-    html_ro = social_metadata(render_research_release(
-        render_research_journal(romanian_html(html), journal, "ro"),
-        "ro", scenarios, authentic, source_commit), "ro")
+    # Continue validating the source fixtures, but never publish them or replay
+    # them on the simplified visitor page. They remain in the GitHub repository.
+    load_research_journal()
+    minimized_scenarios(json.loads(SCENARIOS.read_text(encoding="utf-8")))
+    minimized_verifier(json.loads(VERIFIER.read_text(encoding="utf-8")))
+    html_en = social_metadata(html, "en")
+    html_ro = social_metadata(romanian_html(html), "ro")
     if security_headers(html_ro) != security_headers(html_en):
         raise ValueError("localized assets have mismatching CSP inline hashes")
     media = ROOT / "showcase/assets"
@@ -526,8 +519,6 @@ def build(out: Path) -> tuple[str, ...]:
         "en/index.html": html_en,
         "404.html": localize_404("ro"),
         "en/404.html": localize_404("en"),
-        "evidence-results.json": json.dumps(scenarios, indent=2, ensure_ascii=False) + "\n",
-        "authentic-evidence.json": json.dumps(authentic, indent=2, ensure_ascii=False) + "\n",
         "_headers": security_headers(html_ro),
         "_redirects": '/ /ro/ 301\n',
         # Crawlers need access to static Open Graph metadata and PNGs. The
@@ -546,6 +537,12 @@ def build(out: Path) -> tuple[str, ...]:
     if obsolete_root.is_symlink() or (obsolete_root.exists() and not obsolete_root.is_file()):
         raise ValueError("refusing unsafe stale root entry")
     obsolete_root.unlink(missing_ok=True)
+    # A reused build directory must not retain the retired public JSON replay.
+    for old_name in ("evidence-results.json", "authentic-evidence.json"):
+        old_file = target / old_name
+        if old_file.is_symlink() or (old_file.exists() and not old_file.is_file()):
+            raise ValueError("refusing unsafe stale evidence output")
+        old_file.unlink(missing_ok=True)
     for filename, content in assets.items():
         destination = target / filename
         if not destination.resolve().is_relative_to(target):
