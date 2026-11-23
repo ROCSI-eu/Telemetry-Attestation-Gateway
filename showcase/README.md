@@ -5,9 +5,10 @@
 **Static package:** this directory builds a separate, precomputed, static technology
 showcase from the already existing Mission Control console (#87). The current
 Romanian-first bilingual baseline is hosted on Cloudflare Pages at tag.rocsi.eu.
-A Draft PR does not itself authorize publication; a merge **may trigger an
-automatic Cloudflare deployment when enabled**. Assess that side effect before
-merging, and do not infer the publicly served SHA from a GitHub check alone.
+A Draft PR does not authorize publication. The owner confirmed on 23 November
+2026 that GitHub `main` merges automatically deploy to Cloudflare Pages Production.
+Treat that as the expected consequence of an explicitly approved merge, not a
+reason to recheck Cloudflare dashboard settings. Verify the served SHA afterward;
 It is not a validated product, live verifier or customer workflow. Issue #88
 remains independent of serving immutable static assets.
 
@@ -60,11 +61,11 @@ hidden-tab motion pauses; prefers-reduced-motion freezes both illustrations.
 The local experimental console retains its original controls and logic.
 Recorded mocks and offline verifier evidence remain independent of animation.
 
-**Code-only Draft PR**: neither creating the PR nor passing QA authorizes
-merging, an automatic hosting side effect or deploying the live site. Accept
-the visual design in a browser and separately authorize integration. At that
-point assess the currently effective Pages automatic deployment settings
-before any merge, because merging may publish automatically.
+**Code-only Draft PR**: neither opening a Draft nor passing QA authorizes
+merging or the automatic Production effect. Require explicit merge approval
+that covers the existing GitHub `main` → Cloudflare Pages deployment. Reuse
+that accepted checkpoint rather than demanding another dashboard/Preview/
+rollback inventory for ordinary content updates without contradictory evidence.
 
 ### Focused acceptance
 
@@ -97,8 +98,8 @@ state the limitation, and point `evidence_path` to the existing source in
 unverified claims or real/sensitive data. No invented dates or percentage
 progress. Review the wording and evidence before merge.
 
-A merge to `main` triggers the **existing** Cloudflare Pages automatic build
-when enabled. The build embeds the updated entries directly into RO/EN HTML;
+An explicitly approved merge to `main` triggers the owner-confirmed automatic
+Cloudflare Pages Production build, embedding updated entries into RO/EN HTML;
 there is no CMS, external fetch, browser scripting, new output asset or extra
 deployment step. The strict schema/evidence-path check fails closed on invalid
 input. A commit that does not update the journal cannot magically create
@@ -157,14 +158,15 @@ Build command: \`python3 showcase/build.py --out-dir dist\`.
 Build output: \`dist\`; framework preset: none; no runtime functions,
 environment secrets, analytics or SSR. The Pages project and custom hostname are
 existing accepted setup, not provisioning tasks to repeat at each handoff.
-Reuse the last verified checkpoint for unchanged work. Production/Preview
-auto-deploy, current deployment identity and available rollback are **mutable
-account state**, not repo invariants: do not assume they are OFF or demand fresh
-dashboard screenshots for read-only/code-only tasks. Before an authorized
-merge or release, check only the relevant mutable facts that could affect
-publication. At a separately authorized public-activation gate, confirm
-the target version's \`_headers\`, HTTP behavior and static assets. Do not
-mistake GitHub SUCCESS for a live deployment or redeploy an already-live SHA.
+Reuse accepted hosting checkpoints until materially contradicted. On 23 November
+2026 the owner confirmed GitHub `main` → Pages Production auto-deployment.
+Preview controls, served deployment identity and rollback availability are
+mutable, but a dashboard/API recheck is **not** a prerequisite for every
+ordinary approved documentation merge. Reopen account-state checks only for
+contradictory evidence, hosting/build/branch changes, a publication failure or
+an actual separately authorized rollback. After merge verify the provider
+check, served RO/EN revision, HTTP redirects and relevant `_headers`/assets.
+Do not mistake provider SUCCESS for live publication or deploy manually again.
 
 **Alternative:** existing ROCSI Production VM served as pure static content.
 This would add web-server/domain configuration, disk and operational coupling
