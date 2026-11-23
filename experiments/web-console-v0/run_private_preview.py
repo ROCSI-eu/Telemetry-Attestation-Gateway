@@ -4,9 +4,10 @@
 EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC
 NOT VALIDATION OR PRODUCTION AUTHORIZATION
 
-Requires an existing demonstrably synthetic proof package and locally pinned
-verifier; this orchestrator never creates witnesses, runs a prover, or downloads
-security material. No public listener, long-lived job, or production surface.
+Requires either an existing demonstrably synthetic proof package with its
+independent verifier, or a strictly minimized, private, untrusted SITL record.
+This orchestrator never creates witnesses, runs a prover or authenticates a JSON
+self-report; no security material is downloaded. No public listener, long-lived job, or production surface.
 """
 from __future__ import annotations
 
@@ -21,6 +22,7 @@ import tempfile
 import threading
 
 import refresh_local_console as session_cli
+import sitl_record
 
 HERE = Path(__file__).resolve().parent
 REFRESH = HERE / "refresh_local_console.py"
@@ -62,8 +64,12 @@ def approved_assets(session: Path) -> dict[str, tuple[bytes, str]]:
     one while the viewer runs. Never re-open a mutable path during a request.
     """
     session_cli._existing_session_safe(session)
+    routes = dict(ROUTES)
+    if (session / "web-console-v0" / sitl_record.NAME).exists():
+        routes["/web-console-v0/sitl-record.json"] = (
+            "web-console-v0/sitl-record.json", "application/json")
     result = {}
-    for uri, (name, content_type) in ROUTES.items():
+    for uri, (name, content_type) in routes.items():
         if name in result:
             continue
         path = session / name
@@ -94,10 +100,15 @@ def approved_assets(session: Path) -> dict[str, tuple[bytes, str]]:
         elif name == "web-console-v0/authentic-evidence.json":
             if not session_cli._prior_replay_safe(body):
                 raise Rejected
+        elif name == "web-console-v0/sitl-record.json":
+            try:
+                sitl_record.parse_record(body)
+            except sitl_record.RecordRejected as exc:
+                raise Rejected from exc
         else:
             raise Rejected
         result[name] = (body, content_type)
-    return {uri: result[name] for uri, (name, _) in ROUTES.items()}
+    return {uri: result[name] for uri, (name, _) in routes.items()}
 
 
 class Preview(http.server.BaseHTTPRequestHandler):
@@ -142,9 +153,10 @@ def trusted_bwrap() -> Path:
     return bwrap
 
 
-def offline_refresh(package: Path, session: Path, temporary_root: Path) -> None:
-    # The existing exporter/CLI performs independent genuine cryptographic
-    # verification and strict allowlisting; never reimplement it here.
+def offline_refresh(package: Path | None, session: Path, temporary_root: Path, *,
+                    sitl_record_dir: Path | None = None) -> None:
+    # Proof-package mode reuses the existing independent verifier. SITL-record
+    # mode only validates an unauthenticated local self-report; no re-verification.
     # Qube-specific trust boundary: PATH may include untrusted executable names.
     # Do not silently accept a substituted bwrap that skips network isolation.
     bwrap = trusted_bwrap()
@@ -156,7 +168,10 @@ def offline_refresh(package: Path, session: Path, temporary_root: Path) -> None:
         "--setenv", "TMPDIR", str(temporary_root),
         "--setenv", "PATH", os.environ.get("PATH", "/usr/bin:/bin"),
         "--", sys.executable, str(REFRESH),
-        "--package-dir", str(package), "--session-dir", str(session),
+        *(
+            ["--package-dir", str(package)] if sitl_record_dir is None
+            else ["--sitl-record-dir", str(sitl_record_dir)]
+        ), "--session-dir", str(session),
     ]
     try:
         completed = subprocess.run(
@@ -176,15 +191,20 @@ def offline_refresh(package: Path, session: Path, temporary_root: Path) -> None:
         raise Rejected from None
 
 
-def preview(package: Path, parent: Path, seconds: int, serve: bool = True,
-            ready: object = None) -> None:
-    private_parent(parent, package)
+def preview(package: Path | None, parent: Path, seconds: int, serve: bool = True,
+            ready: object = None, *, sitl_record_dir: Path | None = None) -> None:
+    if (package is None) == (sitl_record_dir is None):
+        raise Rejected
+    private_parent(parent, package if package is not None else sitl_record_dir)
     if not 0 <= seconds <= 300 or (serve and seconds == 0):
         raise Rejected
     with tempfile.TemporaryDirectory(prefix="tag-local-preview-", dir=parent) as tmp:
         root = Path(tmp)
         session = root / "console"
-        offline_refresh(package, session, root)
+        if sitl_record_dir is None:
+            offline_refresh(package, session, root)
+        else:
+            offline_refresh(None, session, root, sitl_record_dir=sitl_record_dir)
         if not serve:
             return
         assets = approved_assets(session)
@@ -224,7 +244,10 @@ def default_private_parent() -> Path:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--package-dir", type=Path, required=True)
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument("--package-dir", type=Path)
+    source.add_argument("--sitl-record-dir", type=Path,
+                        help="private recorded SITL self-report; NOT authenticated evidence")
     parser.add_argument("--private-parent", type=Path,
                         help="existing private 0700 directory (default: validated XDG_RUNTIME_DIR or /run/user/UID)")
     parser.add_argument("--seconds", type=int, default=30,
@@ -235,7 +258,7 @@ def main() -> int:
     try:
         parent = args.private_parent if args.private_parent is not None else default_private_parent()
         preview(args.package_dir, parent, args.seconds,
-                serve=not args.no_serve)
+                serve=not args.no_serve, sitl_record_dir=args.sitl_record_dir)
     except (Rejected, session_cli.SessionRejected, OSError, ValueError):
         print(f"{LABEL}: preview not started; no persistent session", file=sys.stderr)
         return 2

@@ -6,6 +6,7 @@ NOT VALIDATION OR PRODUCTION AUTHORIZATION
 """
 from __future__ import annotations
 
+import argparse
 import json
 import os
 from pathlib import Path
@@ -19,6 +20,8 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 sys.path.insert(0, str(ROOT / "experiments" / "integrated-cli-v0"))
 import cli  # noqa: E402
+sys.path.insert(0, str(ROOT / 'experiments' / 'web-console-v0'))
+import sitl_record  # noqa: E402
 
 LABELS = ["EXPERIMENTAL", "SYNTHETIC_ONLY", "A0_SYNTHETIC",
           "NOT VALIDATION OR PRODUCTION AUTHORIZATION"]
@@ -123,16 +126,24 @@ def run_once() -> dict[str, object]:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--record-dir', type=Path,
+                        help='existing empty owner-private 0700 directory; optional untrusted local replay')
+    args = parser.parse_args()
+
     def terminate(_signal, _frame) -> None:
         raise GateFailure("EXECUTION_TIMEOUT")
     signal.signal(signal.SIGTERM, terminate)
     try:
-        record = run_once()
+        record = run_once()  # Includes separate verification and full cleanup.
+        completed = {**record, 'status': 'PASS', 'cleanup': 'PASS'}
+        if args.record_dir is not None:
+            sitl_record.write_completed(completed, args.record_dir)
     except (GateFailure, OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as exc:
         code = str(exc) if isinstance(exc, GateFailure) else "INTEGRATION_EXECUTION_FAILED"
         print(json.dumps({"labels": LABELS, "status": "FAIL", "reason": code}, sort_keys=True))
         return 1
-    print(json.dumps({**record, "status": "PASS", "cleanup": "PASS"}, sort_keys=True))
+    print(json.dumps(completed, sort_keys=True))
     return 0
 
 
