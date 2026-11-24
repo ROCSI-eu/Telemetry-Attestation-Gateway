@@ -326,3 +326,62 @@ Synthetic data / Local-only / No external assurance claim.
 EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC ·
 NOT VALIDATION OR PRODUCTION AUTHORIZATION.
 SOURCE-INTERVAL-ZKP-01 remains PENDING. No TAG #88 change.
+
+
+## Valid historical state restoration — SOURCE-STATE-ROLLBACK-01
+
+Qube QA, 24 November 2026, main
+`61ac69400b8594ab16975f1e9b84972a6575b01a`: 12/12 focused tests
+passed (0.452 s, exit 0). Fourteen reused source/fixture Git blob pins
+matched the baseline. Maintainer accepted the result on 24 November
+2026 and authorized Draft integration only. Recovery 13/13 and static
+bundle 14/14 PASS are reused, not rerun for unchanged inputs.
+
+Existing deterministic signed synthetic fixtures, simulated ingress
+time and recovery authority, mock proof verifier. No new proof generated
+or verified. The legacy counterexample restores a valid historical v3
+record, fills the declared gap and admits an already accepted interval,
+then reports contiguous synthetic coverage. A separate simulated trusted
+reference stores the SHA-256 digest of the entire canonical record,
+binding scope, recovery policy, global watermark, segments and pending
+gap. Reuse the existing lock, atomic writer and v3 integrity checks.
+Compare before admission, declaration, recovery, coverage and reopen.
+Compare-and-advance the reference before local commit; no success on
+partial commit and no automatic reseed or repair of mismatching pairs.
+
+Tests cover intact recovery, historical local-state rollback, same-watermark
+pending-gap rollback, preservation of the gap, corrupt state versus valid
+reference mismatch, absent/malformed/inconsistent reference, reference
+write failure, local write failure after reference advance, actual process
+restart and the expected negative control: restoring both records coherently
+permits replay and loss of interruption history. Mismatch establishes
+divergence, not attribution or proof of rollback direction.
+
+Reproduce offline with
+`python3 -B experiments/source-proof-binding-v0/test_state_rollback.py`.
+Python 3.14.4; existing network-isolated bubblewrap, read-only host,
+disposable writable /tmp; sandbox exited and test state cleaned.
+Exact tested new source SHA-256:
+- state_rollback.py: `e5bcbd52726da5cedd62ccee6f30ccb880619331e2ac157d53adb3b1e61529de`
+- test_state_rollback.py: `7525cec0214457a69d2c588f7cde9878dd5027ccd4f82fcaa4bc500549015d54`
+
+Profile: Experimental / Synthetic evidence / Maintainer-reviewed /
+Synthetic data / Local-only / No external assurance claim.
+Separate directories on one host simulate, but do not provide, independent
+rollback domains. Digest equality does not establish reference origin or
+freshness; the reference must be trusted and independently retained.
+Two writes are not a distributed atomic transaction; partial commit
+sacrifices availability, with no automatic reconciliation. No hostile-host,
+concurrent direct file mutation, power-loss, real independent service,
+real source/time, physical coverage or operational anti-rollback claim.
+No proving, no SOURCE-INTERVAL-ZKP-01 or TAG #88 changes.
+EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC ·
+NOT VALIDATION OR PRODUCTION AUTHORIZATION.
+
+Draft integration: static bilingual bundle 15/15 PASS (0.247 s);
+documentation check PASS (32 Markdown files). Staged whitespace check
+identified one extra terminal blank line in each new source; removed
+only those lines and ran the focused suite again, 12/12 PASS (0.446 s,
+exit 0), same isolation. Final integrated source SHA-256:
+- state_rollback.py: `0264112c89df16e1adc99ec477f93a2554499f71f8233824b00ae58c123124f9`
+- test_state_rollback.py: `6177ab536ee5ea0d0f520620831ecc6b638a652c3a64f6c2d168786eff07d4e1`
