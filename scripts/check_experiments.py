@@ -19,6 +19,7 @@ APPROVED_TESTS = (
     "experiments/source-proof-binding-v0/test_binding.py",
     "experiments/source-proof-binding-v0/test_temporal_gate.py",
     "experiments/source-proof-binding-v0/test_unified.py",
+    "experiments/source-proof-binding-v0/test_persistent_unified.py",
     "experiments/bounded-speed-proof-v0/test_verify.py",
     "experiments/end-to-end-v0/test_demo.py",
     "experiments/mock-gateway-v0/test_mock_gateway.py",
