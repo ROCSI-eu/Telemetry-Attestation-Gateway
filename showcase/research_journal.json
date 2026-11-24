@@ -51,6 +51,23 @@
         "result": "On 22 November 2026 (GitHub Actions) and 23 November 2026 (Qube Dev1), ArduPilot Copter 4.7.1 SITL supplied two synthetic MAVLink2 observations per run for normalization and a Noir/Barretenberg proof against a public 600 cm/s speed limit. Integrated and separate-process verification returned VALID in both runs.",
         "insight": "Two environments confirmed reproducibility of the synthetic flow, not source authenticity (UNSIGNED), trusted time or whole-mission coverage. No vehicle commands, publication or operational authorization."
       }
+    },
+    {
+      "id": "signed-synthetic-proof-binding",
+      "status": "documented_synthetic",
+      "evidence_path": "experiments/source-proof-binding-v0/qa-evidence-20261124.md",
+      "ro": {
+        "field": "Criptografie · observație sintetică semnată",
+        "title": "O dovadă legată de observația semnată",
+        "result": "La 24 noiembrie 2026, pe Qube, am verificat semnătura unei observații MAVLink 2 sintetice, am calculat independent amprenta și am generat o singură dovadă ZKP. Verificarea criptografică separată a confirmat VALID.",
+        "insight": "Dovada este legată de cadrul sintetic verificat, nu doar de o viteză declarată. Cheia semnatarului este una publică, de test: autenticitatea unui vehicul real și integritatea timpului rămân nedemonstrate."
+      },
+      "en": {
+        "field": "Cryptography · signed synthetic observation",
+        "title": "A proof bound to a signed observation",
+        "result": "On 24 November 2026, Qube verified a synthetic MAVLink 2 observation signature, independently computed its digest and generated one ZKP. Separate cryptographic verification returned VALID using reconstructed public inputs.",
+        "insight": "The proof is bound to the verified synthetic frame, not just a claimed speed. Its public test signing key does not establish real vehicle identity or trustworthy time."
+      }
     }
   ],
   "next_question": {
