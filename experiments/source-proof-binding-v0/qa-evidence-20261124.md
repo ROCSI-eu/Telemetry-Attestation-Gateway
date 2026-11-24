@@ -169,3 +169,51 @@ No new proof generation/verification, real telemetry or TAG #88 changes.
 Exact tested source SHA-256:
 - trusted_time.py: `6a60224d207a710a6b5d7262a61102f886f6f7036b2bc103ff3e206cc6cbf0ac`
 - test_trusted_time.py: `679b9d26cd980263217fa33c79cbb20ace37a66fb982dc184bf44ad91f27643a`
+
+
+## Finite synthetic reception coverage — SOURCE-INTERVAL-COVERAGE-01
+
+Qube QA, 24 November 2026, main
+`80e1101c8a932ba6e1b6ef26ab6b07b28a5c8f5e`: 12/12 focused tests
+passed (0.042 s, exit 0) on the first isolated execution; nine reused
+source/fixture files matched their main Git blobs. Disposable runtime
+cleanup passed. Original experiment SHA-256:
+`a6a934ed5e0da243451edef85ef402346bd50861e93b4c2c0c652e2912493971`.
+The original one-file experiment was split into a reference module and
+regression tests; integration also handles malformed pair shapes and
+unavailable decision clocks explicitly. The preceding single-observation
+cryptographic VALID evidence is reused, not rerun. All interval tests
+use public synthetic keys, deterministic signed fixture observations,
+dummy proof/VK bytes and a mock proof verifier.
+
+The verifier owns the start of a half-open 300 ms reception interval.
+Exactly three ordered captures are required at nominal 10 Hz, centered
+at start + 50, 150 and 250 ms (inclusive ±10 ms tolerance), with exactly
+one primary observation per capture. The separate simulated ingress
+authority authenticates each receipt; the trusted decision clock is
+sampled once at admission after the interval closes. The example
+freshness policy is 1000 ms, with zero future tolerance. Signed source
+timestamps and primary boot counters must strictly increase across
+captures; equal boot values are rejected even with a fresh signature.
+This is a fixed synthetic sampling model, not a general mission profile.
+
+While holding the original persistent-state lock, the existing verifier
+checks each capture against private temporary staged state. Only after
+all three accept does it replace the original watermark once. Missing
+or extra observations, slot gaps, duplicates/replay, regressions,
+tampered/unauthenticated inputs, stale receipts, and proof callback
+rejection do not advance the original state in the tested cases. A
+subsequent valid interval can be accepted after reopening. The existing
+filesystem assumptions and post-replace fsync uncertainty still apply;
+no crash, power-loss or hostile-filesystem resistance was measured.
+
+Completeness means one authenticated reception per expected slot in
+this model, not continuous physical observation, physical capture time,
+or sensor truth. Re-signing with new counters can still disguise semantic
+duplicates. Interval identities and overlap history are not persisted;
+the caller must choose the trusted interval, and global interval
+uniqueness/coverage is not established. No aggregate proof or fresh ZKP
+verification, real time service, real telemetry, or TAG #88 changes.
+
+Reproduce offline:
+`python3 -B experiments/source-proof-binding-v0/test_interval_coverage.py`.

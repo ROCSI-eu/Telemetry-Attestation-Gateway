@@ -207,6 +207,20 @@ class PublicUXTests(unittest.TestCase):
         self.assertIn('Simulated cryptographic result', self.research_en)
         self.assertIn('Rezultat criptografic simulat', self.research_ro)
 
+    def test_interval_coverage_finding_is_research_only(self):
+        for page, overview, title, limit, proof_limit in (
+            (self.research_ro, self.ro, "Completitudinea unei secvențe sintetice",
+             "nu la intervalul fizic", "Nu am generat o dovadă ZKP pentru întreaga secvență"),
+            (self.research_en, self.en, "Completeness of a synthetic observation sequence",
+             "not the physical interval", "No ZKP was generated for the entire sequence"),
+        ):
+            self.assertIn('id="synthetic-interval-coverage"', page)
+            self.assertIn(title, page)
+            self.assertIn(limit, page)
+            self.assertIn(proof_limit, page)
+            self.assertNotIn(title, overview)
+            self.assertNotIn('synthetic-interval-coverage', overview)
+
     def test_public_source_drift_is_rejected(self):
         source = CONSOLE.read_text(encoding='utf-8')
         with self.assertRaises(ValueError):
