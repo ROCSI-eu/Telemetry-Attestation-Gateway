@@ -97,7 +97,7 @@ class PublicUXTests(unittest.TestCase):
     def test_synthetic_truth_limits_are_plain_and_bilingual(self):
         self.assertIn('nu autenticitatea telemetriei de zbor', self.ro)
         self.assertIn('not authentic flight telemetry', self.en)
-        self.assertIn('cheie de semnare', self.ro)
+        self.assertIn('Cheia de semnare', self.ro)
         self.assertIn('publicly known test key', self.en)
         self.assertIn('JSON', self.ro)
         self.assertIn('JSON', self.en)
