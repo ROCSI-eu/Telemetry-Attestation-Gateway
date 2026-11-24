@@ -277,3 +277,52 @@ implementation SHA-256 unchanged. Corrected test SHA-256:
 `e8d05ddc779354639f7f0f502130494d256ef2de872c8ff9cc9d26ead057e324`.
 Repository-root isolated rerun: 16/16 PASS (0.304 s); static public bundle
 13/13 PASS (0.233 s), including bilingual continuity finding. No proving.
+
+
+## Recovery after synthetic reception discontinuity — SOURCE-INTERVAL-RECOVERY-01
+
+Qube QA, 24 November 2026, main
+`d1079d9548011ad784909ed4c04dd8789f93b091`: 13/13 focused tests
+passed (0.336 s, exit 0). Twelve reused source/fixture Git blob pins
+matched the baseline. Maintainer accepted the result on 24 November
+2026. Prior continuity 16/16 and public bundle 13/13 PASS are reused.
+The test uses deterministic signed synthetic fixtures, simulated ingress
+time and a mock proof verifier; no new proof generated or verified.
+
+A separate version-3 state uses the existing private-directory lock and
+atomic writer, retaining the global signed/boot watermark, accepted
+half-open segments and a pending gap in one record. The verifier explicitly
+declares an irrecoverable forward gap; an untrusted capture cannot
+implicitly trigger recovery. A separate synthetic HMAC authority binds
+authorization to scope, watermark, accepted segments and exact gap.
+Only a fully accepted interval opens the new segment. Coverage requires
+containment within a single accepted segment, never across a gap.
+
+Tests cover gap declaration, unauthorized/wrong-target recovery, late
+fill denial, replay with fresh authenticated receipts, source boot
+regression, negative mock verification, invalid final receipt, stale
+recovery authorization, a genuine child-process restart, atomic
+pre-replace failure and bounded history. The experimental cap is 16
+segments, with fail-closed recovery rather than eviction. A declared
+gap survives rejection and restart; adjacent segment boundaries retain
+historical discontinuities. The existing post-replace uncertainty is
+reused, not retested. No physical capture time, physical coverage,
+source-reset or key-rotation support, actual access-control service,
+anti-rollback protection against historical state restoration, hostile
+filesystem or power-loss qualification is established. Irrecoverability
+is a verifier-side assumption, not cryptographically established.
+No recovery before the first accepted interval or automatic retargeting.
+
+Reproduce offline with
+`python3 -B experiments/source-proof-binding-v0/test_interval_recovery.py`.
+Python 3.14.4; existing network-isolated bwrap, host read-only, disposable
+writable /tmp, completed and cleaned. No new dependencies. Exact tested
+source SHA-256:
+- interval_recovery.py: `b18bb4ed925ca83d8d2f16db9568c283866d3255e54281da7c2e4ee77724f6f6`
+- test_interval_recovery.py: `e82acfa1c5a41286457a1c6a2c9dbc31d8bc01a37333bd6c0842619a33231c92`
+
+Profile: Experimental / Synthetic evidence / Maintainer-reviewed /
+Synthetic data / Local-only / No external assurance claim.
+EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC ·
+NOT VALIDATION OR PRODUCTION AUTHORIZATION.
+SOURCE-INTERVAL-ZKP-01 remains PENDING. No TAG #88 change.
