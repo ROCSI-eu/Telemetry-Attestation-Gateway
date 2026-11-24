@@ -224,8 +224,7 @@ class PublicUXTests(unittest.TestCase):
     def test_interval_continuity_research_finding(self):
         from build import load_research_journal
         journal = load_research_journal()
-        self.assertEqual(len(journal["entries"]), 8)
-        self.assertEqual(journal["entries"][-1]["id"], "synthetic-interval-continuity")
+        self.assertEqual(journal["entries"][7]["id"], "synthetic-interval-continuity")
         for page, overview, title, mock, limitation, proof_limit in (
             (self.research_ro, self.ro, "Continuitatea între intervale sintetice",
              "verificator de dovezi simulat", "nu observația fizică",
@@ -241,6 +240,26 @@ class PublicUXTests(unittest.TestCase):
             self.assertIn(proof_limit, page)
             self.assertNotIn(title, overview)
             self.assertNotIn("synthetic-interval-continuity", overview)
+
+    def test_interval_recovery_research_finding(self):
+        from build import load_research_journal
+        journal = load_research_journal()
+        self.assertEqual(len(journal["entries"]), 9)
+        self.assertEqual(journal["entries"][-1]["id"], "synthetic-interval-recovery")
+        for page, overview, title, mock, gap, physical, proof in (
+            (self.research_ro, self.ro, "Reluarea după o întrerupere a secvenței",
+             "verificator de dovezi simulat", "Reluarea nu șterge intervalul lipsă",
+             "nu demonstrează acoperirea fizică", "Nu am generat o dovadă ZKP agregată"),
+            (self.research_en, self.en, "Resuming after a sequence interruption",
+             "mock proof verifier", "Recovery does not erase the missing interval",
+             "does not establish physical coverage", "No aggregate ZKP was generated"),
+        ):
+            for required in ('id="synthetic-interval-recovery"', title, mock, gap, physical, proof):
+                self.assertIn(required, page)
+            self.assertNotIn(title, overview)
+            self.assertNotIn("synthetic-interval-recovery", overview)
+            self.assertNotIn("Qube", page)
+            self.assertNotIn("GitHub Actions", page)
 
     def test_public_source_drift_is_rejected(self):
         source = CONSOLE.read_text(encoding='utf-8')

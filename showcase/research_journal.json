@@ -136,6 +136,23 @@
         "result": "Using a mock proof verifier, we confirmed that checking intervals separately could accept a gap between them. The new experiment accepted three consecutive intervals and rejected gaps, overlaps and replay, including after restart.",
         "insight": "The next interval boundary and observation state advance together. Continuity concerns synthetic reception, not physical observation; restoring valid historical state remains a limitation. No aggregate ZKP was generated."
       }
+    },
+    {
+      "id": "synthetic-interval-recovery",
+      "status": "documented_synthetic",
+      "evidence_path": "experiments/source-proof-binding-v0/qa-evidence-20261124.md",
+      "ro": {
+        "field": "Integritate temporală · recuperarea recepției",
+        "title": "Reluarea după o întrerupere a secvenței",
+        "result": "Cu un verificator de dovezi simulat, am reluat observațiile într-un segment nou, după declararea explicită a unui interval lipsă și autorizarea separată a reluării. Repetările și regresiile au fost respinse, iar istoricul întreruperii a fost păstrat după repornire.",
+        "insight": "Reluarea nu șterge intervalul lipsă și nu permite declararea unei acoperiri continue peste acesta. Modelul presupune o autoritate simulată, o sursă cu contoare monotone și o stare locală de încredere; nu demonstrează acoperirea fizică sau rezistența la restaurarea unei stări istorice. Nu am generat o dovadă ZKP agregată."
+      },
+      "en": {
+        "field": "Temporal integrity · reception recovery",
+        "title": "Resuming after a sequence interruption",
+        "result": "Using a mock proof verifier, we resumed observations in a new segment after explicitly declaring a missing interval and separately authorizing recovery. Replay and regressions were rejected, and interruption history survived restart.",
+        "insight": "Recovery does not erase the missing interval or allow continuous coverage to be claimed across it. The model assumes a simulated authority, monotonic source counters and trusted local state; it does not establish physical coverage or resistance to restoring historical state. No aggregate ZKP was generated."
+      }
     }
   ],
   "next_question": {
