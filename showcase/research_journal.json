@@ -42,13 +42,13 @@
       "ro": {
         "field": "Simulare · dovadă criptografică",
         "title": "Din simulator până la o dovadă verificată",
-        "result": "Pe 22 noiembrie 2026 (GitHub Actions) și pe 23 noiembrie 2026 (Qube Dev1), ArduPilot Copter 4.7.1 SITL a furnizat câte două observații sintetice MAVLink2 pentru normalizare și o dovadă Noir/Barretenberg privind limita publică de 600 cm/s. În ambele execuții, verificarea integrată și cea separată au rezultat VALID.",
+        "result": "Experimentul sintetic a normalizat câte două observații MAVLink2 și a generat o dovadă Noir/Barretenberg pentru limita publică de 600 cm/s. Verificarea integrată și cea independentă au rezultat VALID în două medii de test.",
         "insight": "Două medii au confirmat reproductibilitatea fluxului sintetic, nu autenticitatea sursei (UNSIGNED), timpul de încredere sau acoperirea întregii misiuni. Fără comenzi către vehicul, publicare sau autorizare operațională."
       },
       "en": {
         "field": "Simulation · cryptographic proof",
         "title": "From simulator observations to a verified proof",
-        "result": "On 22 November 2026 (GitHub Actions) and 23 November 2026 (Qube Dev1), ArduPilot Copter 4.7.1 SITL supplied two synthetic MAVLink2 observations per run for normalization and a Noir/Barretenberg proof against a public 600 cm/s speed limit. Integrated and separate-process verification returned VALID in both runs.",
+        "result": "The synthetic experiment normalized two MAVLink2 observations per run and generated a Noir/Barretenberg proof against a public 600 cm/s speed limit. Integrated and independent verification returned VALID in two test environments.",
         "insight": "Two environments confirmed reproducibility of the synthetic flow, not source authenticity (UNSIGNED), trusted time or whole-mission coverage. No vehicle commands, publication or operational authorization."
       }
     },
@@ -59,13 +59,13 @@
       "ro": {
         "field": "Criptografie · observație sintetică semnată",
         "title": "O dovadă legată de observația semnată",
-        "result": "La 24 noiembrie 2026, pe Qube, am verificat semnătura unei observații MAVLink 2 sintetice, am calculat independent amprenta și am generat o singură dovadă ZKP. Verificarea criptografică separată a confirmat VALID.",
+        "result": "Am verificat semnătura unei observații MAVLink 2 sintetice, am calculat independent amprenta cadrului semnat și am generat o dovadă ZKP. Verificarea criptografică separată a confirmat VALID.",
         "insight": "Dovada este legată de cadrul sintetic verificat, nu doar de o viteză declarată. Cheia semnatarului este una publică, de test: autenticitatea unui vehicul real și integritatea timpului rămân nedemonstrate."
       },
       "en": {
         "field": "Cryptography · signed synthetic observation",
         "title": "A proof bound to a signed observation",
-        "result": "On 24 November 2026, Qube verified a synthetic MAVLink 2 observation signature, independently computed its digest and generated one ZKP. Separate cryptographic verification returned VALID using reconstructed public inputs.",
+        "result": "A synthetic MAVLink 2 observation signature was checked, the signed frame digest was computed independently and a ZKP was generated. Separate cryptographic verification returned VALID.",
         "insight": "The proof is bound to the verified synthetic frame, not just a claimed speed. Its public test signing key does not establish real vehicle identity or trustworthy time."
       }
     }
