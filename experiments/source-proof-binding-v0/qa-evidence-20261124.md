@@ -95,3 +95,39 @@ package. The real run accepted one synthetic capture; replay/regression
 rejections and state rollback were tested separately with a mock verifier.
 The experiment establishes neither real source identity, independent trusted
 time, restart-safe replay protection, sensor truth nor interval coverage.
+
+## Restart-persistent temporal integrity — SOURCE-TEMPORAL-PERSISTENCE-01
+
+Separate Qube QA on 24 November 2026: 10/10 focused tests passed, including
+a strengthened restart check with two successive child processes. Tests
+used the existing synthetic signed fixture and a mock proof verifier.
+The preceding real cryptographic VALID result is reused, not rerun; no
+new cryptographic execution is claimed for the persistence extension.
+
+`PersistentUnified` wraps the unchanged sequential verifier. It requires
+an explicitly initialized, verifier-owned private directory (0700), a
+trusted local Linux filesystem and cooperating writers. Directory locking
+serializes read/check/proof/commit; each call reloads the state. The single
+0600 canonical JSON file contains version, hashed enrollment/verifier
+context, two numeric watermarks and an unkeyed corruption checksum. No raw
+observations, signing keys, proofs or witnesses are stored there. Missing,
+malformed or incompatible state fails closed in normal reopen mode.
+
+A successful proof callback precedes file fsync, atomic replacement and
+directory fsync. Failure before replacement leaves the old state intact;
+failure after replacement but before directory fsync returns no acceptance,
+yet may consume the observation. No power-loss durability experiment was
+run. The directory and its ancestors must be trusted and must not be moved,
+replaced or edited by uncooperative actors. Explicit initialization is a
+trusted provisioning action, not an automatic recovery/reset operation.
+
+The checksum detects accidental corruption, not deliberate modification.
+Restoring a valid historical file was tested and allows replay; deletion
+followed by privileged reinitialization also resets history. No rollback
+resistance, independent trusted time, semantic duplicate detection after
+resigning, key rotation, real identity or interval coverage is claimed.
+
+Reproduce offline with `python3 -B experiments/source-proof-binding-v0/test_persistent_unified.py`.
+The repository tests use dummy proof/VK bytes and patched test pins instead
+of private QA artifacts. The underlying proof binding and verifier interface
+are unchanged. No persistent service, real telemetry or TAG #88 change.
