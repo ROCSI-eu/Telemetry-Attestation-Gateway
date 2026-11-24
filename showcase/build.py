@@ -19,6 +19,7 @@ import re
 
 from localization import localize_404, romanian_html, social_metadata
 from visual_refresh import redesign_public_html, simplify_public_html
+from research_module import COPY as RESEARCH_COPY, research_page
 
 ROOT = Path(__file__).resolve().parents[1]
 JOURNAL = ROOT / "showcase/research_journal.json"
@@ -338,15 +339,21 @@ def sha256_source(text: str) -> str:
     ).decode("ascii") + "'"
 
 
-def security_headers(html: str) -> str:
+def security_headers(html: str, research_html: str | None = None) -> str:
     style = re.search(r"<style>(.*?)</style>", html, flags=re.S)
     script = re.search(r"<script>(.*?)</script>", html, flags=re.S)
     if not style or script:
         raise ValueError("unexpected public inline content for CSP")
+    styles = [sha256_source(style.group(1))]
+    if research_html is not None:
+        research_style = re.search(r"<style>(.*?)</style>", research_html, flags=re.S)
+        if not research_style or "<script" in research_html or re.search(r'\sstyle="', research_html):
+            raise ValueError("unexpected research inline content")
+        styles.append(sha256_source(research_style.group(1)))
     csp = "; ".join((
         "default-src 'none'",
         "script-src 'none'",
-        "style-src " + sha256_source(style.group(1)),
+        "style-src " + " ".join(styles),
         "style-src-attr 'none'",
         "img-src 'self' data:",
         "connect-src 'none'",
@@ -498,14 +505,24 @@ def build(out: Path) -> tuple[str, ...]:
                   "", html, count=1)
     if 'href="data:image/svg+xml,' in html:
         raise ValueError("placeholder favicon was not removed")
-    # Continue validating the source fixtures, but never publish them or replay
-    # them on the simplified visitor page. They remain in the GitHub repository.
-    load_research_journal()
-    minimized_scenarios(json.loads(SCENARIOS.read_text(encoding="utf-8")))
-    minimized_verifier(json.loads(VERIFIER.read_text(encoding="utf-8")))
+    journal = load_research_journal()
+    scenarios = minimized_scenarios(json.loads(SCENARIOS.read_text(encoding="utf-8")))
+    verifier = minimized_verifier(json.loads(VERIFIER.read_text(encoding="utf-8")))
     html_en = social_metadata(html, "en")
     html_ro = social_metadata(romanian_html(html), "ro")
-    if security_headers(html_ro) != security_headers(html_en):
+    def overview(page, lang):
+        c = RESEARCH_COPY[lang]
+        pattern = r'<p class="public-progress">.*?</p>'
+        if len(re.findall(pattern, page, re.S)) != 1:
+            raise ValueError("overview progress anchor changed")
+        return re.sub(pattern, lambda _: '<p class="public-progress">' +
+                      escape(c["home_progress"]) + '</p><p class="public-documentation"><a href="/' +
+                      lang + '/research/">' + escape(c["cta"]) + '</a></p>', page, count=1, flags=re.S)
+    html_en = overview(html_en, "en")
+    html_ro = overview(html_ro, "ro")
+    research_ro = research_page(journal, scenarios, verifier, "ro")
+    research_en = research_page(journal, scenarios, verifier, "en")
+    if security_headers(html_ro, research_ro) != security_headers(html_en, research_en):
         raise ValueError("localized assets have mismatching CSP inline hashes")
     media = ROOT / "showcase/assets"
     png = ("og/ro.png", "og/en.png", "apple-touch-icon.png")
@@ -517,9 +534,11 @@ def build(out: Path) -> tuple[str, ...]:
     assets = {
         "ro/index.html": html_ro,
         "en/index.html": html_en,
+        "ro/research/index.html": research_ro,
+        "en/research/index.html": research_en,
         "404.html": localize_404("ro"),
         "en/404.html": localize_404("en"),
-        "_headers": security_headers(html_ro),
+        "_headers": security_headers(html_ro, research_ro),
         "_redirects": '/ /ro/ 301\n',
         # Crawlers need access to static Open Graph metadata and PNGs. The
         # X-Robots-Tag and HTML robots=noindex remain set for search indexing.
