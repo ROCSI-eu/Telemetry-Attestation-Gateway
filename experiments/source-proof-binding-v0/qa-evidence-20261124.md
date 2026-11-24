@@ -57,3 +57,19 @@ This is a reference integration, not a new ZKP run or a public proof package.
 The public fixture keys establish neither real key custody nor identity; the
 capture-local time checks do not provide independent freshness or replay
 protection across captures. No persistent service or production policy changes.
+
+## Sequential verifier-session temporal integrity (reference integration)
+
+`TemporalGate.accept` reuses `authorized_digest` and returns its unchanged
+digest only after checking the signed timestamps and source boot time against
+the last accepted capture. The verifier retains two numeric watermarks in
+memory for one fixed synthetic enrollment and sequential calls. Rejected
+captures do not advance either watermark. Capture metadata cannot reset them.
+
+Run `python3 -B experiments/source-proof-binding-v0/test_temporal_gate.py`.
+The tests cover replay, cross-capture regression, rejected-state isolation
+and preservation of the authorized digest. No raw observation is retained.
+This is session-local ordering only: restart loses history, concurrent use
+and key rotation are outside the model, a freshly signed duplicate payload
+may pass, and neither timestamp establishes independently trusted time.
+No new proof run, persistent service, or production policy change.

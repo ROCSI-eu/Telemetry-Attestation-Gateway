@@ -17,6 +17,7 @@ APPROVED_TESTS = (
     "experiments/bounded-speed-v0/test_bounded_speed.py",
     "experiments/mavlink-normalization-v0/test_mavlink_normalize.py",
     "experiments/source-proof-binding-v0/test_binding.py",
+    "experiments/source-proof-binding-v0/test_temporal_gate.py",
     "experiments/bounded-speed-proof-v0/test_verify.py",
     "experiments/end-to-end-v0/test_demo.py",
     "experiments/mock-gateway-v0/test_mock_gateway.py",
