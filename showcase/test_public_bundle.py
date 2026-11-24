@@ -221,6 +221,27 @@ class PublicUXTests(unittest.TestCase):
             self.assertNotIn(title, overview)
             self.assertNotIn('synthetic-interval-coverage', overview)
 
+    def test_interval_continuity_research_finding(self):
+        from build import load_research_journal
+        journal = load_research_journal()
+        self.assertEqual(len(journal["entries"]), 8)
+        self.assertEqual(journal["entries"][-1]["id"], "synthetic-interval-continuity")
+        for page, overview, title, mock, limitation, proof_limit in (
+            (self.research_ro, self.ro, "Continuitatea între intervale sintetice",
+             "verificator de dovezi simulat", "nu observația fizică",
+             "Nu am generat o dovadă ZKP agregată"),
+            (self.research_en, self.en, "Continuity between synthetic intervals",
+             "mock proof verifier", "not physical observation",
+             "No aggregate ZKP was generated"),
+        ):
+            self.assertIn('id="synthetic-interval-continuity"', page)
+            self.assertIn(title, page)
+            self.assertIn(mock, page)
+            self.assertIn(limitation, page)
+            self.assertIn(proof_limit, page)
+            self.assertNotIn(title, overview)
+            self.assertNotIn("synthetic-interval-continuity", overview)
+
     def test_public_source_drift_is_rejected(self):
         source = CONSOLE.read_text(encoding='utf-8')
         with self.assertRaises(ValueError):
