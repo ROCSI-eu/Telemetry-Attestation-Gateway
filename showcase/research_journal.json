@@ -111,13 +111,30 @@
         "field": "Integritate temporală · acoperirea recepției",
         "title": "Completitudinea unei secvențe sintetice",
         "result": "Cu un verificator de dovezi simulat, am acceptat o secvență completă de trei observații autentificate la momentele de recepție așteptate. Lipsurile, duplicările, reordonările și observațiile invalide au fost respinse fără a compromite starea acceptată anterior.",
-        "insight": "Completitudinea este raportată la modelul sintetic de recepție, nu la intervalul fizic. Nu am generat o dovadă ZKP pentru întreaga secvență; acoperirea fizică și unicitatea intervalelor rămân nedemonstrate."
+        "insight": "Completitudinea este raportată la modelul sintetic de recepție, nu la intervalul fizic. Nu am generat o dovadă ZKP pentru întreaga secvență; acoperirea fizică rămâne nedemonstrată, iar unicitatea intervalelor nu a fost stabilită în acel experiment."
       },
       "en": {
         "field": "Temporal integrity · reception coverage",
         "title": "Completeness of a synthetic observation sequence",
         "result": "Using a mock proof verifier, we accepted a complete sequence of three authenticated observations at the expected reception times. Missing, duplicate, reordered and invalid observations were rejected without compromising the previously accepted state.",
-        "insight": "Completeness is relative to the synthetic reception model, not the physical interval. No ZKP was generated for the entire sequence; physical coverage and interval uniqueness remain unproven."
+        "insight": "Completeness is relative to the synthetic reception model, not the physical interval. No ZKP was generated for the entire sequence; physical coverage remains unproven, and interval uniqueness was not established in that experiment."
+      }
+    },
+    {
+      "id": "synthetic-interval-continuity",
+      "status": "documented_synthetic",
+      "evidence_path": "experiments/source-proof-binding-v0/qa-evidence-20261124.md",
+      "ro": {
+        "field": "Integritate temporală · continuitatea recepției",
+        "title": "Continuitatea între intervale sintetice",
+        "result": "Cu un verificator de dovezi simulat, am confirmat că verificarea separată a intervalelor putea accepta un gol între ele. Noul experiment a acceptat trei intervale consecutive și a respins golurile, suprapunerile și repetările, inclusiv după repornire.",
+        "insight": "Limita următorului interval și starea observațiilor sunt actualizate împreună. Continuitatea privește recepția sintetică, nu observația fizică; restaurarea unei stări istorice valide rămâne o limitare. Nu am generat o dovadă ZKP agregată."
+      },
+      "en": {
+        "field": "Temporal integrity · reception continuity",
+        "title": "Continuity between synthetic intervals",
+        "result": "Using a mock proof verifier, we confirmed that checking intervals separately could accept a gap between them. The new experiment accepted three consecutive intervals and rejected gaps, overlaps and replay, including after restart.",
+        "insight": "The next interval boundary and observation state advance together. Continuity concerns synthetic reception, not physical observation; restoring valid historical state remains a limitation. No aggregate ZKP was generated."
       }
     }
   ],
@@ -125,12 +142,12 @@
     "ro": {
       "label": "Întrebare deschisă",
       "title": "Cum demonstrăm o condiție pentru întreaga secvență?",
-      "description": "Completitudinea recepției a fost testată într-un model sintetic. O dovadă ZKP pentru întreaga secvență, acoperirea intervalului fizic, momentul real al observației și încrederea în sursa și timpul reale rămân de cercetat."
+      "description": "Completitudinea și continuitatea recepției au fost testate într-un model sintetic. O dovadă ZKP pentru întreaga secvență, acoperirea intervalului fizic, momentul real al observației și încrederea în sursa și timpul reale rămân de cercetat."
     },
     "en": {
       "label": "Open research question",
       "title": "How can we prove a condition for the entire sequence?",
-      "description": "Reception completeness was tested in a synthetic model. A ZKP for the entire sequence, physical interval coverage, physical capture time, and trust in the real source and time authority remain open research questions."
+      "description": "Reception completeness and continuity were tested in a synthetic model. A ZKP for the entire sequence, physical interval coverage, physical capture time, and trust in the real source and time authority remain open research questions."
     }
   }
 }

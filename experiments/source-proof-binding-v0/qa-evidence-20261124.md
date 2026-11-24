@@ -217,3 +217,63 @@ verification, real time service, real telemetry, or TAG #88 changes.
 
 Reproduce offline:
 `python3 -B experiments/source-proof-binding-v0/test_interval_coverage.py`.
+
+
+## Continuity between synthetic reception intervals — SOURCE-INTERVAL-CONTINUITY-01
+
+Qube QA, 24 November 2026, main
+`acd24951c02588484be14cb45f0315aa251993f8`: 16/16 focused tests
+passed (0.283 s, exit 0). Ten reused source/fixture Git blob pins matched
+the baseline. Maintainer accepted the finding on 24 November 2026.
+The 13/13 interval-coverage checkpoint is reused, not rerun locally.
+The tests use the existing deterministic signed synthetic fixture,
+simulated ingress-time authority and mock per-observation proof verifier.
+No new ZKP generated or verified.
+
+A baseline counterexample accepted two individually valid intervals
+with an entire interval missing between them. The separate continuity
+reference adds a verifier-owned initial anchor and an exact next-start
+requirement to the existing 300 ms, three-slot, 10 Hz, +/-10 ms model.
+The original lock and atomic writer commit the source watermark and
+next expected interval start in one version-2 record. Scope binds the
+source policy, initial anchor, slot policy, age and time-key fingerprint.
+Version-1 state is not migrated; a separate private state directory is
+required. Gap, overlap and replay reject before the proof callback.
+
+Three contiguous intervals (nine observations) accepted with matching
+reconstructed per-observation inputs. Wrong initial anchor, missing
+interval, 1 ms gap/overlap, replay, reverse order, invalid receipt/source
+signature, missing/misordered slots and negative mock verification were
+rejected. Restart in another process retained continuity. Corrupt state
+and changed anchor were rejected. Injected pre-replace failure preserved
+the prior record; post-replace directory fsync failure returned no
+acceptance and reopening reconciled the record, refusing replay.
+The tests use private temporary state; the isolated process completed,
+and no captures, witnesses, proofs or test state were retained.
+
+Reproduce offline with
+`python3 -B experiments/source-proof-binding-v0/test_interval_continuity.py`.
+Python 3.14.4; the recorded run used the existing network-isolated bwrap
+sandbox, read-only host, clean environment and disposable writable /tmp.
+Exact tested source SHA-256:
+- interval_continuity.py: `5fe18baf2d3b326ba4c500f25916a241bed7f6816f21d66aeca6faadfe45b5a2`
+- test_interval_continuity.py: `cdf65c1fadb1e5ede0201e3bf0e1edd1353723c2f35af6b27787633d1e4d204d`
+
+Profile: Experimental / Synthetic evidence / Maintainer-reviewed /
+Synthetic data / Local-only / No external assurance claim.
+Continuity applies only to admitted synthetic reception intervals.
+Physical acquisition continuity, real identity/time and rollback
+resistance are not established. Trusted cooperative filesystem assumed;
+no power-loss durability test, no automatic retry after ambiguous commit,
+no policy for resuming after an unrecoverable gap. Aggregate ZKP remains
+a separate open question. No hardware, real telemetry, deployment or
+TAG #88 change. EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC ·
+NOT VALIDATION OR PRODUCTION AUTHORIZATION.
+
+Draft integration delta: first repository-root run was 15/16 with a
+child-process import error (test working directory). Only the restart
+test invocation was corrected to use its module directory. Reference
+implementation SHA-256 unchanged. Corrected test SHA-256:
+`e8d05ddc779354639f7f0f502130494d256ef2de872c8ff9cc9d26ead057e324`.
+Repository-root isolated rerun: 16/16 PASS (0.304 s); static public bundle
+13/13 PASS (0.233 s), including bilingual continuity finding. No proving.
