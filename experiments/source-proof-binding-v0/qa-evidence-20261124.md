@@ -73,3 +73,25 @@ This is session-local ordering only: restart loses history, concurrent use
 and key rotation are outside the model, a freshly signed duplicate payload
 may pass, and neither timestamp establishes independently trusted time.
 No new proof run, persistent service, or production policy change.
+
+## Unified synthetic source assurance — cryptographic VALID
+
+On 24 November 2026 the unified sequential flow checked verifier-owned
+key authorization, the synthetic signature and session-local temporal gate,
+then reconstructed the 34 public inputs (32 digest bytes, limit 500 cm/s,
+version 1) independently and verified the retained proof once with pinned
+Barretenberg 5.2.0 and compatible checked CRS. Verification exited 0 (VALID).
+The staged temporal state was committed only after verification succeeded.
+Proof and verification-key SHA-256 values are pinned in `unified.py`.
+No new proof, circuit compilation or SITL run was needed.
+
+The reference accepts the retained proof and VK as caller-provided bytes;
+`local_bb_verifier` requires the pinned local executable and CRS. Those
+private QA proof artifacts are not published. Run the offline composition
+tests with `python3 -B experiments/source-proof-binding-v0/test_unified.py`;
+they use a mock verifier and dummy artifacts, not a fresh cryptographic run.
+The real result is recorded evidence, not a publicly reproducible proof
+package. The real run accepted one synthetic capture; replay/regression
+rejections and state rollback were tested separately with a mock verifier.
+The experiment establishes neither real source identity, independent trusted
+time, restart-safe replay protection, sensor truth nor interval coverage.

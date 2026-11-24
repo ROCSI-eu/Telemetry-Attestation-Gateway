@@ -1626,7 +1626,7 @@ def simplify_public_html(html: str) -> str:
         <article class="public-result"><strong>ZKP generated</strong><p>A cryptographic proof was generated for the bounded synthetic test.</p></article>
         <article class="public-result"><strong>Independent verification passed</strong><p>A separate verifier successfully checked the synthetic proof offline.</p></article>
       </div>
-      <p class="public-progress"><strong>Research progress.</strong> We generated and independently verified a zero-knowledge proof cryptographically bound to a signed synthetic telemetry observation. The signing key is a publicly known test key; the experiment does not authenticate a real vehicle.</p>
+      <p class="public-progress"><strong>Research progress.</strong> In one synthetic experiment, we checked the signing key and signature, applied session-local replay protection and independently verified a zero-knowledge proof bound to the observation. The signing key is a publicly known test key; real vehicle identity, trusted time and replay protection after restart remain unproven.</p>
       <p class="public-limits"><strong>Experimental and synthetic only.</strong> The tests confirm an isolated end-to-end research path, not authentic flight telemetry. A valid proof does not authenticate its source, timestamp or the full mission. The published illustration and JSON recordings are not independently authenticated by this website. No live vehicle, proving, verification or operational authorization is provided.</p>
       <p class="public-documentation"><a href="https://github.com/ROCSI-eu/Telemetry-Attestation-Gateway">Technical documentation and research evidence on GitHub</a></p>
     </section>'''
