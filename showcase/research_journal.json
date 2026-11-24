@@ -85,18 +85,35 @@
         "result": "Separate synthetic tests with a mock proof verifier rejected observation replay after process restart using retained local state.",
         "insight": "State advances only after proof acceptance. Restoring valid historical state defeats this protection; independent time and real source identity remain unproven."
       }
+    },
+    {
+      "id": "authenticated-ingress-time",
+      "status": "documented_synthetic",
+      "evidence_path": "experiments/source-proof-binding-v0/qa-evidence-20261124.md",
+      "ro": {
+        "field": "Integritate temporală · recepție atestată",
+        "title": "Prospețimea recepției verificată sintetic",
+        "result": "Cu un verificator de dovezi simulat, am testat o referință temporală autentificată, legată de captură, emisă de o autoritate simulată separată de sursă. Referințele expirate, viitoare, lipsă sau manipulate au fost respinse.",
+        "insight": "Referința atestă recepția în modelul sintetic, nu momentul fizic al observației. Un serviciu real de timp de încredere, autenticitatea sursei reale și acoperirea intervalului rămân nedemonstrate."
+      },
+      "en": {
+        "field": "Temporal integrity · attested reception",
+        "title": "Reception freshness tested synthetically",
+        "result": "Using a mock proof verifier, we tested a capture-bound authenticated time reference from a simulated authority separate from the source. Expired, future, missing or tampered references were rejected.",
+        "insight": "The reference attests reception in the synthetic model, not physical capture time. A real trusted-time service, real source authenticity and interval coverage remain unproven."
+      }
     }
   ],
   "next_question": {
     "ro": {
       "label": "Întrebare deschisă",
       "title": "Cum stabilim încrederea în sursă și acoperirea în timp?",
-      "description": "Protecția temporală cu stare locală păstrată a fost testată sintetic. Timpul de încredere independent, autenticitatea sursei reale și acoperirea unui interval rămân de cercetat."
+      "description": "Prospețimea recepției a fost testată cu o autoritate temporală simulată. Momentul fizic al observației, un serviciu real de timp de încredere, autenticitatea sursei reale și acoperirea unui interval rămân de cercetat."
     },
     "en": {
       "label": "Open research question",
       "title": "How can we trust the source and cover an interval?",
-      "description": "Temporal replay protection with retained local state was tested synthetically. Independent trusted time, real source identity and interval coverage remain open research questions."
+      "description": "Reception freshness was tested with a simulated time authority. Physical capture time, a real trusted-time service, real source authenticity and interval coverage remain open research questions."
     }
   }
 }

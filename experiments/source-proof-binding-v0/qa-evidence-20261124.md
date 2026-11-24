@@ -131,3 +131,41 @@ Reproduce offline with `python3 -B experiments/source-proof-binding-v0/test_pers
 The repository tests use dummy proof/VK bytes and patched test pins instead
 of private QA artifacts. The underlying proof binding and verifier interface
 are unchanged. No persistent service, real telemetry or TAG #88 change.
+
+
+## Authenticated reception freshness — SOURCE-TRUSTED-TIME-01
+
+Qube QA, 24 November 2026, baseline main
+`ab7eae18caed6aa1b19436b6e1202b205b76a96c`: 12/12 focused tests
+passed (0.015 s, exit 0) after correcting the test-only key length in
+the fixture. The first run rejected the invalid fixture at initialization;
+no implementation security check was weakened. Eight reused files matched
+their main Git blob IDs. The previous real cryptographic VALID result
+is reused, not rerun. The tests use dummy proof/VK bytes and a mock
+proof verifier; the proof input interface remains unchanged.
+
+`TrustedTimeUnified` wraps the existing persistent verifier. A simulated
+ingress authority uses a separate public synthetic HMAC-SHA256 test key.
+The domain-separated MAC binds verifier scope, the canonical capture hash
+(excluding the replaced untrusted trust store), and attested ingress time.
+The verifier uses its separately configured decision clock and a half-open
+admission window [ingress, ingress + max_age), with zero future tolerance
+and a 1000 ms example bound. The authority must actually observe the
+capture at ingress; the source cannot select the verifier clock or key.
+
+Tests reject stale/future, missing/invalid and tampered references, modified
+capture metadata or frames, wrong authority/scope and unavailable clocks.
+They check replay rejection after reopening (even with a new receipt),
+unchanged persistent state for tested rejections and proof failure, and
+unchanged reconstructed proof inputs. The test also explicitly accepts
+fresh ingress of potentially old sensor data. Time is checked at admission,
+not proof completion. No real time service, physical capture time, clock
+synchronization or clock rollback resistance is established. The existing
+historical-state rollback limit still applies; neither real source identity
+nor interval coverage is established.
+
+Reproduce offline: `python3 -B experiments/source-proof-binding-v0/test_trusted_time.py`.
+No new proof generation/verification, real telemetry or TAG #88 changes.
+Exact tested source SHA-256:
+- trusted_time.py: `6a60224d207a710a6b5d7262a61102f886f6f7036b2bc103ff3e206cc6cbf0ac`
+- test_trusted_time.py: `679b9d26cd980263217fa33c79cbb20ace37a66fb982dc184bf44ad91f27643a`
