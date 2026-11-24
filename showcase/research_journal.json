@@ -102,18 +102,35 @@
         "result": "Using a mock proof verifier, we tested a capture-bound authenticated time reference from a simulated authority separate from the source. Expired, future, missing or tampered references were rejected.",
         "insight": "The reference attests reception in the synthetic model, not physical capture time. A real trusted-time service, real source authenticity and interval coverage remain unproven."
       }
+    },
+    {
+      "id": "synthetic-interval-coverage",
+      "status": "documented_synthetic",
+      "evidence_path": "experiments/source-proof-binding-v0/qa-evidence-20261124.md",
+      "ro": {
+        "field": "Integritate temporală · acoperirea recepției",
+        "title": "Completitudinea unei secvențe sintetice",
+        "result": "Cu un verificator de dovezi simulat, am acceptat o secvență completă de trei observații autentificate la momentele de recepție așteptate. Lipsurile, duplicările, reordonările și observațiile invalide au fost respinse fără a compromite starea acceptată anterior.",
+        "insight": "Completitudinea este raportată la modelul sintetic de recepție, nu la intervalul fizic. Nu am generat o dovadă ZKP pentru întreaga secvență; acoperirea fizică și unicitatea intervalelor rămân nedemonstrate."
+      },
+      "en": {
+        "field": "Temporal integrity · reception coverage",
+        "title": "Completeness of a synthetic observation sequence",
+        "result": "Using a mock proof verifier, we accepted a complete sequence of three authenticated observations at the expected reception times. Missing, duplicate, reordered and invalid observations were rejected without compromising the previously accepted state.",
+        "insight": "Completeness is relative to the synthetic reception model, not the physical interval. No ZKP was generated for the entire sequence; physical coverage and interval uniqueness remain unproven."
+      }
     }
   ],
   "next_question": {
     "ro": {
       "label": "Întrebare deschisă",
-      "title": "Cum stabilim încrederea în sursă și acoperirea în timp?",
-      "description": "Prospețimea recepției a fost testată cu o autoritate temporală simulată. Momentul fizic al observației, un serviciu real de timp de încredere, autenticitatea sursei reale și acoperirea unui interval rămân de cercetat."
+      "title": "Cum demonstrăm o condiție pentru întreaga secvență?",
+      "description": "Completitudinea recepției a fost testată într-un model sintetic. O dovadă ZKP pentru întreaga secvență, acoperirea intervalului fizic, momentul real al observației și încrederea în sursa și timpul reale rămân de cercetat."
     },
     "en": {
       "label": "Open research question",
-      "title": "How can we trust the source and cover an interval?",
-      "description": "Reception freshness was tested with a simulated time authority. Physical capture time, a real trusted-time service, real source authenticity and interval coverage remain open research questions."
+      "title": "How can we prove a condition for the entire sequence?",
+      "description": "Reception completeness was tested in a synthetic model. A ZKP for the entire sequence, physical interval coverage, physical capture time, and trust in the real source and time authority remain open research questions."
     }
   }
 }
