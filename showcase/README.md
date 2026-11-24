@@ -12,21 +12,25 @@ reason to recheck Cloudflare dashboard settings. Verify the served SHA afterward
 It is not a validated product, live verifier or customer workflow. Issue #88
 remains independent of serving immutable static assets.
 
-## PUBLIC-UX-SIMPLIFICATION-01 — current public experience (23 November 2026)
+## PUBLIC-RESEARCH-MODULE-01 — QA candidate
 
-The public visitor page is a short, bilingual, automatically animated
-**telemetry → cryptographic proof → independent verification** explanation.
-It shows three previously confirmed synthetic SITL/ZKP/verification findings
-and states the source-authenticity, timing and browser-JSON limitations plainly.
-No scenario selectors, replay buttons, extensible technical panels, typed status
-codes, public JSON replay or JavaScript execution are delivered to visitors.
-There is one secondary GitHub research/documentation link. Technical experiments,
-strict fixture validators and the private local console remain in the source
-repository unchanged. Existing Cloudflare Pages build, RO/EN paths, noindex and
-CSP remain; no deployment is authorized by this code-only Draft.
+The main RO/EN overview remains a short static presentation. The dedicated
+research routes /ro/research/ and /en/research/ render the validated cumulative
+journal, newest first, with technical evidence references and limitations.
+Three native HTML disclosure examples use allowlisted deterministic mock
+outcomes. A separately labelled offline cryptographic result is pre-recorded
+and not authenticated or verified by the browser. No JavaScript, live verifier,
+JSON endpoint, upload, operator action or network API is published.
 
-The historical visual-refresh implementation notes below describe the superseded
-interactive presentation, not the current public visitor journey.
+The build emits exactly 15 static assets (13 baseline + two research pages).
+The CSP permits only the two known inline stylesheet hashes, no scripts or
+connections; both language pairs share their respective stylesheet. Historical
+evidence-results.json and authentic-evidence.json remain source-only and are
+removed from reused output directories. The prior custom-domain stale-cache
+incident requires separately authorized targeted URL purge and HTTP 404 checks;
+this QA candidate does not perform that action. No deployment is authorized.
+
+The historical notes below describe superseded presentation implementations.
 
 ## TAG-VISUAL-REFRESH-01 — public presentation layer
 
@@ -115,8 +119,8 @@ unverified claims or real/sensitive data. No invented dates or percentage
 progress. Review the wording and evidence before merge.
 
 An explicitly approved merge to `main` triggers the owner-confirmed automatic
-Cloudflare Pages Production build, embedding updated entries into RO/EN HTML;
-there is no CMS, external fetch, browser scripting, new output asset or extra
+Cloudflare Pages Production build, embedding updated entries into dedicated RO/EN research HTML;
+there is no CMS, external fetch, browser scripting or extra
 deployment step. The strict schema/evidence-path check fails closed on invalid
 input. A commit that does not update the journal cannot magically create
 an entry, even when it deploys successfully.
@@ -131,7 +135,7 @@ python3 -m unittest discover -s showcase -p 'test_*.py' -v
 \`\`\`
 
 Use a local static HTTP server in an authorized isolated QA environment to
-inspect the generated **15 files** (the existing 14 files plus the local ROCSI mark). The allowlisted package is:
+inspect the generated **15 files** (the existing 13 plus two research pages). The allowlisted package is:
 
 - \`ro/index.html\`: Romanian-default public page (**Centru de comandă și control**);
   \`en/index.html\`: English page (**Mission Control**). Both use the same
@@ -152,7 +156,7 @@ inspect the generated **15 files** (the existing 14 files plus the local ROCSI m
 - \`authentic-evidence.json\`: **strictly reconstructed** precomputed synthetic
   offline-verifier result; the browser does not verify it or authenticate the JSON.
 - \`_headers\`: static-host security headers including exact inline-content CSP hashes,
-  same-origin-only JSON fetches, denied frames/camera/geolocation, no tracking.
+  no browser connections, denied frames/camera/geolocation, no tracking.
 - \`_redirects\`: Cloudflare Pages rule \`/ /ro/ 301\` permanently redirects
   the bare domain to canonical \`/ro/\` without duplicating Romanian HTML.
 - \`robots.txt\`: allows social crawlers to retrieve the page's **static**

@@ -42,15 +42,17 @@ class PublicUXTests(unittest.TestCase):
         self.files = build(self.folder)
         self.ro = (self.folder / "ro/index.html").read_text(encoding="utf-8")
         self.en = (self.folder / "en/index.html").read_text(encoding="utf-8")
+        self.research_ro = (self.folder / "ro/research/index.html").read_text(encoding="utf-8")
+        self.research_en = (self.folder / "en/research/index.html").read_text(encoding="utf-8")
 
     def test_bilingual_three_stage_sequence_and_confirmed_results(self):
         for page, stage, title, proof, verification, progress in (
             (self.ro, "Telemetrie → dovadă criptografică → verificare",
              "Trei etape confirmate prin teste sintetice de laborator",
-             "Dovadă ZKP generată", "Verificare independentă reușită", "Progresul cercetării."),
+             "Dovadă ZKP generată", "Verificare independentă reușită", "Explorează cercetarea"),
             (self.en, "Telemetry → cryptographic proof → verification",
              "Three steps confirmed in synthetic laboratory tests",
-             "ZKP generated", "Independent verification passed", "Research progress."),
+             "ZKP generated", "Independent verification passed", "Explore the research"),
         ):
             for required in (stage, title, proof, verification, progress, 'id="demonstration"',
                              'id="results"', 'id="principle"', 'id="hero-title"',
@@ -97,20 +99,18 @@ class PublicUXTests(unittest.TestCase):
     def test_synthetic_truth_limits_are_plain_and_bilingual(self):
         self.assertIn('nu autenticitatea telemetriei de zbor', self.ro)
         self.assertIn('not authentic flight telemetry', self.en)
-        self.assertIn('Cheia de semnare', self.ro)
-        self.assertIn('publicly known test key', self.en)
-        self.assertIn('session-local replay protection', self.en)
-        self.assertIn('mock proof verifier rejected replay after restart', self.en)
-        self.assertIn('Restoring old state defeats this protection', self.en)
-        self.assertIn('reception freshness using an authenticated time reference from a simulated authority', self.en)
-        self.assertIn('does not establish physical capture time or a real trusted-time service', self.en)
-        self.assertIn('real vehicle identity remains unproven', self.en)
-        self.assertIn('în aceeași sesiune', self.ro)
-        self.assertIn('verificator de dovezi simulat, am respins reutilizarea după repornire', self.ro)
-        self.assertIn('Restaurarea unei stări mai vechi anulează această protecție', self.ro)
-        self.assertIn('prospețimea recepției folosind o referință temporală autentificată de o autoritate simulată', self.ro)
-        self.assertIn('Nu am demonstrat momentul fizic al observației sau existența unui serviciu real de timp de încredere', self.ro)
-        self.assertIn('identitatea unui vehicul real rămâne nedemonstrată', self.ro)
+        self.assertIn('href="/ro/research/"', self.ro)
+        self.assertIn('href="/en/research/"', self.en)
+        self.assertIn('autoritate temporală simulată', self.ro)
+        self.assertIn('simulated time authority', self.en)
+        self.assertIn('Restoring valid historical state defeats this protection', self.research_en)
+        self.assertIn('Restaurarea unei stări istorice valide anulează protecția', self.research_ro)
+        self.assertIn('not physical capture time', self.research_en)
+        self.assertIn('nu momentul fizic al observației', self.research_ro)
+        self.assertIn('mock proof verifier', self.research_en)
+        self.assertIn('verificator de dovezi simulat', self.research_ro)
+        self.assertIn('not authenticated by the browser', self.research_en)
+        self.assertIn('neautentificată de browser', self.research_ro)
         self.assertIn('JSON', self.ro)
         self.assertIn('JSON', self.en)
         self.assertIn('does not authenticate its source, timestamp or the full mission', self.en)
@@ -118,7 +118,8 @@ class PublicUXTests(unittest.TestCase):
 
     def test_bundle_is_static_no_replay_artifacts_and_safe_rebuild(self):
         expected = {
-            'ro/index.html', 'en/index.html', '404.html', 'en/404.html',
+            'ro/index.html', 'en/index.html', 'ro/research/index.html',
+            'en/research/index.html', '404.html', 'en/404.html',
             'assets/favicon.svg', 'assets/rocsi-mark.svg', 'assets/favicon.ico',
             'assets/apple-touch-icon.png', 'og/ro.png', 'og/en.png',
             '_headers', '_redirects', 'robots.txt',
@@ -139,8 +140,8 @@ class PublicUXTests(unittest.TestCase):
             self.assertIn(label, headers)
         style = re.search(r'<style>(.*?)</style>', self.en, re.S).group(1)
         self.assertIn(sha256_source(style), headers)
-        self.assertEqual(headers, security_headers(self.ro))
-        self.assertEqual(headers, security_headers(self.en))
+        self.assertEqual(headers, security_headers(self.ro, self.research_ro))
+        self.assertEqual(headers, security_headers(self.en, self.research_en))
         for page in (self.en, self.ro):
             self.assertIn('name="robots" content="noindex,nofollow"', page)
             self.assertNotIn('analytics', page.lower())
@@ -178,6 +179,33 @@ class PublicUXTests(unittest.TestCase):
         verifier['unexpected_private_field'] = 'secret'
         with self.assertRaises(ValueError):
             minimized_verifier(verifier)
+
+    def test_research_module_static_bilingual_and_linked(self):
+        from build import load_research_journal
+        journal = load_research_journal()
+        headers = (self.folder / '_headers').read_text()
+        for page, lang in ((self.research_ro, 'ro'), (self.research_en, 'en')):
+            self.assertIn('<html lang="'+lang+'">', page)
+            self.assertEqual(page.count('class="r-entry"'), len(journal["entries"]))
+            self.assertEqual(page.count('<details class="r-demo">'), 3)
+            self.assertIn('href="/'+lang+'/"', page)
+            self.assertIn('href="/ro/research/"', page)
+            self.assertIn('href="/en/research/"', page)
+            self.assertIn('name="robots" content="noindex,nofollow"', page)
+            self.assertIn(sha256_source(re.search(r'<style>(.*?)</style>', page, re.S).group(1)), headers)
+            for entry in journal["entries"]:
+                self.assertIn('id="'+entry["id"]+'"', page)
+                self.assertIn(entry["evidence_path"], page)
+            for forbidden in ('<script', '<form', '<button', 'fetch(', 'localStorage',
+                              'operator-panel', 'evidence-results.json', 'authentic-evidence.json'):
+                self.assertNotIn(forbidden, page)
+            parsed = PageLinks()
+            parsed.feed(page)
+            for href in parsed.hrefs:
+                if href.startswith('#'):
+                    self.assertIn(href[1:], parsed.ids)
+        self.assertIn('Simulated cryptographic result', self.research_en)
+        self.assertIn('Rezultat criptografic simulat', self.research_ro)
 
     def test_public_source_drift_is_rejected(self):
         source = CONSOLE.read_text(encoding='utf-8')
