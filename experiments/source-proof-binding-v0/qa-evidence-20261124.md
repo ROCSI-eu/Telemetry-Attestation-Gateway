@@ -41,3 +41,19 @@ experimental result, not an independently reproducible public proof package.
 Existing unrelated SITL end-to-end experiments and the persistent Qube TAG #88
 service were not altered. No real telemetry, deployment, or public verifier was
 involved.
+
+## Verifier-owned source-key authorization (reference integration)
+
+`binding_reference.authorized_digest` reuses the normalization parser and
+returns the same BLAKE2s proof input only after checking a verifier-owned
+enrollment (slot, alias, SHA-256 key fingerprint, active flag) and signature.
+The verifier supplies the symmetric key and requested alias independently of
+capture data. Capture-supplied trust is replaced. The synthetic slot is
+restricted to `1:1:7`; absent/revoked enrollment and valid signatures under
+unregistered keys cannot produce an authorized digest.
+
+Run `python3 -B experiments/source-proof-binding-v0/test_binding.py` offline.
+This is a reference integration, not a new ZKP run or a public proof package.
+The public fixture keys establish neither real key custody nor identity; the
+capture-local time checks do not provide independent freshness or replay
+protection across captures. No persistent service or production policy changes.
