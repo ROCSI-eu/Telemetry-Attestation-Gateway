@@ -44,19 +44,23 @@ class PublicUXTests(unittest.TestCase):
         self.en = (self.folder / "en/index.html").read_text(encoding="utf-8")
 
     def test_bilingual_three_stage_sequence_and_confirmed_results(self):
-        for page, stage, title, proof, verification in (
+        for page, stage, title, proof, verification, progress in (
             (self.ro, "Telemetrie → dovadă criptografică → verificare",
              "Trei etape confirmate prin teste sintetice de laborator",
-             "Dovadă ZKP generată", "Verificare independentă reușită"),
+             "Dovadă ZKP generată", "Verificare independentă reușită", "Progresul cercetării."),
             (self.en, "Telemetry → cryptographic proof → verification",
              "Three steps confirmed in synthetic laboratory tests",
-             "ZKP generated", "Independent verification passed"),
+             "ZKP generated", "Independent verification passed", "Research progress."),
         ):
-            for required in (stage, title, proof, verification, 'id="demonstration"',
+            for required in (stage, title, proof, verification, progress, 'id="demonstration"',
                              'id="results"', 'id="principle"', 'id="hero-title"',
                              'id="concept-cinema"', 'class="hero-scene"',
-                             'SITL', 'GitHub Actions', '20s linear infinite'):
+                             '20s linear infinite'):
                 self.assertIn(required, page)
+            self.assertNotIn('GitHub Actions', page)
+            self.assertNotIn('Qube', page)
+            self.assertNotIn('class="research-journal"', page)
+            self.assertEqual(page.count('class="public-progress"'), 1)
             self.assertEqual(page.count('class="public-step"'), 3)
             self.assertEqual(page.count('class="public-result"'), 3)
             self.assertLess(page.index('id="hero-title"'), page.index('id="demonstration"'))
@@ -93,6 +97,8 @@ class PublicUXTests(unittest.TestCase):
     def test_synthetic_truth_limits_are_plain_and_bilingual(self):
         self.assertIn('nu autenticitatea telemetriei de zbor', self.ro)
         self.assertIn('not authentic flight telemetry', self.en)
+        self.assertIn('Cheia de semnare', self.ro)
+        self.assertIn('publicly known test key', self.en)
         self.assertIn('JSON', self.ro)
         self.assertIn('JSON', self.en)
         self.assertIn('does not authenticate its source, timestamp or the full mission', self.en)

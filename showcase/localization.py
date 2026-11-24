@@ -474,15 +474,16 @@ RO_TEXT.update({'The Demonstration': 'Demonstrația',
                                                                          'privată.',
  'DOCUMENTED EXPERIMENTAL RESULTS': 'REZULTATE EXPERIMENTALE DOCUMENTATE',
  'Three steps confirmed in synthetic laboratory tests': 'Trei etape confirmate prin teste sintetice de laborator',
- 'SITL observations received': 'Observații SITL recepționate',
+ 'Synthetic telemetry received': 'Telemetrie sintetică recepționată',
  'Simulator observations reached the experimental processing flow.': 'Observațiile simulatorului au ajuns în fluxul experimental de '
                                                                      'procesare.',
  'ZKP generated': 'Dovadă ZKP generată',
  'A cryptographic proof was generated for the bounded synthetic test.': 'Am generat o dovadă criptografică pentru testul sintetic cu '
                                                                         'limită prestabilită.',
  'Independent verification passed': 'Verificare independentă reușită',
- 'The generated proof was successfully checked offline in GitHub Actions.': 'Dovada generată a fost verificată cu succes offline în GitHub '
-                                                                            'Actions.',
+ 'A separate verifier successfully checked the synthetic proof offline.': 'Un verificator separat a confirmat dovada sintetică în testul offline.',
+ 'Research progress.': 'Progresul cercetării.',
+ 'We generated and independently verified a zero-knowledge proof cryptographically bound to a signed synthetic telemetry observation. The signing key is a publicly known test key; the experiment does not authenticate a real vehicle.': 'Am generat și verificat independent o dovadă zero-knowledge legată criptografic de o observație sintetică de telemetrie semnată. Cheia de semnare este una de test, cunoscută public; experimentul nu autentifică un vehicul real.',
  'Experimental and synthetic only.': 'Exclusiv experimental și sintetic.',
  'The tests confirm an isolated end-to-end research path, not authentic flight telemetry. A valid proof does not authenticate its source, timestamp or the full mission. The published illustration and JSON recordings are not independently authenticated by this website. No live vehicle, proving, verification or operational authorization is provided.': 'Testele '
                                                                                                                                                                                                                                                                                                                                                                 'confirmă '

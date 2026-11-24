@@ -1573,6 +1573,8 @@ PUBLIC_SIMPLE_CSS = """
     .public-result{padding:24px;border-left:3px solid #b5d8cd;background:#17282c}
     .public-result strong{display:block;color:#ebd1a4;font-size:1.12rem;margin-bottom:10px}
     .public-result p{margin:0;color:#ccd7d0;line-height:1.6;font-size:.9rem}
+    .public-progress{margin:0 0 24px;max-width:85ch;color:#d5dcd7;line-height:1.7}
+    .public-progress strong{color:#efcc97}
     .public-limits{max-width:83ch;padding:20px 24px;border:1px solid #586165;background:#111e21;line-height:1.7;color:#c7d2cc}
     .public-limits strong{color:#f1dfbd}
     .public-documentation{margin:24px 0 0}
@@ -1620,10 +1622,11 @@ def simplify_public_html(html: str) -> str:
       <p class="section-overline">DOCUMENTED EXPERIMENTAL RESULTS</p>
       <h2 id="results-title">Three steps confirmed in synthetic laboratory tests</h2>
       <div class="public-results">
-        <article class="public-result"><strong>SITL observations received</strong><p>Simulator observations reached the experimental processing flow.</p></article>
+        <article class="public-result"><strong>Synthetic telemetry received</strong><p>Simulator observations reached the experimental processing flow.</p></article>
         <article class="public-result"><strong>ZKP generated</strong><p>A cryptographic proof was generated for the bounded synthetic test.</p></article>
-        <article class="public-result"><strong>Independent verification passed</strong><p>The generated proof was successfully checked offline in GitHub Actions.</p></article>
+        <article class="public-result"><strong>Independent verification passed</strong><p>A separate verifier successfully checked the synthetic proof offline.</p></article>
       </div>
+      <p class="public-progress"><strong>Research progress.</strong> We generated and independently verified a zero-knowledge proof cryptographically bound to a signed synthetic telemetry observation. The signing key is a publicly known test key; the experiment does not authenticate a real vehicle.</p>
       <p class="public-limits"><strong>Experimental and synthetic only.</strong> The tests confirm an isolated end-to-end research path, not authentic flight telemetry. A valid proof does not authenticate its source, timestamp or the full mission. The published illustration and JSON recordings are not independently authenticated by this website. No live vehicle, proving, verification or operational authorization is provided.</p>
       <p class="public-documentation"><a href="https://github.com/ROCSI-eu/Telemetry-Attestation-Gateway">Technical documentation and research evidence on GitHub</a></p>
     </section>'''
