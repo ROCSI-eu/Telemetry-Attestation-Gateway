@@ -204,6 +204,23 @@
         "result": "Using a mock proof verifier, we interrupted the process at four update stages. Matching state could be reopened, while divergence required explicit reconciliation. Replay and regression were rejected in the tested cases; insufficient evidence blocked recovery.",
         "insight": "State visibility after process termination does not establish power-loss durability. Restoring all copies together remains undetectable, and real reference independence is not established. No aggregate ZKP was generated."
       }
+    },
+    {
+      "id": "synthetic-state-commit-uncertainty",
+      "status": "documented_synthetic",
+      "evidence_path": "experiments/source-proof-binding-v0/qa-evidence-20261124.md",
+      "ro": {
+        "field": "Integritatea stării · confirmarea incertă",
+        "title": "Rezultatul incert al unei actualizări de stare",
+        "result": "Cu un verificator de dovezi simulat, am testat pierderea confirmării după o actualizare, eșecul înaintea aplicării și actualizările parțiale. Retrimiterea a fost posibilă doar după verificarea unei stări anterioare concordante; operațiile deja aplicate au respins repetările. Cazurile ambigue au blocat continuarea fără reconciliere explicită.",
+        "insight": "Eroarea primită de apelant nu arată singură dacă operația a fost aplicată. Verificările presupun o referință actuală și de încredere; persistența după pierderea alimentării, procesarea exactly-once și detectarea restaurării simultane a copiilor rămân nedemonstrate. Nu am generat o dovadă ZKP agregată."
+      },
+      "en": {
+        "field": "State integrity · uncertain acknowledgement",
+        "title": "Uncertain outcome of a state update",
+        "result": "Using a mock proof verifier, we tested lost acknowledgement after an update, failure before applying it and partial updates. Retry was possible only after checking a matching previous state; already applied operations rejected replay. Ambiguous cases blocked continuation without explicit reconciliation.",
+        "insight": "A caller error alone does not establish whether a commit occurred. The checks assume a current, trusted reference; power-loss durability, exactly-once processing and detection of simultaneous restoration of all copies remain unproven. No aggregate ZKP was generated."
+      }
     }
   ],
   "next_question": {

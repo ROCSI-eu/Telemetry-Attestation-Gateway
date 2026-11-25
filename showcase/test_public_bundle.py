@@ -303,7 +303,6 @@ class PublicUXTests(unittest.TestCase):
     def test_state_crash_consistency_research_finding(self):
         from build import load_research_journal
         journal = load_research_journal()
-        self.assertEqual(len(journal["entries"]), 12)
         self.assertEqual(journal["entries"][11]["id"], "synthetic-state-crash-consistency")
         for page, overview, title, mock, limit, rollback, proof in (
             (self.research_ro, self.ro, "Consistența stării după întreruperi simulate",
@@ -319,6 +318,27 @@ class PublicUXTests(unittest.TestCase):
                 self.assertIn(required, page)
             self.assertNotIn(title, overview)
             self.assertNotIn("synthetic-state-crash-consistency", overview)
+            self.assertNotIn("Qube", page)
+            self.assertNotIn("GitHub Actions", page)
+
+    def test_state_commit_uncertainty_research_finding(self):
+        from build import load_research_journal
+        journal = load_research_journal()
+        self.assertEqual(len(journal["entries"]), 13)
+        self.assertEqual(journal["entries"][12]["id"], "synthetic-state-commit-uncertainty")
+        for page, overview, title, mock, ambiguity, limit, proof in (
+            (self.research_ro, self.ro, "Rezultatul incert al unei actualizări de stare",
+             "verificator de dovezi simulat", "Cazurile ambigue au blocat continuarea",
+             "persistența după pierderea alimentării", "Nu am generat o dovadă ZKP agregată"),
+            (self.research_en, self.en, "Uncertain outcome of a state update",
+             "mock proof verifier", "Ambiguous cases blocked continuation",
+             "power-loss durability", "No aggregate ZKP was generated"),
+        ):
+            for required in ('id="synthetic-state-commit-uncertainty"', title, mock,
+                             ambiguity, limit, proof):
+                self.assertIn(required, page)
+            self.assertNotIn(title, overview)
+            self.assertNotIn("synthetic-state-commit-uncertainty", overview)
             self.assertNotIn("Qube", page)
             self.assertNotIn("GitHub Actions", page)
 
