@@ -385,3 +385,93 @@ only those lines and ran the focused suite again, 12/12 PASS (0.446 s,
 exit 0), same isolation. Final integrated source SHA-256:
 - state_rollback.py: `0264112c89df16e1adc99ec477f93a2554499f71f8233824b00ae58c123124f9`
 - test_state_rollback.py: `6177ab536ee5ea0d0f520620831ecc6b638a652c3a64f6c2d168786eff07d4e1`
+
+## SOURCE-STATE-RECONCILIATION-01 — 25 November 2026
+
+**EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION**
+
+Non-cryptographic prototype: no proof generated or verified.
+Activity: Exploration permitted. Maintainer accepted the local result on 25 November 2026 and authorized Draft integration only.
+Profile: Experimental / Synthetic evidence / Maintainer-reviewed / Synthetic data / Local-only / No external assurance claim.
+
+### Provenance and scope
+
+Live GitHub main was confirmed as 7bc490547701af2a466a5acefa1cc46aa9e2d63c,
+PR #186 merged. AGENTS.md, docs/README.md, docs/current-work-authorization.md,
+docs/delivery-plan.md, experiments/README.md, CONTRIBUTING.md and the existing
+rollback evidence were consulted. Prior rollback 12/12, static 15/15, CI
+#45473257221 SUCCESS and Production FINAL/PASS (ten RO/EN findings) reused;
+not rerun. Qube source archive created from the exact local Git commit object,
+no network fetch or shared checkout mutation. Existing deterministic signed
+synthetic fixtures, mock proof verifier and simulated reference only.
+
+### Hypothesis and method
+
+Retain one bounded canonical v3 candidate before reference advance, using the
+existing atomic writer. Normal open still fails closed on a mismatch.
+Explicit reconciliation requires a valid local record, a valid prepared
+record in the same scope, a matching trusted current reference, and exactly
+one admissible forward structural transition (first/next interval, declared
+gap or recovery). Both watermarks must strictly increase for admission;
+gap declaration retains the exact watermark and segments. Reuse the v3
+parser, original local lock, reference lock and atomic writer. No reference
+advance, proof callback, history rewrite, or automatic reseed on repair.
+Candidate stays as one bounded file; superseded on the next prepared write.
+Bootstrap reconciliation is excluded. No migration or production design.
+
+### Execution
+
+Python 3.14.4; existing bubblewrap with isolated user/network namespace,
+read-only host, private /tmp tmpfs, cleared environment.
+From experiments/source-proof-binding-v0:
+    bwrap --unshare-user --unshare-net --die-with-parent --ro-bind / / --dev /dev --proc /proc --tmpfs /tmp --clearenv --setenv PATH /usr/bin:/bin --setenv HOME /tmp --chdir "$PWD" /usr/bin/python3 -B test_state_reconciliation.py
+
+Observed 11/11 PASS, 0.306 s unittest duration, exit 0, process 42094
+completed (reported runtime 0.63 s). First run. Focused cases:
+1. Interrupted interval commit: normal reopen rejected; explicit repair succeeds, replay rejected.
+2. Interrupted gap declaration: same watermark, pending gap preserved.
+3. Interrupted recovery: both historical segments preserved, no bridging, replay and late fill rejected.
+4. Historical candidate with current reference rejected.
+5. Historical reference plus historical candidate rejected against newer local state.
+6. Missing candidate rejected.
+7. Malformed candidate rejected.
+8. Missing reference rejected.
+9. Matching pair: explicit repair refused, not proof of freshness.
+10. Separate process after repair: history retained and replay rejected before mock proof call.
+11. Negative control: restoring local, reference and candidate together allows replay and erases the gap; expected limitation, not evidence of rollback resistance.
+
+Injected failure at local atomic replace after reference advancement;
+no real crash or power-loss test. Rejections check local/reference bytes and
+proof callback count; successful repair checks byte-identical candidate,
+unchanged reference, no proof callback. Runtime state in private tmpfs;
+sandbox exited. Source and sanitized evidence retained for reproducibility.
+
+SHA-256:
+- state_reconciliation.py: a0a562632a643b5b1d8afbf245c817cbbd7213786871619c646d20454ac86e56
+- test_state_reconciliation.py: 1f2e2452bf0ad06fc70f267544424888fb183ffa353f64a4c869ee55195d06fb
+
+### Limits and recommendation
+
+Current trusted reference is an assumption; same-host simulated directories
+are not independent rollback domains. A matching digest establishes
+consistency, not origin, freshness or actual time. Prepared state is
+not an authenticated transition log; structural forward checks and trusted
+reference are necessary assumptions, not proof of historical execution.
+A missing, corrupt, non-adjacent or mismatching candidate/local/reference
+cannot be recovered by this method. No concurrent uncooperative writers,
+hostile filesystem, fsync/power-loss durability, multi-transition recovery,
+independent reference service or production recovery qualification.
+Prior post-replace uncertainty remains; no guarantee of exactly-once external
+acknowledgement. No raw observation stored by candidate, no fresh proving,
+no real telemetry, no deployment, no GitHub write, no CI, no modification
+of SOURCE-INTERVAL-ZKP-01 (PENDING) or TAG #88.
+
+Draft integration authorized on 25 November 2026: retain these limits and
+negative control, register in the existing gate and add one public-safe
+bilingual journal finding. No Ready/merge/deployment authorization inferred.
+
+Draft integration check: the two experimental source SHA-256 pins matched
+the accepted local run. The staged base tree matched the exact main tree.
+Static bilingual bundle 16/16 PASS (0.279 s); documentation check PASS
+(32 Markdown files); staged diff check PASS. No rerun of unchanged
+11/11 experiment locally; the existing mandatory PR gate covers it.
