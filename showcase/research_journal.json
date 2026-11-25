@@ -153,6 +153,23 @@
         "result": "Using a mock proof verifier, we resumed observations in a new segment after explicitly declaring a missing interval and separately authorizing recovery. Replay and regressions were rejected, and interruption history survived restart.",
         "insight": "Recovery does not erase the missing interval or allow continuous coverage to be claimed across it. The model assumes a simulated authority, monotonic source counters and trusted local state; it does not establish physical coverage or resistance to restoring historical state. No aggregate ZKP was generated."
       }
+    },
+    {
+      "id": "synthetic-state-rollback",
+      "status": "documented_synthetic",
+      "evidence_path": "experiments/source-proof-binding-v0/qa-evidence-20261124.md",
+      "ro": {
+        "field": "Integritatea stării · detectarea restaurării",
+        "title": "Detectarea restaurării unei stări istorice",
+        "result": "Cu un verificator de dovezi simulat, am demonstrat că restaurarea unei stări istorice valide putea permite reutilizarea observațiilor și ștergerea istoricului întreruperilor. O referință simulată asupra întregii stări a detectat divergența și a blocat continuarea, inclusiv când referința lipsea sau era inconsistentă.",
+        "insight": "Integritatea nu garantează actualitatea. Dacă ambele stări sunt restaurate simultan, mecanismul nu detectează regresia. Independența reală a referinței nu este demonstrată; o actualizare parțială blochează continuarea, fără recuperare automată. Nu am generat o dovadă ZKP agregată."
+      },
+      "en": {
+        "field": "State integrity · rollback detection",
+        "title": "Detecting restoration of historical state",
+        "result": "Using a mock proof verifier, we demonstrated that restoring valid historical state could permit replay of observations and erase interruption history. A simulated reference covering the entire state detected divergence and blocked further operations, including when the reference was missing or inconsistent.",
+        "insight": "Integrity does not guarantee freshness. If both states are restored together, the mechanism cannot detect regression. Real reference independence is not established; a partial update blocks further operations without automatic recovery. No aggregate ZKP was generated."
+      }
     }
   ],
   "next_question": {

@@ -244,8 +244,7 @@ class PublicUXTests(unittest.TestCase):
     def test_interval_recovery_research_finding(self):
         from build import load_research_journal
         journal = load_research_journal()
-        self.assertEqual(len(journal["entries"]), 9)
-        self.assertEqual(journal["entries"][-1]["id"], "synthetic-interval-recovery")
+        self.assertEqual(journal["entries"][8]["id"], "synthetic-interval-recovery")
         for page, overview, title, mock, gap, physical, proof in (
             (self.research_ro, self.ro, "Reluarea după o întrerupere a secvenței",
              "verificator de dovezi simulat", "Reluarea nu șterge intervalul lipsă",
@@ -258,6 +257,26 @@ class PublicUXTests(unittest.TestCase):
                 self.assertIn(required, page)
             self.assertNotIn(title, overview)
             self.assertNotIn("synthetic-interval-recovery", overview)
+            self.assertNotIn("Qube", page)
+            self.assertNotIn("GitHub Actions", page)
+
+    def test_state_rollback_research_finding(self):
+        from build import load_research_journal
+        journal = load_research_journal()
+        self.assertEqual(len(journal["entries"]), 10)
+        self.assertEqual(journal["entries"][-1]["id"], "synthetic-state-rollback")
+        for page, overview, title, mock, limit, partial, proof in (
+            (self.research_ro, self.ro, "Detectarea restaurării unei stări istorice",
+             "verificator de dovezi simulat", "ambele stări sunt restaurate simultan",
+             "fără recuperare automată", "Nu am generat o dovadă ZKP agregată"),
+            (self.research_en, self.en, "Detecting restoration of historical state",
+             "mock proof verifier", "both states are restored together",
+             "without automatic recovery", "No aggregate ZKP was generated"),
+        ):
+            for required in ('id="synthetic-state-rollback"', title, mock, limit, partial, proof):
+                self.assertIn(required, page)
+            self.assertNotIn(title, overview)
+            self.assertNotIn("synthetic-state-rollback", overview)
             self.assertNotIn("Qube", page)
             self.assertNotIn("GitHub Actions", page)
 
