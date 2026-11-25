@@ -187,6 +187,23 @@
         "result": "Using a mock proof verifier, we reconciled local state after an interrupted update. A previously prepared candidate allowed restoration of the correct state, preservation of interruption history and rejection of replay after restart. Missing, inconsistent or historical evidence blocked reconciliation.",
         "insight": "Reconciliation is explicit and covers a single forward transition, based on a simulated reference assumed current and trusted. Restoring all copies together remains undetectable; matching states do not prove freshness. We did not test physical failures or a real independent authority, and no aggregate ZKP was generated."
       }
+    },
+    {
+      "id": "synthetic-state-crash-consistency",
+      "status": "documented_synthetic",
+      "evidence_path": "experiments/source-proof-binding-v0/qa-evidence-20261124.md",
+      "ro": {
+        "field": "Integritatea stării · întreruperi de proces",
+        "title": "Consistența stării după întreruperi simulate",
+        "result": "Cu un verificator de dovezi simulat, am întrerupt controlat procesul în patru etape ale actualizării. Starea concordantă a putut fi redeschisă, iar divergența a necesitat reconciliere explicită. Repetările și regresiile au fost respinse în cazurile testate; dovezile insuficiente au blocat recuperarea.",
+        "insight": "Vizibilitatea stării după terminarea procesului nu demonstrează durabilitatea la pierderea alimentării. Restaurarea simultană a tuturor copiilor rămâne nedetectabilă, iar independența reală a referinței nu este demonstrată. Nu am generat o dovadă ZKP agregată."
+      },
+      "en": {
+        "field": "State integrity · process interruptions",
+        "title": "State consistency after simulated interruptions",
+        "result": "Using a mock proof verifier, we interrupted the process at four update stages. Matching state could be reopened, while divergence required explicit reconciliation. Replay and regression were rejected in the tested cases; insufficient evidence blocked recovery.",
+        "insight": "State visibility after process termination does not establish power-loss durability. Restoring all copies together remains undetectable, and real reference independence is not established. No aggregate ZKP was generated."
+      }
     }
   ],
   "next_question": {

@@ -475,3 +475,27 @@ the accepted local run. The staged base tree matched the exact main tree.
 Static bilingual bundle 16/16 PASS (0.279 s); documentation check PASS
 (32 Markdown files); staged diff check PASS. No rerun of unchanged
 11/11 experiment locally; the existing mandatory PR gate covers it.
+
+## SOURCE-STATE-CRASH-CONSISTENCY-01 — 25 November 2026
+
+**EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION**
+
+Profile: Experimental / Synthetic evidence / Maintainer-reviewed / Synthetic data / Local-only / No external assurance claim. Maintainer accepted the finding and authorized Draft integration on 25 November 2026. Non-cryptographic prototype; no proof generated or verified.
+
+Baseline: main `2aea4f4a221634167b710ac273b0957ef4389d0f`, PR #187 merged; previously verified reconciliation 11/11, static bundle 16/16, CI #45555874588 SUCCESS and Production 11/11 bilingual findings. AGENTS.md, current authorization and experimental workspace rules consulted. Reused checkpoint evidence, not rerun.
+
+Question: what happens when the process terminates at each update boundary? Existing deterministic signed synthetic fixtures, mock proof verifier, simulated independent reference and private v3 state. Qube Python 3.14.4, bubblewrap 0.11.1, isolated user/network namespaces, read-only host, private writable tmpfs, cleared environment. Child process exits abruptly with status 73 at the selected call boundary; surviving test process opens a new session.
+
+Observed first run: 5/5 PASS, 0.125 s, exit 0. Local probe SHA-256 `7987099f0c56458bf1027322f2e038cf4b7cc2f82665bbbabcb4033887fdeaf1`; sanitized result SHA-256 `484038f740b1237b0f1d5e0ef37fad9e63570d44ce7601c7c939024359a9ab9c`. Reused reconciliation source SHA-256 `a0a562632a643b5b1d8afbf245c817cbbd7213786871619c646d20454ac86e56`, rollback source SHA-256 `0264112c89df16e1adc99ec477f93a2554499f71f8233824b00ae58c123124f9`.
+
+- Before candidate replace: old local/reference/prepared files unchanged; normal reopen succeeds, reconciliation not required, subsequent replay rejected.
+- After candidate preparation before reference advance: candidate alone is not authoritative; old matching pair remains usable.
+- After reference advance before local replace: normal open rejects divergence; explicit forward reconciliation preserves both historical segments and the gap; replay and historical local regression rejected.
+- After local replace before directory fsync: new record visibly matches reference on reopen; replay rejected. No claim of physical durability or acknowledgement semantics.
+- Malformed candidate or missing reference: fail closed, no automatic reseed.
+
+Reproduce offline: `python3 -B experiments/source-proof-binding-v0/test_state_crash_consistency.py` (Linux). The integration removes the local absolute import path and unused assignment only. Integrated test SHA-256: `58949519972ca7773a7532763098f8165042f7636319a081bc2e5eb629988261`.
+
+Limitations: process termination in tmpfs is not power-loss, whole-host restart or persistent-media recovery testing. Same-host directories do not establish independent rollback domains. Two updates are not a distributed atomic transaction. The earlier joint-restoration counterexample remains: restoring all three historical copies can permit replay and erase gap history. Matching digest does not prove freshness, origin or source truth. No exactly-once external acknowledgement, hostile-host or multi-transition recovery qualification. Runtime tmpfs discarded on sandbox exit. SOURCE-INTERVAL-ZKP-01 remains PENDING; TAG #88 unchanged. No proving, hardware, real telemetry or deployment.
+
+Draft integration delta: portable focused probe 5/5 PASS (0.126 s), static bilingual bundle 17/17 PASS (0.281 s), documentation check PASS (32 Markdown files), all exit 0 in the same isolated runtime. No unrelated suites rerun locally. The existing mandatory PR gate remains unchanged.

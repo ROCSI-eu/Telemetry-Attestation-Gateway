@@ -282,7 +282,6 @@ class PublicUXTests(unittest.TestCase):
     def test_state_reconciliation_research_finding(self):
         from build import load_research_journal
         journal = load_research_journal()
-        self.assertEqual(len(journal["entries"]), 11)
         self.assertEqual(journal["entries"][10]["id"], "synthetic-state-reconciliation")
         for page, overview, title, mock, step, limit, freshness, proof in (
             (self.research_ro, self.ro, "Reconcilierea după actualizarea parțială a stării",
@@ -298,6 +297,28 @@ class PublicUXTests(unittest.TestCase):
                 self.assertIn(required, page)
             self.assertNotIn(title, overview)
             self.assertNotIn("synthetic-state-reconciliation", overview)
+            self.assertNotIn("Qube", page)
+            self.assertNotIn("GitHub Actions", page)
+
+    def test_state_crash_consistency_research_finding(self):
+        from build import load_research_journal
+        journal = load_research_journal()
+        self.assertEqual(len(journal["entries"]), 12)
+        self.assertEqual(journal["entries"][11]["id"], "synthetic-state-crash-consistency")
+        for page, overview, title, mock, limit, rollback, proof in (
+            (self.research_ro, self.ro, "Consistența stării după întreruperi simulate",
+             "verificator de dovezi simulat", "nu demonstrează durabilitatea la pierderea alimentării",
+             "Restaurarea simultană a tuturor copiilor rămâne nedetectabilă",
+             "Nu am generat o dovadă ZKP agregată"),
+            (self.research_en, self.en, "State consistency after simulated interruptions",
+             "mock proof verifier", "does not establish power-loss durability",
+             "Restoring all copies together remains undetectable",
+             "No aggregate ZKP was generated"),
+        ):
+            for required in ('id="synthetic-state-crash-consistency"', title, mock, limit, rollback, proof):
+                self.assertIn(required, page)
+            self.assertNotIn(title, overview)
+            self.assertNotIn("synthetic-state-crash-consistency", overview)
             self.assertNotIn("Qube", page)
             self.assertNotIn("GitHub Actions", page)
 
