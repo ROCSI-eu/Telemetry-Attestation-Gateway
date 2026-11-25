@@ -499,3 +499,35 @@ Reproduce offline: `python3 -B experiments/source-proof-binding-v0/test_state_cr
 Limitations: process termination in tmpfs is not power-loss, whole-host restart or persistent-media recovery testing. Same-host directories do not establish independent rollback domains. Two updates are not a distributed atomic transaction. The earlier joint-restoration counterexample remains: restoring all three historical copies can permit replay and erase gap history. Matching digest does not prove freshness, origin or source truth. No exactly-once external acknowledgement, hostile-host or multi-transition recovery qualification. Runtime tmpfs discarded on sandbox exit. SOURCE-INTERVAL-ZKP-01 remains PENDING; TAG #88 unchanged. No proving, hardware, real telemetry or deployment.
 
 Draft integration delta: portable focused probe 5/5 PASS (0.126 s), static bilingual bundle 17/17 PASS (0.281 s), documentation check PASS (32 Markdown files), all exit 0 in the same isolated runtime. No unrelated suites rerun locally. The existing mandatory PR gate remains unchanged.
+
+## SOURCE-STATE-COMMIT-UNCERTAINTY-01 — 25 November 2026
+
+**EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION**
+
+Scope and evidence profile: Experimental / Synthetic evidence / Maintainer-reviewed / Synthetic data / Local-only / No external assurance claim. Owner accepted the observed local 5/5 result and authorized this Draft-only integration, not Ready, merge, deployment or evidence promotion. Non-cryptographic synthetic test; mock proof verifier, no proof generated or verified.
+
+Baseline: live main `1361e9564b7774c380aa1b72679378bda8477f70` (PR #188 MERGED). Canonical AGENTS.md, current-work-authorization.md, docs/README.md, delivery-plan.md, experiments/README.md and CONTRIBUTING.md consulted. Reused prior crash-consistency 5/5 PASS, static 17/17, CI #45561821977 SUCCESS and twelve public RO/EN journal findings; not rerun. Reused the canonical v3 parser, candidate preparation, atomic writer, segmented recovery history, deterministic signed synthetic fixtures and separate simulated reference. Source SHA-256: `state_reconciliation.py` a0a562632a643b5b1d8afbf245c817cbbd7213786871619c646d20454ac86e56; `state_rollback.py` 0264112c89df16e1adc99ec477f93a2554499f71f8233824b00ae58c123124f9; `interval_recovery.py` b18bb4ed925ca83d8d2f16db9568c283866d3255e54281da7c2e4ee77724f6f6.
+
+Hypothesis: a caller-visible error or absent acknowledgement does not identify whether the operation committed. Simulate before-reference failure, post-commit lost caller acknowledgement, post-local-replace directory fsync error, partial reference/local write and stale/missing evidence; inspect reopened state before retries.
+
+Qube Python 3.14.4; existing bubblewrap network/user namespace isolation, read-only host, private writable /tmp tmpfs, cleared environment. First focused local execution: 5/5 PASS, 0.063 s, exit code 0. Local probe SHA-256 `3280b390426831cbd383cb4c5761358c5b7ea2f598667e327a6bc11548ddd2a0`; sanitized result SHA-256 `ed826a73ee022f23651e34470ead1b9bbadedc27efedd751dbd062946c1573bf`. Integrated test removes only the Qube-specific absolute source path; resulting SHA-256 `e66f1acc2e4458b00fd34fc1ab169409f0024b1c6e852fec051ca3e158b9fa7f`.
+
+Five observations:
+1. Reference write fails before replace: old reference and local state match, although candidate is prepared. A fresh open permits one re-admission; replay after acceptance is rejected before mock proof callback.
+2. Commit completes, acknowledgement to caller is synthetically lost: reopened state reflects the committed operation and rejects duplicate submission; caller error alone never establishes commit state.
+3. Local state replacement completes but directory fsync reports failure: reopened process observes new consistent state and rejects duplicate; this is visibility only, NOT physical durability at power loss.
+4. Reference advances but local replacement fails: automatic retry and normal reopening fail closed on mismatch; explicit existing one-step reconciliation preserves both segments, gap and replay/regression protections.
+5. Stale candidate or unavailable simulated reference: reopening, retry and explicit repair reject without fresh verifier callback or automatic reseeding.
+
+Reproduce (Linux, offline): `python3 -B experiments/source-proof-binding-v0/test_state_commit_uncertainty.py`. The exact approved lightweight experiment gate includes this focused file; no new packages or workflows. No proof generated.
+
+Limits: Conditional classification under assumed trusted reference and cooperative state/filesystem, not a general idempotency API or exactly-once acknowledgement. A generic caller timeout cannot authorize blind retry. Simulated separate same-host directories are not independent rollback domains. Joint historical rollback of local, reference and candidate can remain undetected (prior negative result reused, not rerun). No power-loss, host reboot, persistent media or actual fsync durability evidence, independent authority, hostile-host, real source/time, hardware, live ledger, deployment or operational recovery qualification. SOURCE-INTERVAL-ZKP-01 remains PENDING; TAG #88 unchanged. Draft-only integration does not authorize Ready, merge or Cloudflare deployment.
+
+Draft integration checkpoint: focused portable experiment 5/5 PASS (0.064 s);
+the first static suite invocation exposed the existing journal capacity check
+(12 entries maximum). Only the bound was extended to 13 in the existing builder,
+without changing the schema or rendering behavior. Focused static suite rerun:
+18/18 PASS (0.301 s); documentation check PASS (32 Markdown files); exit 0.
+The unchanged 5/5 focused suite was not rerun after the builder-only fix.
+Existing required PR CI remains enabled and unchanged; this is not an
+authorization for Ready, merge or publication.
