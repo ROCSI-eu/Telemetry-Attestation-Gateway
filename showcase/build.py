@@ -19,7 +19,7 @@ import re
 
 from localization import localize_404, romanian_html, social_metadata
 from visual_refresh import redesign_public_html, simplify_public_html
-from research_module import COPY as RESEARCH_COPY, research_page
+from research_module import COPY as RESEARCH_COPY, research_page, article_page
 
 ROOT = Path(__file__).resolve().parents[1]
 JOURNAL = ROOT / "showcase/research_journal.json"
@@ -380,10 +380,10 @@ def load_research_journal(path: Path = JOURNAL) -> dict:
     """Validate public-safe, bilingual accepted research summaries at build time."""
     payload = json.loads(path.read_text(encoding="utf-8"))
     exact_fields(payload, {"schema_version", "entries", "next_question"}, "journal")
-    if payload["schema_version"] != "TAG_RESEARCH_JOURNAL_V1":
+    if payload["schema_version"] != "TAG_RESEARCH_JOURNAL_V2":
         raise ValueError("unsupported journal schema")
     entries = payload["entries"]
-    if type(entries) is not list or not 1 <= len(entries) <= 14:
+    if type(entries) is not list or not 1 <= len(entries) <= 200:
         raise ValueError("journal entry count invalid")
     seen = set()
 
@@ -396,7 +396,7 @@ def load_research_journal(path: Path = JOURNAL) -> dict:
         return obj
 
     for item in entries:
-        exact_fields(item, {"id", "status", "evidence_path", "ro", "en"}, "entry")
+        exact_fields(item, {"id", "status", "evidence_path", "ro", "en", "article"}, "entry")
         if (type(item["id"]) is not str
             or not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", item["id"])
             or item["id"] in seen or item["status"] != "documented_synthetic"):
@@ -412,6 +412,24 @@ def load_research_journal(path: Path = JOURNAL) -> dict:
             raise ValueError("journal evidence reference not found: " + ref)
         for language in ("ro", "en"):
             fields(item[language], {"field", "title", "result", "insight"}, item["id"] + "/" + language)
+        article = exact_fields(item["article"], {"formula", "ro", "en"}, "article")
+        formula = article["formula"]
+        if (type(formula) is not str or not 1 <= len(formula) <= 240
+            or any(char in formula for char in ("<", "\x00"))):
+            raise ValueError("invalid article formula")
+        for language in ("ro", "en"):
+            body = exact_fields(article[language], {"question", "principle", "formula_note", "method",
+                                                    "interpretation", "controls", "stages"}, "article locale")
+            for key in ("question", "principle", "formula_note", "method", "interpretation", "controls"):
+                value = body[key]
+                if (type(value) is not str or not 20 <= len(value) <= 1500
+                    or value != value.strip() or any(x in value for x in ("<", ">", "\x00", "https://", "http://"))):
+                    raise ValueError("invalid article prose: " + item["id"] + "/" + key)
+            stages = body["stages"]
+            if (type(stages) is not list or len(stages) != 3 or any(
+                    type(x) is not str or not 5 <= len(x) <= 65
+                    or x != x.strip() or any(mark in x for mark in ("<", ">", "\x00")) for x in stages)):
+                raise ValueError("invalid article diagram")
     exact_fields(payload["next_question"], {"ro", "en"}, "next question")
     for language in ("ro", "en"):
         fields(payload["next_question"][language], {"label", "title", "description"}, "next/" + language)
@@ -536,6 +554,8 @@ def build(out: Path) -> tuple[str, ...]:
         "en/index.html": html_en,
         "ro/research/index.html": research_ro,
         "en/research/index.html": research_en,
+        **{f"{lang}/research/{item['id']}/index.html": article_page(item, lang)
+           for item in journal["entries"] for lang in ("ro", "en")},
         "404.html": localize_404("ro"),
         "en/404.html": localize_404("en"),
         "_headers": security_headers(html_ro, research_ro),

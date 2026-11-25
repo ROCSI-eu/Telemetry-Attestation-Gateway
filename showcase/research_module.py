@@ -33,6 +33,18 @@ CSS = """
 .r-entry p{margin:0 0 12px;color:#d2dbd5}
 .r-entry .r-limit{border-top:1px solid #405052;padding-top:12px;color:#c3cbc4;font-size:.92rem}
 .r-entry a{margin-top:auto;font-size:.88rem}
+.r-article{max-width:880px;margin:0 auto;padding:28px 0 60px}
+.r-article h1{font-size:clamp(2rem,4.5vw,3.6rem);line-height:1.12;margin:0 0 15px;color:#f5f1e6}
+.r-article h2{font-size:1.45rem;line-height:1.25;margin:28px 0 10px;color:#eacb91}
+.r-article p{color:#d2dbd5;margin:0 0 16px}
+.r-article .r-equation{border:1px solid #596567;background:#141f22;padding:19px;white-space:pre-wrap;overflow-wrap:anywhere;color:#f1e4cb;font-size:1rem}
+.r-diagram{border:1px solid #506263;background:#162427;padding:22px;margin:22px 0}
+.r-diagram ol{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:25px;margin:10px 0;padding:0;list-style:none;counter-reset:stage}
+.r-diagram li{position:relative;border:1px solid #76807b;padding:14px 11px;text-align:center;min-height:74px;color:#f1e4cb;display:flex;align-items:center;justify-content:center;counter-increment:stage}
+.r-diagram li:not(:last-child):after{content:'→';position:absolute;right:-22px;font-size:1.3rem;color:#eacb91}
+.r-diagram figcaption{color:#aebdb6;font-size:.88rem;margin-top:12px}
+.r-article a{overflow-wrap:anywhere}
+@media(max-width:560px){.r-diagram ol{grid-template-columns:1fr;gap:26px}.r-diagram li:not(:last-child):after{content:'↓';right:50%;top:auto;bottom:-28px;transform:translateX(50%)}}
 .r-feature{border-left:3px solid #bda36d;background:#1b282a;padding:22px 24px;margin:0 0 20px}
 .r-feature h3{font-size:1.2rem;margin:0 0 8px;color:#f2e8d2}
 .r-feature p{margin:6px 0;color:#d2dbd5}
@@ -84,6 +96,23 @@ COPY = {
  "foot":"ROCSI research. No real telemetry, commands, browser cryptography or operational authorization.",
  "github":"Repository and documentation", "cta":"Explore the research", "home_progress":"We experimentally demonstrated proof binding to a signed observation, replay protection and reception freshness checks with a simulated time authority. Detailed findings and limitations are available in the research section."
 }}
+ARTICLE_LABELS = {
+    "ro": {"open": "Citește articolul", "back": "Înapoi la jurnal",
+           "question": "Întrebarea de cercetare", "principle": "Principiul și modelul",
+           "method": "Metodă experimentală", "observed": "Observația documentată",
+           "formula": "Relație formală sau invariant", "interpretation": "Interpretare",
+           "controls": "Controale și contraexemple", "limitations": "Limite",
+           "figure": "Schemă conceptuală, nu dovadă experimentală",
+           "source": "Proveniență: raportul experimental verificabil"},
+    "en": {"open": "Read the article", "back": "Back to research journal",
+           "question": "Research question", "principle": "Principle and model",
+           "method": "Experimental method", "observed": "Documented observation",
+           "formula": "Formal relation or invariant", "interpretation": "Interpretation",
+           "controls": "Controls and counterexamples", "limitations": "Limitations",
+           "figure": "Conceptual diagram, not experimental evidence",
+           "source": "Provenance: inspectable experimental record"},
+}
+
 def research_page(journal, scenarios, verifier, lang):
     c=COPY[lang]
     e=escape
@@ -92,7 +121,7 @@ def research_page(journal, scenarios, verifier, lang):
     entries=[]
     for item in reversed(journal["entries"]):
         copy=item[lang]
-        entries.append(f'<article class="r-entry" id="{e(item["id"])}"><p class="r-kicker">{e(copy["field"])}</p><h3>{e(copy["title"])}</h3><p>{e(copy["result"])}</p><p class="r-limit"><strong>{e(c["limit"])}:</strong> {e(copy["insight"])}</p><a href="{REPO}/blob/main/{e(item["evidence_path"],quote=True)}">{e(c["evidence"])}</a></article>')
+        entries.append(f'<article class="r-entry" id="{e(item["id"])}"><p class="r-kicker">{e(copy["field"])}</p><h3>{e(copy["title"])}</h3><p>{e(copy["result"])}</p><p class="r-limit"><strong>{e(c["limit"])}:</strong> {e(copy["insight"])}</p><a href="/{lang}/research/{e(item["id"])}/">{e(ARTICLE_LABELS[lang]["open"])}</a><a href="{REPO}/blob/main/{e(item["evidence_path"],quote=True)}">{e(c["evidence"])}</a></article>')
     demos=[]
     for case,title,note in c["cases"]:
         data=scenarios["cases"][case]
@@ -113,3 +142,37 @@ def research_page(journal, scenarios, verifier, lang):
 <section class="r-section" id="demonstrations"><p class="r-kicker">02 / TAG</p><h2>{e(c["demos"])}</h2><p class="r-section-intro">{e(c["demo_intro"])}</p><aside class="r-feature"><h3>{e(c["record"])}</h3><p>{e(recorded)}</p><p>{e(c["record_limit"])}</p></aside>{"".join(demos)}</section>
 <section class="r-section" id="next"><p class="r-kicker">03 / TAG</p><h2>{e(c["next"])}</h2><div class="r-questions"><h3>{e(question["title"])}</h3><p>{e(question["description"])}</p></div></section></main>
 <footer class="r-footer"><a href="{REPO}">{e(c["github"])}</a><p>{e(c["foot"])}</p><p>EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION</p></footer></div></body></html>'''
+
+
+def article_page(item: dict, lang: str) -> str:
+    """Static bilingual article from the checked, public-safe journal record."""
+    e = escape
+    labels = ARTICLE_LABELS[lang]
+    copy = item[lang]
+    article = item["article"][lang]
+    slug = item["id"]
+    other = "en" if lang == "ro" else "ro"
+    url = f"{ORIGIN}/{lang}/research/{slug}/"
+    other_url = f"{ORIGIN}/{other}/research/{slug}/"
+    stages = "".join(f"<li>{e(stage)}</li>" for stage in article["stages"])
+    return f"""<!doctype html>
+<html lang="{lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{e(copy["title"])} | TAG · ROCSI</title><meta name="robots" content="noindex,nofollow"><meta name="description" content="{e(copy["result"],quote=True)}">
+<link rel="canonical" href="{url}"><link rel="alternate" hreflang="ro" href="{ORIGIN}/ro/research/{slug}/"><link rel="alternate" hreflang="en" href="{ORIGIN}/en/research/{slug}/"><link rel="alternate" hreflang="x-default" href="{ORIGIN}/ro/research/{slug}/"><link rel="icon" href="/assets/favicon.svg">
+<meta property="og:title" content="{e(copy["title"],quote=True)} | TAG · ROCSI"><meta property="og:description" content="{e(copy["result"],quote=True)}"><meta property="og:url" content="{url}"><meta property="og:image" content="{ORIGIN}/og/{lang}.png"><meta property="og:type" content="article">
+<style>{CSS}</style></head><body class="research-page"><div class="r-wrap">
+<header class="r-header"><a class="r-brand" href="/{lang}/"><img src="/assets/rocsi-mark.svg" alt="">TAG / ROCSI</a><a href="/{lang}/research/">{e(labels["back"])}</a><nav class="r-lang" aria-label="Limbă / Language"><a href="/ro/research/{slug}/" hreflang="ro" lang="ro" aria-current="{"page" if lang=="ro" else "false"}">RO</a><a href="/en/research/{slug}/" hreflang="en" lang="en" aria-current="{"page" if lang=="en" else "false"}">EN</a></nav></header>
+<main><article class="r-article" id="{slug}"><p class="r-kicker">{e(copy["field"])}</p><h1>{e(copy["title"])}</h1><p class="r-boundary">{e(COPY[lang]["boundary"])}</p>
+<h2>{e(labels["question"])}</h2><p>{e(article["question"])}</p>
+<h2>{e(labels["principle"])}</h2><p>{e(article["principle"])}</p>
+<h2>{e(labels["formula"])}</h2><pre class="r-equation"><code>{e(item["article"]["formula"])}</code></pre>
+<p>{e(article["formula_note"])}</p>
+<figure class="r-diagram"><ol>{stages}</ol><figcaption>{e(labels["figure"])}</figcaption></figure>
+<h2>{e(labels["method"])}</h2><p>{e(article["method"])}</p>
+<h2>{e(labels["observed"])}</h2><p>{e(copy["result"])}</p>
+<h2>{e(labels["interpretation"])}</h2><p>{e(article["interpretation"])}</p>
+<h2>{e(labels["controls"])}</h2><p>{e(article["controls"])}</p>
+<h2>{e(labels["limitations"])}</h2><p>{e(copy["insight"])}</p>
+<p><a href="{REPO}/blob/main/{e(item["evidence_path"],quote=True)}">{e(labels["source"])}</a></p>
+<p><a href="/{lang}/research/">{e(labels["back"])}</a></p></article></main>
+<footer class="r-footer"><a href="{REPO}">{e(COPY[lang]["github"])}</a><p>{e(COPY[lang]["foot"])}</p><p>EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION</p></footer></div></body></html>"""

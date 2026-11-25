@@ -117,6 +117,7 @@ class PublicUXTests(unittest.TestCase):
         self.assertIn('nu autentifică sursa, marcajul temporal sau întreaga misiune', self.ro)
 
     def test_bundle_is_static_no_replay_artifacts_and_safe_rebuild(self):
+        from build import load_research_journal
         expected = {
             'ro/index.html', 'en/index.html', 'ro/research/index.html',
             'en/research/index.html', '404.html', 'en/404.html',
@@ -124,6 +125,9 @@ class PublicUXTests(unittest.TestCase):
             'assets/apple-touch-icon.png', 'og/ro.png', 'og/en.png',
             '_headers', '_redirects', 'robots.txt',
         }
+        expected.update(f"{lang}/research/{entry['id']}/index.html"
+                        for entry in load_research_journal()["entries"]
+                        for lang in ("ro", "en"))
         self.assertEqual(set(self.files), expected)
         self.assertEqual({p.relative_to(self.folder).as_posix() for p in self.folder.rglob('*') if p.is_file()}, expected)
         for old in ('evidence-results.json','authentic-evidence.json'):
@@ -206,6 +210,29 @@ class PublicUXTests(unittest.TestCase):
                     self.assertIn(href[1:], parsed.ids)
         self.assertIn('Simulated cryptographic result', self.research_en)
         self.assertIn('Rezultat criptografic simulat', self.research_ro)
+
+    def test_research_articles_bilingual_static_reconciled(self):
+        from build import load_research_journal
+        journal = load_research_journal()
+        self.assertEqual(len(journal["entries"]), 14)
+        headers = (self.folder / "_headers").read_text()
+        for item in journal["entries"]:
+            for lang in ("ro", "en"):
+                path = self.folder / lang / "research" / item["id"] / "index.html"
+                page = path.read_text(encoding="utf-8")
+                self.assertIn('<html lang="'+lang+'">', page)
+                self.assertIn(item[lang]["title"], page)
+                self.assertIn(item["article"]["formula"].replace("<", "&lt;").replace(">", "&gt;"), page)
+                self.assertIn(item["evidence_path"], page)
+                self.assertIn('name="robots" content="noindex,nofollow"', page)
+                self.assertIn('SYNTHETIC_ONLY', page)
+                self.assertIn('href="/'+("en" if lang == "ro" else "ro")+'/research/'+item["id"]+'/"', page)
+                self.assertEqual(page.count("<li>"), 3)
+                self.assertIn(sha256_source(re.search(r"<style>(.*?)</style>", page, re.S).group(1)), headers)
+                for forbidden in ("<script", "<form", "fetch(", "localStorage",
+                                  "evidence-results.json", "authentic-evidence.json"):
+                    self.assertNotIn(forbidden, page)
+        self.assertEqual(journal["schema_version"], "TAG_RESEARCH_JOURNAL_V2")
 
     def test_interval_coverage_finding_is_research_only(self):
         for page, overview, title, limit, proof_limit in (
