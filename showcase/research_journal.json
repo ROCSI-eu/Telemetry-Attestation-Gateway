@@ -221,18 +221,35 @@
         "result": "Using a mock proof verifier, we tested lost acknowledgement after an update, failure before applying it and partial updates. Retry was possible only after checking a matching previous state; already applied operations rejected replay. Ambiguous cases blocked continuation without explicit reconciliation.",
         "insight": "A caller error alone does not establish whether a commit occurred. The checks assume a current, trusted reference; power-loss durability, exactly-once processing and detection of simultaneous restoration of all copies remain unproven. No aggregate ZKP was generated."
       }
+    },
+    {
+      "id": "synthetic-aggregate-crypto-atomic",
+      "status": "documented_synthetic",
+      "evidence_path": "experiments/source-proof-binding-v0/qa-aggregate-crypto-e2e-20261125.md",
+      "ro": {
+        "field": "Criptografie · secvență sintetică",
+        "title": "O dovadă pentru trei observații și un singur commit",
+        "result": "Într-un experiment local, o dovadă ZKP reală pentru trei observații sintetice semnate cu o cheie de test a fost verificată independent folosind 98 de elemente publice reconstruite. Numai după acceptarea dovezii, watermark-ul local a fost actualizat atomic o singură dată. Dovezile absente sau modificate și secvențele diferite nu au avansat starea.",
+        "insight": "Rezultatul privește doar cele trei observații furnizate. Nu demonstrează acoperire fizică continuă, corectitudinea senzorilor, originea și timpul reale de încredere, durabilitatea la pierderea alimentării sau validarea produsului."
+      },
+      "en": {
+        "field": "Cryptography · synthetic sequence",
+        "title": "One proof for three observations and one atomic commit",
+        "result": "In a local experiment, a genuine ZKP for three test-key-signed synthetic observations was independently verified using 98 reconstructed public field inputs. Only after proof acceptance was the local watermark updated atomically once. Missing or modified proofs and different sequences did not advance the state.",
+        "insight": "The result covers only the three supplied observations. It does not establish continuous physical coverage, sensor correctness, real trusted origin or time, power-loss durability, or product validation."
+      }
     }
   ],
   "next_question": {
     "ro": {
       "label": "Întrebare deschisă",
-      "title": "Cum demonstrăm o condiție pentru întreaga secvență?",
-      "description": "Completitudinea și continuitatea recepției au fost testate într-un model sintetic. O dovadă ZKP pentru întreaga secvență, acoperirea intervalului fizic, momentul real al observației și încrederea în sursa și timpul reale rămân de cercetat."
+      "title": "Cum demonstrăm acoperirea fizică și încrederea în sursă?",
+      "description": "Am verificat criptografic o condiție pentru trei observații sintetice și un commit atomic local. Acoperirea fizică între observații, momentul real al măsurării, sursa independentă de încredere și durabilitatea în condiții reale rămân de cercetat."
     },
     "en": {
       "label": "Open research question",
-      "title": "How can we prove a condition for the entire sequence?",
-      "description": "Reception completeness and continuity were tested in a synthetic model. A ZKP for the entire sequence, physical interval coverage, physical capture time, and trust in the real source and time authority remain open research questions."
+      "title": "How can we establish physical coverage and source trust?",
+      "description": "We cryptographically verified a condition for three synthetic observations and one local atomic commit. Physical coverage between observations, real measurement time, independently trusted source provenance and real-world durability remain open research questions."
     }
   }
 }

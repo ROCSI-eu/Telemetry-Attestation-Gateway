@@ -22,6 +22,8 @@ APPROVED_TESTS = (
     "experiments/source-proof-binding-v0/test_persistent_unified.py",
     "experiments/source-proof-binding-v0/test_trusted_time.py",
     "experiments/source-proof-binding-v0/test_interval_coverage.py",
+    "experiments/source-proof-binding-v0/test_aggregate_interval.py",
+    "experiments/source-proof-binding-v0/test_aggregate_crypto.py",
     "experiments/source-proof-binding-v0/test_interval_continuity.py",
     "experiments/source-proof-binding-v0/test_interval_recovery.py",
     "experiments/source-proof-binding-v0/test_state_rollback.py",
