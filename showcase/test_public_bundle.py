@@ -232,6 +232,23 @@ class PublicUXTests(unittest.TestCase):
                 for forbidden in ("<script", "<form", "fetch(", "localStorage",
                                   "evidence-results.json", "authentic-evidence.json"):
                     self.assertNotIn(forbidden, page)
+        for lang in ("ro", "en"):
+            page = (self.folder / lang / "research" / "authenticated-ingress-time" / "index.html").read_text(encoding="utf-8")
+            self.assertIn("0 ≤ age_ms &lt; 1000", page)
+            self.assertNotIn("0 ≤ age_ms ≤ 1000", page)
+            self.assertIn("semi-deschisă" if lang == "ro" else "half-open", page)
+        for lang in ("ro", "en"):
+            page = (self.folder / lang / "research" / "sitl-receive-only" / "index.html").read_text(encoding="utf-8")
+            self.assertIn("experiments/sitl-receive-v0/qube-parity-evidence-20261123.md", page)
+            self.assertNotIn("experiments/integrated-cli-v0/README.md", page)
+        # Allow a mathematical less-than sign, but reject tag-shaped article formula input.
+        from build import JOURNAL
+        malicious = json.loads(JOURNAL.read_text(encoding="utf-8"))
+        malicious["entries"][5]["article"]["formula"] = "age_ms <script>"
+        bad_journal = self.folder / "bad-formula.json"
+        bad_journal.write_text(json.dumps(malicious), encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "invalid article formula"):
+            load_research_journal(bad_journal)
         self.assertEqual(journal["schema_version"], "TAG_RESEARCH_JOURNAL_V2")
 
     def test_interval_coverage_finding_is_research_only(self):

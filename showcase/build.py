@@ -415,7 +415,7 @@ def load_research_journal(path: Path = JOURNAL) -> dict:
         article = exact_fields(item["article"], {"formula", "ro", "en"}, "article")
         formula = article["formula"]
         if (type(formula) is not str or not 1 <= len(formula) <= 240
-            or any(char in formula for char in ("<", "\x00"))):
+            or "\x00" in formula or re.search(r"<\s*[/!A-Za-z]", formula)):
             raise ValueError("invalid article formula")
         for language in ("ro", "en"):
             body = exact_fields(article[language], {"question", "principle", "formula_note", "method",

@@ -50,7 +50,7 @@
     {
       "id": "sitl-receive-only",
       "status": "documented_synthetic",
-      "evidence_path": "experiments/integrated-cli-v0/README.md",
+      "evidence_path": "experiments/sitl-receive-v0/qube-parity-evidence-20261123.md",
       "ro": {
         "field": "Simulare · observații sintetice",
         "title": "Observații recepționate din simulator",
@@ -248,11 +248,11 @@
         "insight": "The reference attests reception in the synthetic model, not physical capture time. A real trusted-time service, real source authenticity and interval coverage remain unproven."
       },
       "article": {
-        "formula": "fresh = valid_receipt AND 0 ≤ age_ms ≤ 1000",
+        "formula": "fresh = valid_receipt AND 0 ≤ age_ms < 1000",
         "ro": {
           "question": "Ce înseamnă prospețimea atunci când timpul de pe sursă nu este independent de sursa însăși? Putem încerca să atestăm momentul recepției într-un model sintetic, fără să pretindem cunoașterea momentului fizic al măsurării.",
           "principle": "Un receptor poate valida o referință temporală emisă de o autoritate separată de producătorul datelor. Acea referință trebuie legată de captură și verificată împotriva unei ferestre de prospețime; simpla existență a unui timestamp nu este suficientă.",
-          "formula_note": "Condiția folosește vârsta referinței de recepție în milisecunde și o limită demonstrativă de 1000 ms. Este o regulă de recepție simulată, nu o garanție privind întârzierea fizică a observației.",
+          "formula_note": "Condiția folosește o fereastră semi-deschisă: 0 ms este admis, dar la exact 1000 ms referința expiră. Este o regulă de recepție simulată, nu o garanție privind întârzierea fizică a observației.",
           "method": "Testele au folosit o autoritate temporală simulată distinctă de sursă, o referință autentificată asociată capturii și un verificator de dovezi simulat. Au fost evaluate recepții acceptabile și referințe expirate, viitoare, absente sau modificate.",
           "interpretation": "Acceptarea arată că politica sintetică poate respinge anumite erori de referință temporală și poate izola starea acceptată anterior. Nu transformă ceasul sursei într-un ceas de încredere și nu demonstrează întârzierea reală.",
           "controls": "Au fost respinse referințe lipsă, viitoare, expirate și manipulate. Absența unei autorități temporale reale și a unei legături cu momentul fizic al capturii rămâne o limitare structurală.",
@@ -265,7 +265,7 @@
         "en": {
           "question": "What does freshness mean when source time is not independent of the source? We can test attested reception time in a synthetic model without pretending to know when a physical sensor measurement actually occurred.",
           "principle": "A receiver can validate a time reference issued by an authority separate from the data producer. That reference must be capture-bound and checked against a freshness interval; the presence of a timestamp alone proves little.",
-          "formula_note": "The condition uses age in milliseconds for the reception reference and an illustrative 1000 ms bound. This is a simulated ingress policy, not a guarantee about the age of a physical measurement.",
+          "formula_note": "The condition uses a half-open window: 0 ms is admitted, but at exactly 1000 ms the receipt has expired. This is a simulated ingress policy, not a guarantee about the age of a physical measurement.",
           "method": "Tests used a simulated time authority distinct from the source, an authenticated capture-bound receipt and a mock proof verifier. Admissible receipts were compared with expired, future, absent and tampered references.",
           "interpretation": "Acceptance shows that the synthetic policy can reject specified receipt errors while preserving previously accepted state. It does not make the source clock trustworthy or establish real-world sensor latency.",
           "controls": "Missing, future, expired and tampered references were rejected. No real trusted-time authority or reliable binding to physical capture time was established.",
