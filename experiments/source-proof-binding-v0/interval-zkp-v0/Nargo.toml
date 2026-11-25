@@ -1,0 +1,5 @@
+[package]
+name = "interval_zkp"
+type = "bin"
+authors = ["ROCSI"]
+[dependencies]

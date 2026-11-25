@@ -383,7 +383,7 @@ def load_research_journal(path: Path = JOURNAL) -> dict:
     if payload["schema_version"] != "TAG_RESEARCH_JOURNAL_V1":
         raise ValueError("unsupported journal schema")
     entries = payload["entries"]
-    if type(entries) is not list or not 1 <= len(entries) <= 13:
+    if type(entries) is not list or not 1 <= len(entries) <= 14:
         raise ValueError("journal entry count invalid")
     seen = set()
 

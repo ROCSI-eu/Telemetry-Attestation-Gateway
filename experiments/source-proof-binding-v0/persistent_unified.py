@@ -38,7 +38,7 @@ class PersistentUnified(Unified):
                 raise ValueError
             self._scope = hashlib.sha256(canonical([
                 enrollment["slot"], enrollment["alias"],
-                enrollment["key_fingerprint"], PINNED_VK, 500, 1
+                enrollment["key_fingerprint"], *self._state_context()
             ])).hexdigest()
         except (TypeError, KeyError, ValueError, AttributeError):
             raise BindingRejected("INVALID_STATE_POLICY") from None
@@ -48,6 +48,9 @@ class PersistentUnified(Unified):
                     raise BindingRejected("STATE_ALREADY_EXISTS")
                 self._write(None)
             self._gate._watermark = self._read()
+
+    def _state_context(self):
+        return [PINNED_VK, 500, 1]
 
     @contextmanager
     def _locked(self):

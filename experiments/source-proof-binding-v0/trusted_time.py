@@ -55,7 +55,7 @@ class TrustedTimeUnified(PersistentUnified):
         self._max_age = max_age_ms
         super().__init__(**kwargs)
 
-    def accept(self, capture, *, receipt=None):
+    def _check_reference(self, capture, *, receipt=None):
         # Reference and decision clock never selected by the capture.
         snapshot = copy.deepcopy(capture)
         evidence = copy.deepcopy(receipt)
@@ -82,4 +82,7 @@ class TrustedTimeUnified(PersistentUnified):
             raise BindingRejected("TIME_REFERENCE_STALE")
         # Reuse original proof callback and persistent replay check. Time is
         # evaluated at admission, not again after proof verification.
-        return super().accept(snapshot)
+        return snapshot
+
+    def accept(self, capture, *, receipt=None):
+        return super().accept(self._check_reference(capture, receipt=receipt))

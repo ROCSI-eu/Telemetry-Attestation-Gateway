@@ -324,7 +324,7 @@ class PublicUXTests(unittest.TestCase):
     def test_state_commit_uncertainty_research_finding(self):
         from build import load_research_journal
         journal = load_research_journal()
-        self.assertEqual(len(journal["entries"]), 13)
+        self.assertEqual(len(journal["entries"]), 14)
         self.assertEqual(journal["entries"][12]["id"], "synthetic-state-commit-uncertainty")
         for page, overview, title, mock, ambiguity, limit, proof in (
             (self.research_ro, self.ro, "Rezultatul incert al unei actualizări de stare",
@@ -339,6 +339,25 @@ class PublicUXTests(unittest.TestCase):
                 self.assertIn(required, page)
             self.assertNotIn(title, overview)
             self.assertNotIn("synthetic-state-commit-uncertainty", overview)
+            self.assertNotIn("Qube", page)
+            self.assertNotIn("GitHub Actions", page)
+
+    def test_synthetic_aggregate_crypto_e2e_finding_is_scoped(self):
+        from build import load_research_journal
+        journal = load_research_journal()
+        self.assertEqual(len(journal["entries"]), 14)
+        self.assertEqual(journal["entries"][13]["id"], "synthetic-aggregate-crypto-atomic")
+        for page, overview, title, proof, commit, limitation in (
+            (self.research_ro, self.ro, "O dovadă pentru trei observații și un singur commit",
+             "dovadă ZKP reală", "watermark-ul local", "Nu demonstrează acoperire fizică continuă"),
+            (self.research_en, self.en, "One proof for three observations and one atomic commit",
+             "genuine ZKP", "local watermark", "does not establish continuous physical coverage"),
+        ):
+            for required in ('id="synthetic-aggregate-crypto-atomic"', title, proof, commit, limitation,
+                             "qa-aggregate-crypto-e2e-20261125.md"):
+                self.assertIn(required, page)
+            self.assertNotIn(title, overview)
+            self.assertNotIn("synthetic-aggregate-crypto-atomic", overview)
             self.assertNotIn("Qube", page)
             self.assertNotIn("GitHub Actions", page)
 
