@@ -25,6 +25,7 @@ APPROVED_TESTS = (
     "experiments/source-proof-binding-v0/test_interval_continuity.py",
     "experiments/source-proof-binding-v0/test_interval_recovery.py",
     "experiments/source-proof-binding-v0/test_state_rollback.py",
+    "experiments/source-proof-binding-v0/test_state_reconciliation.py",
     "experiments/bounded-speed-proof-v0/test_verify.py",
     "experiments/end-to-end-v0/test_demo.py",
     "experiments/mock-gateway-v0/test_mock_gateway.py",

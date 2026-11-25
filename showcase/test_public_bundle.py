@@ -263,8 +263,7 @@ class PublicUXTests(unittest.TestCase):
     def test_state_rollback_research_finding(self):
         from build import load_research_journal
         journal = load_research_journal()
-        self.assertEqual(len(journal["entries"]), 10)
-        self.assertEqual(journal["entries"][-1]["id"], "synthetic-state-rollback")
+        self.assertEqual(journal["entries"][9]["id"], "synthetic-state-rollback")
         for page, overview, title, mock, limit, partial, proof in (
             (self.research_ro, self.ro, "Detectarea restaurării unei stări istorice",
              "verificator de dovezi simulat", "ambele stări sunt restaurate simultan",
@@ -277,6 +276,28 @@ class PublicUXTests(unittest.TestCase):
                 self.assertIn(required, page)
             self.assertNotIn(title, overview)
             self.assertNotIn("synthetic-state-rollback", overview)
+            self.assertNotIn("Qube", page)
+            self.assertNotIn("GitHub Actions", page)
+
+    def test_state_reconciliation_research_finding(self):
+        from build import load_research_journal
+        journal = load_research_journal()
+        self.assertEqual(len(journal["entries"]), 11)
+        self.assertEqual(journal["entries"][10]["id"], "synthetic-state-reconciliation")
+        for page, overview, title, mock, step, limit, freshness, proof in (
+            (self.research_ro, self.ro, "Reconcilierea după actualizarea parțială a stării",
+             "verificator de dovezi simulat", "o singură tranziție înainte",
+             "Restaurarea simultană a tuturor copiilor rămâne nedetectabilă",
+             "coincidența stărilor nu dovedește actualitatea", "nu am generat o dovadă ZKP agregată"),
+            (self.research_en, self.en, "Reconciliation after a partial state update",
+             "mock proof verifier", "a single forward transition",
+             "Restoring all copies together remains undetectable",
+             "matching states do not prove freshness", "no aggregate ZKP was generated"),
+        ):
+            for required in ('id="synthetic-state-reconciliation"', title, mock, step, limit, freshness, proof):
+                self.assertIn(required, page)
+            self.assertNotIn(title, overview)
+            self.assertNotIn("synthetic-state-reconciliation", overview)
             self.assertNotIn("Qube", page)
             self.assertNotIn("GitHub Actions", page)
 
