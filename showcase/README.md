@@ -22,7 +22,7 @@ outcomes. A separately labelled offline cryptographic result is pre-recorded
 and not authenticated or verified by the browser. No JavaScript, live verifier,
 JSON endpoint, upload, operator action or network API is published.
 
-The build emits exactly 15 static assets (13 baseline + two research pages).
+The build emits 15 baseline static assets plus two article pages per accepted journal finding (43 files for the initial 14 findings).
 The CSP permits only the two known inline stylesheet hashes, no scripts or
 connections; both language pairs share their respective stylesheet. Historical
 evidence-results.json and authentic-evidence.json remain source-only and are
@@ -89,7 +89,7 @@ rollback inventory for ordinary content updates without contradictory evidence.
 
 ### Focused acceptance
 
-Build the same 15 files using python3 showcase/build.py --out-dir LOCAL_QA_PATH.
+Build the baseline 15 assets plus all bilingual article pages using python3 showcase/build.py --out-dir LOCAL_QA_PATH.
 Run python3 -m unittest discover -s showcase -p 'test_*.py' -v and
 python3 scripts/check_docs.py. In an isolated Chromium/Chrome session served
 over loopback, inspect RO and EN at 1440px, 375px and 320px. Confirm the exact
@@ -125,6 +125,30 @@ deployment step. The strict schema/evidence-path check fails closed on invalid
 input. A commit that does not update the journal cannot magically create
 an entry, even when it deploys successfully.
 
+### RESEARCH-PUBLICATION-01 — reconciled bilingual mini-articles
+
+The existing 14 accepted synthetic findings retain their stable identifiers and
+index summaries. The V2 journal schema adds one evidence-scoped article per
+language to each entry: question, scientific principle, formal relation or
+state invariant, explanation, experimental method, interpretation, controls,
+limitations and an illustrative three-stage diagram. The existing result and
+limitation text are reused verbatim in each article, avoiding conflicting
+versions of an accepted finding. URLs are
+`/ro/research/<entry-id>/` and `/en/research/<entry-id>/`; the index remains
+the navigable bibliography. No separate content store, CMS, live fetch, math
+script, browser proving or operator route is introduced.
+
+A new publicly accepted achievement updates the same journal entry with both
+languages, backed by checked-in experiment evidence, in its focused PR.
+Unfinished, negative or inconclusive experiments are never silently treated as
+positive achievements. Existing evidence references remain the source of truth.
+The builder validates fields, lengths, identifiers and evidence paths and
+escapes all visitor-facing text. The fixed CSS diagrams are conceptual
+illustrations, never execution evidence. Build-time file inventory, CSP hashes,
+noindex and markers are tested. Article creation is not an automatic consequence
+of a generic GitHub merge; a separately approved merge deploys the reviewed
+static content through the established Cloudflare Pages integration.
+
 ## Build and scope
 
 From the repository root:
@@ -135,7 +159,7 @@ python3 -m unittest discover -s showcase -p 'test_*.py' -v
 \`\`\`
 
 Use a local static HTTP server in an authorized isolated QA environment to
-inspect the generated **15 files** (the existing 13 plus two research pages). The allowlisted package is:
+inspect the baseline **15 files** and each generated RO/EN mini-article page (currently **43 files** total). The allowlisted package is:
 
 - \`ro/index.html\`: Romanian-default public page (**Centru de comandă și control**);
   \`en/index.html\`: English page (**Mission Control**). Both use the same

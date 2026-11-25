@@ -19,10 +19,13 @@ jobs:
         run: python3 scripts/check_experiments.py
       - name: Verify public static showcase
         run: python3 -m unittest discover -s showcase -p 'test_*.py' -v
-      - name: Build and verify fifteen static assets
+      - name: Build and verify static assets against the accepted journal
         run: |
           python3 showcase/build.py --out-dir "$RUNNER_TEMP/tag-showcase"
-          test "$(find "$RUNNER_TEMP/tag-showcase" -type f | wc -l)" -eq 15
+          # One index in each language plus two articles for every accepted journal entry.
+          # The strict schema validation and public-bundle suite above remain mandatory.
+          expected_count="$(python3 -c 'import json; from pathlib import Path; journal = json.loads(Path("showcase/research_journal.json").read_text()); print(15 + 2 * len(journal["entries"]))')"
+          test "$(find "$RUNNER_TEMP/tag-showcase" -type f | wc -l)" -eq "$expected_count"
           test -f "$RUNNER_TEMP/tag-showcase/ro/index.html"
           test ! -e "$RUNNER_TEMP/tag-showcase/index.html"
           grep -Fxq "/ /ro/ 301" "$RUNNER_TEMP/tag-showcase/_redirects"

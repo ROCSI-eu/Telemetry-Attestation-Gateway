@@ -1,5 +1,5 @@
 {
-  "schema_version": "TAG_RESEARCH_JOURNAL_V1",
+  "schema_version": "TAG_RESEARCH_JOURNAL_V2",
   "entries": [
     {
       "id": "synthetic-proof-offline",
@@ -16,12 +16,41 @@
         "title": "Checking a condition without disclosing the value",
         "result": "In a separate experiment, a cryptographic proof was generated from synthetic data. The offline verifier accepted the proof using the expected verification key.",
         "insight": "The verifier can check this condition without receiving the private value. A valid proof does not establish the trustworthiness of the original measurement."
+      },
+      "article": {
+        "formula": "Verify(vk, proof, public_inputs) = VALID",
+        "ro": {
+          "question": "Poate un verificator să confirme că o valoare sintetică privată satisface o limită publică, fără să primească valoarea? Experimentul delimitează verificarea condiției de încrederea în instrumentul care a produs măsurătoarea.",
+          "principle": "O dovadă cu cunoștințe zero permite verificarea unei relații aritmetice asupra unui martor privat, raportată la intrări publice. Corectitudinea verificării depinde de circuit, de cheia de verificare și de corespondența intrărilor, nu de faptul că un senzor ar spune adevărul.",
+          "formula_note": "Relația reprezintă acceptarea criptografică de către verificator a unei dovezi asociate circuitului și intrărilor publice. Nu reprezintă o semnătură asupra originii telemetriei și nici o atestare a timpului observației.",
+          "method": "Într-un mediu local izolat, experimentul a utilizat intrări explicit sintetice, un circuit Noir de comparare a vitezei cu o limită și un verificator Barretenberg executat separat. Valoarea privată nu a fost inclusă în rezultatul public minimizat.",
+          "interpretation": "Acceptarea raportată demonstrează doar verificarea relației pentru acel circuit și pentru acele date artificiale. Separarea martorului privat de intrările publice oferă o bază experimentală pentru divulgare selectivă, nu o certificare a unui vehicul.",
+          "controls": "Raportul distinge între dovada validă și măsurarea autentică. Cazurile cu dovezi modificate sau cu intrări publice nepotrivite apar în testele de verificare asociate, fără a susține că toate amenințările asupra sursei au fost acoperite.",
+          "stages": [
+            "Martor privat și limită publică",
+            "Generare dovadă offline",
+            "Verificator independent"
+          ]
+        },
+        "en": {
+          "question": "Can an offline verifier confirm that a synthetic private value satisfies a public bound without receiving that value? The experiment separates proof of a condition from trust in the instrument that supposedly produced the measurement.",
+          "principle": "A zero-knowledge proof lets a verifier check a circuit relation involving a private witness and disclosed public inputs. Cryptographic acceptance depends on the circuit, verification key and consistent public inputs; it cannot establish whether the underlying sensor observation was genuine.",
+          "formula_note": "The expression represents cryptographic acceptance of a proof bound to a given circuit and set of public inputs. It is not a source-identity signature or an attestation of the observation time.",
+          "method": "In an isolated local environment, the experiment used expressly synthetic inputs, a Noir bounded-speed circuit and separate offline Barretenberg verification. The minimized outcome did not reveal the private witness value.",
+          "interpretation": "The recorded acceptance supports the narrow relation tested by that circuit and those artificial inputs. Keeping the witness apart from the public fields provides evidence about selective disclosure, not verification of a physical vehicle.",
+          "controls": "The record distinguishes a valid proof from an authentic measurement. Altered-proof and altered-public-input examples are tested in associated verifier workflows, but do not claim exhaustive coverage of source threats.",
+          "stages": [
+            "Private witness and public bound",
+            "Offline proof generation",
+            "Independent verifier"
+          ]
+        }
       }
     },
     {
       "id": "sitl-receive-only",
       "status": "documented_synthetic",
-      "evidence_path": "experiments/integrated-cli-v0/README.md",
+      "evidence_path": "experiments/sitl-receive-v0/qube-parity-evidence-20261123.md",
       "ro": {
         "field": "Simulare · observații sintetice",
         "title": "Observații recepționate din simulator",
@@ -33,6 +62,35 @@
         "title": "Receiving observations from the simulator",
         "result": "An isolated ArduPilot SITL session received and normalized two synthetic observations through a receive-only interface.",
         "insight": "The receive-only path feeds the integrated experiment, but it does not authenticate the data source."
+      },
+      "article": {
+        "formula": "normalized = normalize(receive_only(frames))",
+        "ro": {
+          "question": "Putem colecta observații sintetice dintr-un simulator fără a avea un canal prin care să controlăm vehiculul? Acesta este un experiment de integrare pasivă, nu o evaluare a unui sistem autonom.",
+          "principle": "Separarea dintre calea de observare și calea de comandă este o limită arhitecturală: parserul primește mesaje MAVLink2 și produce valori tipizate, dar nu emite, transmite sau retransmite comenzi. Recepția reușită nu echivalează cu identificarea expeditorului.",
+          "formula_note": "Formula reprezintă exclusiv transformarea cadrelor recepționate în observații normalizate. Ea nu conține o operație de autentificare, iar un flux de loopback poate fi imitat de o altă sursă de test.",
+          "method": "Într-o sesiune SITL izolată s-au recepționat două observații de poziție sintetice, păstrând doar datele necesare normalizării. Calea de recepție a avut limite explicite pentru fereastra de timp, numărul și mărimea datagramelor.",
+          "interpretation": "Rezultatul arată că un adaptor de intrare poate alimenta experimentele criptografice fără un canal de acțiune asupra vehiculului. Este o proprietate a configurației experimentale, nu a întregii rețele sau a unui sistem fizic.",
+          "controls": "Intrările malformate, pierderea sursei și expirarea ferestrei de recepție sunt tratate separat în testele componentei. În acest pas nu a existat o cheie reală pentru identificarea simulatorului ca sursă de încredere.",
+          "stages": [
+            "Simulator SITL",
+            "Recepție exclusiv pasivă",
+            "Normalizare tipizată"
+          ]
+        },
+        "en": {
+          "question": "Can synthetic simulator observations be collected without introducing a vehicle-command path? This is an experiment in passive integration, not an evaluation of an autonomous system.",
+          "principle": "Separating observation from control is an architectural boundary: the parser receives MAVLink2 messages and returns typed values but does not issue, transmit or forward vehicle commands. Receiving a frame does not identify its sender.",
+          "formula_note": "The expression describes the transformation of received frames into normalized observations only. It does not include an authentication step, and another test source could imitate loopback traffic.",
+          "method": "An isolated SITL session received two synthetic position observations, retaining only the data needed for normalization. The receiver had explicit limits on its time window, datagram count and datagram size.",
+          "interpretation": "The observation shows that an input adapter can feed later cryptographic experiments without a vehicle actuation channel. That is a property of the tested setup, not of a physical system or an arbitrary network.",
+          "controls": "Malformed input, source loss and receive-window expiry are separately covered by component tests. At this stage no real-world key authenticated the simulator as a trusted source.",
+          "stages": [
+            "SITL simulator",
+            "Receive-only path",
+            "Typed normalization"
+          ]
+        }
       }
     },
     {
@@ -50,6 +108,35 @@
         "title": "From simulator observations to a verified proof",
         "result": "The synthetic experiment normalized two MAVLink2 observations per run and generated a Noir/Barretenberg proof against a public 600 cm/s speed limit. Integrated and independent verification returned VALID in two test environments.",
         "insight": "Two environments confirmed reproducibility of the synthetic flow, not source authenticity (UNSIGNED), trusted time or whole-mission coverage. No vehicle commands, publication or operational authorization."
+      },
+      "article": {
+        "formula": "accepted = Verify(proof, speed_bound = 600 cm/s)",
+        "ro": {
+          "question": "Poate un flux sintetic complet să pornească din ArduPilot SITL, să normalizeze două observații și să ajungă până la verificarea independentă a unei dovezi? Am căutat reproductibilitate în două medii, fără a transforma simulatorul într-o sursă atestată.",
+          "principle": "Un experiment end-to-end validează îmbinarea contractelor dintre recepție, normalizare, circuitul Noir, generatorul Barretenberg și verificator. El nu extinde prin sine domeniul afirmației de la două observații la întreaga misiune.",
+          "formula_note": "Ecuația rezumă verificarea relației criptografice față de limita publică de 600 cm/s. Nu indică faptul că intervalele dintre cadre ar fi fost observate sau că sursa MAVLink ar avea o identitate verificată.",
+          "method": "S-a folosit simulatorul ArduPilot SITL într-un flux de recepție pasivă; câte două observații MAVLink2 au fost normalizate și incluse într-o verificare criptografică reală. Un mediu CI și o reproducere locală izolată au confirmat aceleași rezultate tipizate.",
+          "interpretation": "Verificarea integrată și verificatorul separat au întors VALID, în timp ce clasificarea sursei a rămas UNSIGNED, publicarea DISABLED, iar decizia destinatarului NOT_MADE. Această separare este parte din rezultatul științific.",
+          "controls": "Testele negative pentru capturi malformate, dovezi alterate și versiuni incompatibile sunt documentate în fluxul CLI. Nu au fost generate comenzi către vehicul și nu se revendică acoperire temporală completă.",
+          "stages": [
+            "Două observații SITL",
+            "Dovadă ZKP sintetică",
+            "Verificare în două medii"
+          ]
+        },
+        "en": {
+          "question": "Can a complete synthetic workflow start with ArduPilot SITL, normalize two observations and end in independent proof verification? The goal was reproduction in two environments without treating the simulator as an attested source.",
+          "principle": "An end-to-end experiment examines how the reception, normalization, Noir circuit, Barretenberg prover and verifier contracts fit together. It does not extend the claim from two samples to an entire mission.",
+          "formula_note": "The expression summarizes cryptographic verification against the public 600 cm/s bound. It does not imply that time between frames was observed or that MAVLink source identity was authenticated.",
+          "method": "ArduPilot SITL supplied passive synthetic observations; two MAVLink2 observations per run were normalized and used in a genuine cryptographic check. A CI environment and isolated local reproduction reported the same typed outcomes.",
+          "interpretation": "Integrated and separate verification returned VALID, while source trust remained UNSIGNED, publication DISABLED and relying-party decision NOT_MADE. Preserving those independent dimensions is a central part of the finding.",
+          "controls": "Malformed captures, modified proofs and incompatible versions are covered by documented CLI negative cases. No vehicle commands were sent and whole-interval temporal coverage is not claimed.",
+          "stages": [
+            "Two SITL observations",
+            "Synthetic ZKP",
+            "Two verification environments"
+          ]
+        }
       }
     },
     {
@@ -67,6 +154,35 @@
         "title": "A proof bound to a signed observation",
         "result": "A synthetic MAVLink 2 observation signature was checked, the signed frame digest was computed independently and a ZKP was generated. Separate cryptographic verification returned VALID.",
         "insight": "The proof is bound to the verified synthetic frame, not just a claimed speed. Its public test signing key does not establish real vehicle identity or trustworthy time."
+      },
+      "article": {
+        "formula": "BLAKE2s(signed_frame) = authenticated_digest",
+        "ro": {
+          "question": "Ce putem lega efectiv de o dovadă: o viteză declarată sau octeții unui cadru sintetic semnat? Cercetarea urmărește să reducă riscul înlocuirii observației după verificarea semnăturii.",
+          "principle": "O semnătură verificată oferă autenticitate doar în raport cu cheia acceptată de verificator. Calcularea independentă a amprentei cadrului și folosirea acesteia drept intrare publică a circuitului leagă martorul privat de exact datele aprobate de controlul de intrare.",
+          "formula_note": "Relația rezumă egalitatea dintre amprenta calculată asupra cadrului privat din circuit și amprenta cadrului verificat înaintea provingului. O cheie publică de test nu identifică un vehicul real.",
+          "method": "Experimentul a verificat o semnătură MAVLink2 pe date sintetice, apoi a calculat separat digestul BLAKE2s. Dovada Noir/Barretenberg rezultată a fost verificată în afara procesului de generare, folosind contextul criptografic determinat.",
+          "interpretation": "Rezultatul VALID susține legarea dintre dovadă și cadrul sintetic verificat, în limitele schemei și intrărilor asumate. Este o proprietate diferită de simpla demonstrare că o valoare este sub un prag.",
+          "controls": "Controalele cu digest, cheie sau dovadă nepotrivite trebuie să eșueze fără avansarea stării. Referințele asociate păstrează separarea dintre verificarea criptografică, autorizarea cheii și integritatea temporală.",
+          "stages": [
+            "Cadru sintetic semnat",
+            "Digest verificat independent",
+            "Dovadă legată de cadru"
+          ]
+        },
+        "en": {
+          "question": "What can actually be bound to a proof: a claimed speed or the bytes of a signed synthetic frame? This investigation reduces the possibility of substituting an observation after its signature has been checked.",
+          "principle": "A checked signature establishes authenticity only relative to an accepted key. Independently hashing the frame and making that digest a public circuit input binds the private witness to the data admitted by the ingress check.",
+          "formula_note": "The relation summarizes equality between the circuit's digest of a private frame and the digest of the independently authenticated frame. A public test key is not evidence of any actual vehicle identity.",
+          "method": "The experiment checked a synthetic MAVLink2 signature and independently computed a BLAKE2s digest. A Noir/Barretenberg proof was then verified outside the proof-generation process against the expected cryptographic context.",
+          "interpretation": "The VALID outcome supports binding the proof to the checked synthetic frame under the stated scheme and inputs. This is a different property from merely proving that an asserted speed is below a threshold.",
+          "controls": "Controls with a mismatched digest, key or proof must fail without advancing trusted state. The linked record keeps cryptographic verification, signing-key authorization and temporal integrity conceptually separate.",
+          "stages": [
+            "Signed synthetic frame",
+            "Independent frame digest",
+            "Frame-bound proof"
+          ]
+        }
       }
     },
     {
@@ -84,6 +200,35 @@
         "title": "Rejecting replay after restart",
         "result": "Separate synthetic tests with a mock proof verifier rejected observation replay after process restart using retained local state.",
         "insight": "State advances only after proof acceptance. Restoring valid historical state defeats this protection; independent time and real source identity remain unproven."
+      },
+      "article": {
+        "formula": "accept = verified AND sequence > watermark",
+        "ro": {
+          "question": "Cum putem respinge reutilizarea unei observații după repornirea verificatorului? Fără stare păstrată, un cadru criptografic valid anterior poate fi prezentat din nou fără a încălca semnătura originală.",
+          "principle": "Un watermark persistent reține ultima poziție de secvență acceptată. Un nou eveniment nu trebuie să avanseze watermark-ul decât după acceptarea dovezii și a verificărilor de secvență; integritatea stării nu garantează însă actualitatea ei.",
+          "formula_note": "Formula este un invariant logic pentru modelul sintetic: o nouă secvență trebuie să depășească referința păstrată și să treacă verificarea. În aceste teste verificatorul criptografic era simulat, nu un prover real.",
+          "method": "Testele au utilizat o stare locală reluată după închiderea procesului și au verificat că retransmiterea observației deja acceptate este respinsă. O respingere nu a schimbat watermark-ul anterior.",
+          "interpretation": "Constatarea separă protecția de replay în cadrul unei sesiuni de protecția după repornire. Ea arată utilitatea unei stări persistente, dar identifică imediat dependența de protejarea acelei stări împotriva restaurării.",
+          "controls": "Testul relevant este repetarea după restart; controalele negative includ dovezi respinse și regresii ale secvenței. Restaurarea unei copii istorice valide este un contraexemplu explicit la rezistența necondiționată la replay.",
+          "stages": [
+            "Observație admisă",
+            "Watermark păstrat",
+            "Replay respins după restart"
+          ]
+        },
+        "en": {
+          "question": "How can an observation be rejected as replay after restarting the verifier? Without retained state, a previously accepted cryptographically valid frame might be presented again without breaking its original signature.",
+          "principle": "A persistent watermark records the last accepted sequence position. New events must not advance it until proof and sequence checks succeed; state integrity alone does not establish that a stored state is the latest.",
+          "formula_note": "The formula is a logical invariant in the synthetic model: the incoming sequence must exceed the retained reference and pass verification. The cryptographic proof verifier was mocked in these tests.",
+          "method": "The tests reopened local state after process termination and checked that retransmitting an accepted observation was rejected. A rejected event did not modify the previous watermark.",
+          "interpretation": "The finding separates replay protection within a running session from protection across a restart. It shows why state must persist but also reveals the dependence on preventing restoration of older valid copies.",
+          "controls": "Replay after restart is the decisive negative case; rejected proofs and regressing counters were also considered. Restoring valid historical state is an explicit counterexample to unconditional replay resistance.",
+          "stages": [
+            "Admitted observation",
+            "Persisted watermark",
+            "Replay rejected on restart"
+          ]
+        }
       }
     },
     {
@@ -101,6 +246,35 @@
         "title": "Reception freshness tested synthetically",
         "result": "Using a mock proof verifier, we tested a capture-bound authenticated time reference from a simulated authority separate from the source. Expired, future, missing or tampered references were rejected.",
         "insight": "The reference attests reception in the synthetic model, not physical capture time. A real trusted-time service, real source authenticity and interval coverage remain unproven."
+      },
+      "article": {
+        "formula": "fresh = valid_receipt AND 0 ≤ age_ms < 1000",
+        "ro": {
+          "question": "Ce înseamnă prospețimea atunci când timpul de pe sursă nu este independent de sursa însăși? Putem încerca să atestăm momentul recepției într-un model sintetic, fără să pretindem cunoașterea momentului fizic al măsurării.",
+          "principle": "Un receptor poate valida o referință temporală emisă de o autoritate separată de producătorul datelor. Acea referință trebuie legată de captură și verificată împotriva unei ferestre de prospețime; simpla existență a unui timestamp nu este suficientă.",
+          "formula_note": "Condiția folosește o fereastră semi-deschisă: 0 ms este admis, dar la exact 1000 ms referința expiră. Este o regulă de recepție simulată, nu o garanție privind întârzierea fizică a observației.",
+          "method": "Testele au folosit o autoritate temporală simulată distinctă de sursă, o referință autentificată asociată capturii și un verificator de dovezi simulat. Au fost evaluate recepții acceptabile și referințe expirate, viitoare, absente sau modificate.",
+          "interpretation": "Acceptarea arată că politica sintetică poate respinge anumite erori de referință temporală și poate izola starea acceptată anterior. Nu transformă ceasul sursei într-un ceas de încredere și nu demonstrează întârzierea reală.",
+          "controls": "Au fost respinse referințe lipsă, viitoare, expirate și manipulate. Absența unei autorități temporale reale și a unei legături cu momentul fizic al capturii rămâne o limitare structurală.",
+          "stages": [
+            "Captură sintetică",
+            "Referință temporală de recepție",
+            "Controlul prospețimii"
+          ]
+        },
+        "en": {
+          "question": "What does freshness mean when source time is not independent of the source? We can test attested reception time in a synthetic model without pretending to know when a physical sensor measurement actually occurred.",
+          "principle": "A receiver can validate a time reference issued by an authority separate from the data producer. That reference must be capture-bound and checked against a freshness interval; the presence of a timestamp alone proves little.",
+          "formula_note": "The condition uses a half-open window: 0 ms is admitted, but at exactly 1000 ms the receipt has expired. This is a simulated ingress policy, not a guarantee about the age of a physical measurement.",
+          "method": "Tests used a simulated time authority distinct from the source, an authenticated capture-bound receipt and a mock proof verifier. Admissible receipts were compared with expired, future, absent and tampered references.",
+          "interpretation": "Acceptance shows that the synthetic policy can reject specified receipt errors while preserving previously accepted state. It does not make the source clock trustworthy or establish real-world sensor latency.",
+          "controls": "Missing, future, expired and tampered references were rejected. No real trusted-time authority or reliable binding to physical capture time was established.",
+          "stages": [
+            "Synthetic capture",
+            "Authenticated ingress receipt",
+            "Freshness policy"
+          ]
+        }
       }
     },
     {
@@ -118,6 +292,35 @@
         "title": "Completeness of a synthetic observation sequence",
         "result": "Using a mock proof verifier, we accepted a complete sequence of three authenticated observations at the expected reception times. Missing, duplicate, reordered and invalid observations were rejected without compromising the previously accepted state.",
         "insight": "Completeness is relative to the synthetic reception model, not the physical interval. No ZKP was generated for the entire sequence; physical coverage remains unproven, and interval uniqueness was not established in that experiment."
+      },
+      "article": {
+        "formula": "slots_ms = {start + 50, start + 150, start + 250}",
+        "ro": {
+          "question": "Este suficientă o dovadă pentru o observație pentru a pretinde acoperirea unui interval? Nu: cercetarea a introdus o regulă de completitudine pentru o secvență finită de recepții, distinctă de acoperirea fizică.",
+          "principle": "Modelul definește un interval de recepție de 300 ms, trei sloturi de observație așteptate și o toleranță explicită de plus sau minus 10 ms. Exact un cadru autentificat trebuie asociat fiecărui slot; lipsa sau duplicarea nu poate fi mascată de un rezultat favorabil.",
+          "formula_note": "Mulțimea arată cele trei momente relative de recepție așteptate. Nu spune nimic despre ceea ce s-a întâmplat fizic între observațiile înregistrate.",
+          "method": "Cu un verificator de dovezi simulat, testele au construit trei observații semnate sintetic în sloturile așteptate. Au evaluat lipsuri, duplicări, reordonări și observații invalide, păstrând starea anterioară când verificarea eșua.",
+          "interpretation": "Rezultatul identifică completitudinea față de un program declarat de recepție. Acest criteriu este mai puternic decât verificarea izolată a unui singur cadru, dar este mai slab decât pretenția că toate evenimentele fizice au fost observate.",
+          "controls": "Controalele negative au inclus slot absent, slot duplicat, ordine incorectă și date invalide. Dovada ZKP agregată și unicitatea intervalelor au rămas în afara acestui experiment particular.",
+          "stages": [
+            "Fereastră sintetică de 300 ms",
+            "Trei sloturi autentificate",
+            "Acceptare ori respingere"
+          ]
+        },
+        "en": {
+          "question": "Does a proof about one observation establish coverage of an interval? No: this experiment introduced a completeness condition over a finite reception sequence, deliberately separate from physical coverage.",
+          "principle": "The model defines a 300 ms reception interval, three expected observation slots and an explicit plus-or-minus 10 ms tolerance. Exactly one authenticated frame must match each slot; missing or duplicate input cannot be hidden by a favorable predicate outcome.",
+          "formula_note": "The set lists the three expected times relative to interval start. It says nothing about physical behavior between captured observations.",
+          "method": "With a mock proof verifier, tests supplied three synthetically signed observations in their expected slots. They explored missing, duplicated, reordered and invalid observations while preserving prior accepted state when a check failed.",
+          "interpretation": "The outcome demonstrates completeness relative to a declared reception schedule. It is stronger than verifying one isolated frame, yet weaker than establishing that every real physical event was observed.",
+          "controls": "Negative controls included an absent slot, duplicate slot, reversed order and invalid input. Aggregate ZKP generation and interval uniqueness were outside this particular experiment.",
+          "stages": [
+            "Synthetic 300 ms window",
+            "Three authenticated slots",
+            "Accept or reject"
+          ]
+        }
       }
     },
     {
@@ -135,6 +338,35 @@
         "title": "Continuity between synthetic intervals",
         "result": "Using a mock proof verifier, we confirmed that checking intervals separately could accept a gap between them. The new experiment accepted three consecutive intervals and rejected gaps, overlaps and replay, including after restart.",
         "insight": "The next interval boundary and observation state advance together. Continuity concerns synthetic reception, not physical observation; restoring valid historical state remains a limitation. No aggregate ZKP was generated."
+      },
+      "article": {
+        "formula": "next_interval.start = previous_interval.end",
+        "ro": {
+          "question": "Pot fi fiecare dintre două intervale validat separat și totuși să existe un gol între ele? Da: corectitudinea locală a segmentelor nu implică legătura dintre limitele lor temporale.",
+          "principle": "Intervalele semideschise consecutive trebuie să împartă aceeași limită, iar ultima stare acceptată și începutul intervalului următor trebuie să avanseze împreună. O verificare izolată a fiecărei secvențe nu impune această condiție de continuitate.",
+          "formula_note": "Egalitatea este invariantul de continuitate pentru două intervale de recepție sintetice consecutive. Nu stabilește că a existat observație fizică neîntreruptă între momente.",
+          "method": "Experimentul cu verificator de dovezi simulat a construit trei intervale consecutive și a păstrat împreună limita următoare și watermark-ul observațiilor. Au fost incluse teste după restart cu aceeași stare persistentă.",
+          "interpretation": "Acceptarea celor trei intervale și respingerea golurilor demonstrează o condiție suplimentară față de completitudinea fiecărui interval. Ea exclude un gol nedeclarat din modelul sintetic, nu descoperă evenimente fizice neobservate.",
+          "controls": "Au fost respinse golurile de o milisecundă, suprapunerile, repetările, ordinea inversată și recepțiile invalide. Experimentul nu a generat o dovadă ZKP agregată, iar restaurarea unei stări istorice rămâne problematică.",
+          "stages": [
+            "Interval acceptat",
+            "Limite egale și commit comun",
+            "Interval următor"
+          ]
+        },
+        "en": {
+          "question": "Can two intervals each pass local verification while a gap remains between them? Yes: correctness of individual segments does not imply continuity across their temporal boundaries.",
+          "principle": "Consecutive half-open intervals must share a boundary, and the last accepted state and next interval start must advance together. Verifying each sequence in isolation imposes no such continuity condition.",
+          "formula_note": "The equality is a continuity invariant for consecutive synthetic reception intervals. It does not show that physical observations were uninterrupted between those instants.",
+          "method": "Using a mock proof verifier, the experiment assembled three consecutive intervals and advanced the next boundary together with the observation watermark. Tests after restart reused the persisted state.",
+          "interpretation": "Accepting all three intervals while rejecting gaps demonstrates a property beyond per-interval completeness. It excludes an undeclared gap in the synthetic model, not unobserved physical events.",
+          "controls": "One-millisecond gaps, overlaps, replay, reversed order and invalid receptions were rejected. No aggregate ZKP was generated here, and valid historical-state restoration remains a limitation.",
+          "stages": [
+            "Accepted interval",
+            "Shared boundary and commit",
+            "Next interval"
+          ]
+        }
       }
     },
     {
@@ -152,6 +384,35 @@
         "title": "Resuming after a sequence interruption",
         "result": "Using a mock proof verifier, we resumed observations in a new segment after explicitly declaring a missing interval and separately authorizing recovery. Replay and regressions were rejected, and interruption history survived restart.",
         "insight": "Recovery does not erase the missing interval or allow continuous coverage to be claimed across it. The model assumes a simulated authority, monotonic source counters and trusted local state; it does not establish physical coverage or resistance to restoring historical state. No aggregate ZKP was generated."
+      },
+      "article": {
+        "formula": "resume = declared_gap AND authorized_new_segment",
+        "ro": {
+          "question": "Cum putem continua recepția după o întrerupere fără să falsificăm istoricul și să susținem că a existat acoperire neîntreruptă? Regula de continuitate trebuie să poată distinge între eroare și reluare explicit autorizată.",
+          "principle": "Un nou segment poate începe numai după consemnarea golului și autorizarea distinctă a reluării. Istoricul segmentelor, contoarele monotone și starea acceptată trebuie să supraviețuiască repornirii, iar limitele istorice nu trebuie rescrise.",
+          "formula_note": "Expresia descrie două condiții necesare într-un model sintetic: declararea discontinuității și autorizarea noului segment. Nu înseamnă că perioada lipsă este recuperată sau demonstrată retrospectiv.",
+          "method": "Testele cu verificator de dovezi simulat au înregistrat explicit un interval lipsă și au continuat într-un segment nou, după autorizare separată. Au reîncărcat starea și istoricul după restart și au verificat respingerea revenirii la observații vechi.",
+          "interpretation": "Rezultatul arată că progresul poate fi recuperat fără a șterge dovada întreruperii. Este o alternativă la fie blocarea permanentă a recepției, fie ignorarea discretă a golului temporal.",
+          "controls": "Au fost încercate repetări și regresii ale contoarelor și segmentelor. Modelul presupune o autoritate de autorizare simulată, contoare monotone și stare locală de încredere; nu oferă o demonstrație criptografică agregată.",
+          "stages": [
+            "Gol de recepție declarat",
+            "Autorizare reluare",
+            "Segment nou cu istoric păstrat"
+          ]
+        },
+        "en": {
+          "question": "How can reception resume after an interruption without rewriting history or implying uninterrupted coverage? The continuity rule must distinguish an undeclared error from a separately authorized resumption.",
+          "principle": "A new segment may begin only after recording the missing span and separately authorizing recovery. Segment history, monotonic counters and accepted state must survive restart, without rewriting prior boundaries.",
+          "formula_note": "The expression states two prerequisites in the synthetic model: a declared gap and authorized creation of a new segment. It does not mean the missing interval has been recovered or retrospectively proven.",
+          "method": "Tests with a mock proof verifier explicitly recorded a missing interval and resumed within a new segment after separate authorization. They reopened retained history after restart and checked rejection of old observations.",
+          "interpretation": "The outcome demonstrates a controlled way to resume progress without deleting evidence of interruption. It avoids both an indefinitely blocked receiver and silently pretending the gap never existed.",
+          "controls": "Replay and regression of counters or segments were exercised. The model assumes a simulated authorizing authority, monotonic counters and trusted local state; it did not generate an aggregate cryptographic proof.",
+          "stages": [
+            "Declared reception gap",
+            "Recovery authorization",
+            "New segment, history retained"
+          ]
+        }
       }
     },
     {
@@ -169,6 +430,35 @@
         "title": "Detecting restoration of historical state",
         "result": "Using a mock proof verifier, we demonstrated that restoring valid historical state could permit replay of observations and erase interruption history. A simulated reference covering the entire state detected divergence and blocked further operations, including when the reference was missing or inconsistent.",
         "insight": "Integrity does not guarantee freshness. If both states are restored together, the mechanism cannot detect regression. Real reference independence is not established; a partial update blocks further operations without automatic recovery. No aggregate ZKP was generated."
+      },
+      "article": {
+        "formula": "H(local_state) = external_reference.digest",
+        "ro": {
+          "question": "Ce se întâmplă când un atacator restaurează o copie istorică a stării care este intern consistentă? Semnătura sau hash-ul corect al acelei copii nu demonstrează că ea este cea mai recentă.",
+          "principle": "Detectarea rollback-ului necesită o referință independentă asupra întregii stări, incluzând istoricul segmentelor, nu doar asupra ultimului contor. Dacă referința este actuală și nu poate fi restaurată împreună cu starea locală, divergența poate fi recunoscută.",
+          "formula_note": "Compararea digesturilor este un control de consistență între două copii presupuse diferit administrate. Egalitatea dovedește cel mult concordanța, nu prospețimea și nici independența reală a referinței.",
+          "method": "Cu un verificator de dovezi simulat, experimentele au restaurat o stare istorică validă, demonstrând posibilitatea replay-ului și a pierderii istoricului. O referință simulată pentru starea completă a detectat divergența și a oprit continuarea.",
+          "interpretation": "Acesta este un rezultat negativ util: protecția locală împotriva modificării neautorizate nu exclude regresia cronologică. Adăugarea unei referințe externe schimbă ipotezele de încredere și introduce propria nevoie de prospețime.",
+          "controls": "Referința absentă sau inconsistentă a blocat operația; restaurarea simultană a ambelor copii este contraexemplul rămas. Nu s-a demonstrat o autoritate independentă reală și nu s-a generat un ZKP agregat.",
+          "stages": [
+            "Stare locală restaurată",
+            "Comparație cu referință simulată",
+            "Blocare la divergență"
+          ]
+        },
+        "en": {
+          "question": "What happens when an adversary restores an internally consistent historical state? A valid signature or digest on that copy does not establish that it is the newest copy.",
+          "principle": "Rollback detection requires an independent reference covering the entire state, including segment history, rather than only the latest counter. If the reference is current and cannot be rolled back with local state, divergence can be detected.",
+          "formula_note": "The digest comparison is a consistency check between two copies assumed to be independently controlled. Equality establishes agreement at most, not freshness or real independence of the reference.",
+          "method": "Using a mock proof verifier, experiments restored a valid historical state and demonstrated potential replay and lost interruption history. A simulated whole-state reference detected divergence and prevented further processing.",
+          "interpretation": "This is an important negative result: protection against local alteration does not preclude chronological regression. Adding an external reference changes the trust assumptions and requires its own freshness guarantee.",
+          "controls": "Missing and inconsistent references caused failure-closed behavior; simultaneous restoration of both copies remained an explicit counterexample. Real reference independence and aggregate ZKP generation were not demonstrated.",
+          "stages": [
+            "Restored local state",
+            "Simulated reference comparison",
+            "Block on divergence"
+          ]
+        }
       }
     },
     {
@@ -186,6 +476,35 @@
         "title": "Reconciliation after a partial state update",
         "result": "Using a mock proof verifier, we reconciled local state after an interrupted update. A previously prepared candidate allowed restoration of the correct state, preservation of interruption history and rejection of replay after restart. Missing, inconsistent or historical evidence blocked reconciliation.",
         "insight": "Reconciliation is explicit and covers a single forward transition, based on a simulated reference assumed current and trusted. Restoring all copies together remains undetectable; matching states do not prove freshness. We did not test physical failures or a real independent authority, and no aggregate ZKP was generated."
+      },
+      "article": {
+        "formula": "reconcile = prepared_candidate AND matching_current_reference",
+        "ro": {
+          "question": "Putem repara o actualizare parțială după ce copia locală și referința separată au devenit divergente, fără a accepta replay sau a șterge istoricul segmentelor? Recuperarea trebuie să fie controlată, nu un reset arbitrar.",
+          "principle": "O candidată de stare pregătită înainte de commit oferă dovada tranziției așteptate. Reconcilierea admite cel mult o tranziție înainte atunci când referința simulată actuală și istoricul candidatului se potrivesc; o simplă coincidență de digesturi nu garantează prospețimea.",
+          "formula_note": "Expresia este o precondiție schematică pentru recuperarea explicită: există o candidată pregătită și o referință corespunzătoare. Ea nu reprezintă un consens distribuit sau o garanție de tranzacționalitate fizică.",
+          "method": "Cu un verificator de dovezi simulat, testele au întrerupt o actualizare și au păstrat candidatul necesar reconcilierii. Au redeschis starea după restart și au verificat că istoricul întreruperilor rămâne intact și că operațiile repetate sunt respinse.",
+          "interpretation": "Rezultatul oferă o metodă de recuperare pentru un singur pas înainte în modelul sintetic, fără a transforma divergența în acceptare implicită. Lipsa dovezilor suficiente este o condiție legitimă de oprire.",
+          "controls": "Au fost respinse candidate absente, istorice sau inconsistente și încercări de replay. Restaurarea simultană a tuturor copiilor și o autoritate independentă reală rămân în afara dovezilor existente.",
+          "stages": [
+            "Commit întrerupt",
+            "Candidată pregătită și referință",
+            "Reconciliere explicită"
+          ]
+        },
+        "en": {
+          "question": "Can a partial update be repaired when local state and its separate reference diverge, without allowing replay or deleting segment history? Recovery must be controlled rather than treated as an arbitrary reset.",
+          "principle": "A state candidate prepared before commit provides evidence of the expected transition. Reconciliation permits at most one forward step when the assumed-current simulated reference and candidate history match; matching digests alone do not establish freshness.",
+          "formula_note": "The expression is a schematic recovery precondition: a prepared candidate exists and a corresponding current reference is available. It is not distributed consensus or a guarantee of physical transactional durability.",
+          "method": "Using a mock proof verifier, tests interrupted an update while retaining the prepared candidate. They reopened state after restart and checked that interruption history survived and repeated operations were rejected.",
+          "interpretation": "The result gives a recovery path for one forward step in the synthetic model, without silently treating divergence as acceptance. Insufficient evidence is a valid reason to stop further operations.",
+          "controls": "Missing, historical and inconsistent candidates, as well as replay attempts, were rejected. Simultaneous restoration of all copies and a real independent reference remain outside the demonstrated scope.",
+          "stages": [
+            "Interrupted commit",
+            "Prepared candidate and reference",
+            "Explicit reconciliation"
+          ]
+        }
       }
     },
     {
@@ -203,6 +522,35 @@
         "title": "State consistency after simulated interruptions",
         "result": "Using a mock proof verifier, we interrupted the process at four update stages. Matching state could be reopened, while divergence required explicit reconciliation. Replay and regression were rejected in the tested cases; insufficient evidence blocked recovery.",
         "insight": "State visibility after process termination does not establish power-loss durability. Restoring all copies together remains undetectable, and real reference independence is not established. No aggregate ZKP was generated."
+      },
+      "article": {
+        "formula": "reopen_state ∈ {consistent, reconciliation_required}",
+        "ro": {
+          "question": "Care sunt consecințele opririi procesului în puncte diferite ale unei actualizări de stare? Este important să distingem un proces întrerupt de pierderea fizică a alimentării sau a datelor din dispozitivul de stocare.",
+          "principle": "Modelul distinge o stare concordantă, redeschisă direct, de o divergență ce necesită reconciliere explicită. Persistența observată după terminarea unui proces nu dovedește că fișierele ar rezista la lipsa bruscă a alimentării.",
+          "formula_note": "Relația reprezintă clasificarea rezultatelor admise la redeschidere: stare concordantă sau recuperare obligatorie. Nu certifică toate modurile posibile de defectare ale unui sistem de fișiere.",
+          "method": "Un test sintetic cu verificator de dovezi simulat a întrerupt controlat procesul în patru etape ale actualizării. Au fost inspectate copia locală, referința separată și candidatul de reconciliere după redeschidere.",
+          "interpretation": "În punctele testate, o stare concordantă a fost utilizabilă, iar o divergență a necesitat reconciliere; repetările și regresiile au fost respinse. Acesta este un rezultat despre proces și logică de stare, nu un test de hardware.",
+          "controls": "Cazurile cu dovadă insuficientă au blocat recuperarea. Nu s-au simulat fizic căderea de tensiune, flush-ul dispozitivului sau restaurarea simultană a tuturor copiilor.",
+          "stages": [
+            "Întrerupere controlată de proces",
+            "Redeschidere și comparație",
+            "Continuare sau reconciliere"
+          ]
+        },
+        "en": {
+          "question": "What are the consequences of terminating a process at different stages of a state update? A process interruption must be distinguished from actual loss of power or data in the storage device.",
+          "principle": "The model separates consistent state that can reopen directly from divergence requiring explicit reconciliation. Persistence observed after process termination does not show that bytes would survive an abrupt power failure.",
+          "formula_note": "The relation classifies possible reopened outcomes: consistent state or mandatory reconciliation. It is not a guarantee against all file-system or device failure modes.",
+          "method": "A synthetic test using a mock proof verifier interrupted the process at four controlled update stages. Local state, separate reference and prepared recovery candidate were inspected after reopening.",
+          "interpretation": "In the tested cases, matching state could resume, while divergence required reconciliation; replay and regression were rejected. This is evidence about process-level state logic, not hardware durability.",
+          "controls": "Cases with insufficient evidence blocked recovery. Physical power loss, storage flushing and simultaneous restoration of all copies were not tested.",
+          "stages": [
+            "Controlled process interruption",
+            "Reopen and compare",
+            "Continue or reconcile"
+          ]
+        }
       }
     },
     {
@@ -220,6 +568,35 @@
         "title": "Uncertain outcome of a state update",
         "result": "Using a mock proof verifier, we tested lost acknowledgement after an update, failure before applying it and partial updates. Retry was possible only after checking a matching previous state; already applied operations rejected replay. Ambiguous cases blocked continuation without explicit reconciliation.",
         "insight": "A caller error alone does not establish whether a commit occurred. The checks assume a current, trusted reference; power-loss durability, exactly-once processing and detection of simultaneous restoration of all copies remain unproven. No aggregate ZKP was generated."
+      },
+      "article": {
+        "formula": "safe_retry = previous_state_confirmed AND not_already_applied",
+        "ro": {
+          "question": "Dacă un apelant pierde confirmarea unei actualizări, înseamnă că operația nu a avut loc? Nu: un răspuns de eroare sau un timeout poate apărea atât înainte, cât și după aplicarea schimbării.",
+          "principle": "Corectitudinea retrimiterii depinde de starea observată după eroare, nu de mesajul de eroare izolat. O referință actuală și concordantă poate permite o reluare când tranziția nu a fost aplicată; o stare deja avansată trebuie să respingă repetarea.",
+          "formula_note": "Formula enunță condiția prudentă pentru o retrimitere în model: starea anterioară este confirmată și operația nu a fost deja aplicată. Nu este o garanție de exactly-once pentru apeluri externe.",
+          "method": "Cu un verificator de dovezi simulat, testele au injectat pierderea confirmării după commit, un eșec înaintea aplicării și actualizări parțiale. Au comparat starea și referința după eroare înainte de orice nouă încercare.",
+          "interpretation": "Observația centrală este că același tip de răspuns al apelantului poate reprezenta stări efective diferite. Tratarea ambiguității prin reconciliere explicită previne o retrimitere care ar altera sau dubla progresul.",
+          "controls": "Repetările după commit au fost respinse, iar divergențele și lipsa dovezilor au blocat continuarea. Persistența la pierderea alimentării și procesarea exactly-once la exterior nu au fost demonstrate.",
+          "stages": [
+            "Confirmare pierdută",
+            "Reverificarea stării efective",
+            "Retry sigur sau blocare"
+          ]
+        },
+        "en": {
+          "question": "If a caller loses an update acknowledgement, does it mean the operation never happened? No: a timeout or error may occur both before and after the state transition has taken effect.",
+          "principle": "Safe retry depends on the state observed after the failure, not the error message alone. A current, matching reference can permit retry when no transition was applied; already advanced state must reject a repeated operation.",
+          "formula_note": "The formula states a cautious retry precondition in the model: the previous state is confirmed and the operation was not already applied. It does not assert externally observable exactly-once execution.",
+          "method": "With a mock proof verifier, tests injected lost acknowledgement after commit, a failure before applying state and partial updates. They compared state and reference after failure before permitting another attempt.",
+          "interpretation": "The core observation is that the same caller-facing failure can correspond to different effective states. Resolving ambiguity through explicit reconciliation prevents a retry from overwriting or duplicating progress.",
+          "controls": "Replay following an applied commit was rejected; divergence and missing evidence stopped continuation. Power-loss persistence and external exactly-once semantics remain unproven.",
+          "stages": [
+            "Lost acknowledgement",
+            "Inspect effective state",
+            "Safe retry or block"
+          ]
+        }
       }
     },
     {
@@ -237,6 +614,35 @@
         "title": "One proof for three observations and one atomic commit",
         "result": "In a local experiment, a genuine ZKP for three test-key-signed synthetic observations was independently verified using 98 reconstructed public field inputs. Only after proof acceptance was the local watermark updated atomically once. Missing or modified proofs and different sequences did not advance the state.",
         "insight": "The result covers only the three supplied observations. It does not establish continuous physical coverage, sensor correctness, real trusted origin or time, power-loss durability, or product validation."
+      },
+      "article": {
+        "formula": "∀ i ∈ {1,2,3}: BLAKE2s(frame_i) = digest_i ∧ speed_i ≤ 500",
+        "ro": {
+          "question": "Poate o singură dovadă criptografică autentică să acopere trei cadre sintetice autentificate și să permită exact o actualizare atomică a watermark-ului, numai după verificare? Acesta este un test end-to-end distinct de suitele anterioare cu verificator simulat.",
+          "principle": "Circuitul Noir leagă octeții fiecărui cadru privat de amprenta autentificată reconstruită independent și verifică viteza față de limita publică de 500 cm/s. Verificatorul reconstruiește 98 de elemente de câmp publice: 3 ori 32 octeți de digest, limita și versiunea.",
+          "formula_note": "Formula rezumă condiția pentru fiecare dintre cele trei cadre furnizate. Nu pretinde că între aceste cadre s-a măsurat continuu viteza fizică sau că autoritatea de timp și cheia de test ar identifica o sursă reală.",
+          "method": "Într-un mediu local izolat, cu instrumentele Noir și Barretenberg preexistente deja disponibile, s-a generat o singură dovadă reală pentru trei cadre sintetice semnate cu cheia de test. Verificarea independentă a precedat unicul commit atomic al watermark-ului. Dovada avea 14.656 octeți; provingul local a durat 0,318 secunde, iar verificarea împreună cu commitul 0,117 secunde, într-o singură execuție.",
+          "interpretation": "Verificarea VALID și redeschiderea stării demonstrează bariera verificare-înainte-de-commit pentru exact acele intrări. Măsurătorile sunt observații punctuale ale unei singure rulări locale, nu estimări de performanță pentru producție.",
+          "controls": "Au fost respinse, fără modificarea watermark-ului, absența dovezii, cheia de verificare greșită, dovada modificată și o altă secvență sintetică autentificată. Repetarea după commit a fost respinsă. Acoperirea fizică, sursa și timpul real de încredere rămân nedemonstrate.",
+          "stages": [
+            "Trei cadre sintetice autentificate",
+            "ZKP cu 98 intrări publice",
+            "VALID apoi un commit atomic"
+          ]
+        },
+        "en": {
+          "question": "Can one genuine cryptographic proof cover three authenticated synthetic frames and enable exactly one atomic watermark update only after verification? This is an end-to-end experiment distinct from earlier mock-verifier suites.",
+          "principle": "The Noir circuit binds each private frame's bytes to an independently reconstructed authenticated digest and checks speed against the public 500 cm/s limit. The verifier reconstructs 98 public field elements: three sets of 32 digest bytes, the bound and version.",
+          "formula_note": "The formula states the predicate for each of the three supplied frames. It does not assert continuous physical speed measurement between frames or that test keys and time references establish real-world provenance.",
+          "method": "In an isolated local runtime reusing the existing Noir and Barretenberg tools, one genuine proof was generated for three test-key-signed synthetic frames. Independent verification preceded the single atomic watermark commit. Proof size was 14,656 bytes; local proving took 0.318 seconds and verification plus commit took 0.117 seconds in one observed run.",
+          "interpretation": "The VALID verification and reopened persistent state demonstrate the verify-before-commit barrier for those exact inputs. Timing values are one-off local observations, not production performance estimates.",
+          "controls": "Missing proof, incorrect verification key, modified proof and a different authenticated synthetic sequence were rejected without changing the watermark. Replay after commit was also rejected. Physical coverage, real trusted source and real trusted time remain unproven.",
+          "stages": [
+            "Three authenticated synthetic frames",
+            "ZKP with 98 public inputs",
+            "VALID then one atomic commit"
+          ]
+        }
       }
     }
   ],
