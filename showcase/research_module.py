@@ -300,6 +300,16 @@ OVERVIEW_CSS = """
 .public-research-balance .public-research-counts{max-width:none;margin-bottom:16px}
 .public-research-balance .public-documentation,.public-research-balance .public-progress{margin:0;max-width:none}
 .public-progress p{margin:0 0 12px}.public-progress p:last-child{margin-bottom:0}
+.public-research-preview{margin:22px 0 0;padding-top:18px;border-top:1px solid #415256}
+.public-research-preview h4{margin:0 0 10px;color:#efcc97;font-size:1.05rem}
+.public-research-preview ul{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;list-style:none;padding:0;margin:0}
+.public-research-preview li{min-width:0}
+.public-research-preview a{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px;height:100%;padding:10px 13px;border:1px solid #466168;background:#102329;color:#e5c18a;text-decoration:none;font-size:.95rem;line-height:1.45}
+.public-research-preview a:hover{background:#1e3439}
+.public-research-preview a:focus-visible{outline:2px solid #f1d4a2;outline-offset:3px}
+.public-research-preview p{color:#d5dcd7;font-size:.95rem;margin:10px 0 0}
+@media(max-width:750px){.public-research-preview ul{grid-template-columns:1fr;gap:8px}.public-research-preview a{min-height:44px}}
+
 .public-research-counts dt{font-size:.95rem}
 .public-gcs figcaption{font-size:.91rem}
 .public-gcs-flow{animation:public-gcs-flow 3s linear infinite}
@@ -337,6 +347,18 @@ def render_overview_progress(journal: dict, lang: str) -> str:
     """Derived counts and proposed architecture, never a separate evidence registry."""
     c = OVERVIEW_COPY[lang]
     e = escape
+    # A small editorial selection; canonical titles and stable URLs only.
+    selected_ids = ("synthetic-proof-offline", "sitl-zkp-integrated", "synthetic-source-emission-gap")
+    entries = {item["id"]: item for item in journal["entries"]}
+    examples = "".join(
+        f'<li><a href="/{lang}/research/{slug}/">{e(entries[slug][lang]["title"])}<span aria-hidden="true"> →</span></a></li>'
+        for slug in selected_ids if slug in entries
+    )
+    preview_label = "Câteva exemple din jurnal" if lang == "ro" else "A few examples from the journal"
+    preview_note = ("Mini-articole cu diagrame, metode experimentale, controale, rezultate și limite, însoțite de documentația dovezilor."
+                    if lang == "ro" else "Articles with diagrams, experimental methods, controls, findings and limitations, with links to the evidence.")
+    preview = (f'<div class="public-research-preview"><h4>{e(preview_label)}</h4><ul>{examples}</ul>'
+               f'<p>{e(preview_note)}</p></div>') if examples else ""
     findings = len(journal["entries"])
     themes = len({item["article"]["visual"]["theme"] for item in journal["entries"]})
     icons = {
@@ -359,7 +381,7 @@ def render_overview_progress(journal: dict, lang: str) -> str:
         f'<div class="public-research-balance"><div class="public-research-metrics"><dl class="public-research-counts"><div><dt>{e(c["findings"])}</dt><dd id="public-finding-count">{findings}</dd></div>'
         f'<div><dt>{e(c["themes"])}</dt><dd id="public-theme-count">{themes}</dd></div></dl>'
         f'<p class="public-documentation"><a href="/{lang}/research/">{e(COPY[lang]["cta"])}</a></p></div>'
-        '<div class="public-progress">' + "".join(f"<p>{e(part)}</p>" for part in COPY[lang]["home_progress"]) + '</div></div></section>'
+        '<div class="public-progress">' + "".join(f"<p>{e(part)}</p>" for part in COPY[lang]["home_progress"]) + '</div></div>' + preview + '</section>'
         f'<section class="public-gcs" aria-labelledby="public-gcs-title">'
         f'<h3 id="public-gcs-title">{e(c["direction"])}</h3><p><strong>{e(c["proposed"])}</strong></p>'
         f'<p>{e(c["intro"])}</p><figure aria-label="{e(c["direction"], quote=True)}">'

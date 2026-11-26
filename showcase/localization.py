@@ -241,6 +241,9 @@ RO_TEXT = {
     "What if a system could prove a condition was met without revealing the data behind it? TAG explores this idea for telemetry through controlled experiments using synthetic data.": "Ce-ar fi dacă un sistem ar putea demonstra respectarea unei condiții fără să dezvăluie datele din spatele ei? TAG explorează această idee pentru telemetrie, prin experimente controlate cu date sintetice.",
     "Explore the concept": "Descoperă conceptul",
     "See the demonstration": "Explorează demonstrația",
+    "Research journal": "Jurnalul cercetării",
+    "Research": "Cercetare",
+    "TAG researches cryptographic checks of telemetry conditions without revealing private data. Discover the experiments, findings and their limits in the research journal.": "TAG cercetează verificarea criptografică a condițiilor din telemetrie, fără divulgarea datelor private. Descoperă experimentele, rezultatele și limitele în jurnal.",
     "01 / THE CONCEPT": "01 / CONCEPTUL",
     "THE CONCEPT": "CONCEPTUL",
     "Less data exposed. A condition that can be verified.": "Mai puține date expuse. O condiție verificabilă.",
@@ -516,6 +519,7 @@ class _Translator(HTMLParser):
             # Exactly the two approved, static parent-site navigation destinations.
             value = value.replace('href="https://rocsi.eu/en/contact"', 'href="https://rocsi.eu/ro/contact"')
             value = value.replace('href="https://rocsi.eu/en"', 'href="https://rocsi.eu/ro"')
+            value = value.replace('href="/en/research/"', 'href="/ro/research/"')
         for en, ro in RO_ARIA.items():
             value = value.replace(f'aria-label="{en}"', f'aria-label="{ro}"')
         self.output.append(value)

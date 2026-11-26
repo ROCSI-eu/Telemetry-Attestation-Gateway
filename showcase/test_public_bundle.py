@@ -154,7 +154,7 @@ class PublicUXTests(unittest.TestCase):
             self.assertIn(render_overview_progress(journal, lang), page)
             self.assertIn(f'id="public-finding-count">{len(journal["entries"])}</dd>', page)
             self.assertIn(f'id="public-theme-count">{len({e["article"]["visual"]["theme"] for e in journal["entries"]})}</dd>', page)
-            self.assertEqual(page.count(f'href="/{lang}/research/"'), 1)
+            self.assertEqual(page.count(f'href="/{lang}/research/"'), 3)
             for name in (label, boundary, "ArduPilot SITL", "QGroundControl", "Mission Planner"):
                 self.assertIn(name, page)
             self.assertNotIn('class="r-entry"', page)
@@ -163,6 +163,23 @@ class PublicUXTests(unittest.TestCase):
             html = render_overview_progress(subset, lang)
             self.assertIn('id="public-finding-count">1</dd>', html)
             self.assertIn('id="public-theme-count">1</dd>', html)
+
+    def test_home_research_entrypoints_and_examples(self):
+        from build import load_research_journal
+        from research_module import render_overview_progress
+        from html import escape
+        journal = load_research_journal()
+        entries = {item["id"]: item for item in journal["entries"]}
+        for lang, page, label in (("ro", self.ro, "Jurnalul cercetării"), ("en", self.en, "Research journal")):
+            self.assertIn(f'<a class="hero-research" href="/{lang}/research/">{label}</a>', page)
+            self.assertIn(f'class="header-research" href="/{lang}/research/"', page)
+            preview = page.split('<div class="public-research-preview">', 1)[1].split('</div>', 1)[0]
+            self.assertEqual(preview.count('<li>'), 3)
+            for slug in ("synthetic-proof-offline", "sitl-zkp-integrated", "synthetic-source-emission-gap"):
+                self.assertIn(f'href="/{lang}/research/{slug}/"', preview)
+                self.assertIn(escape(entries[slug][lang]["title"]), preview)
+            self.assertNotIn(f'href="/{"en" if lang == "ro" else "ro"}/research/"', page)
+            self.assertNotIn('public-research-preview">', render_overview_progress({"entries": []}, lang))
 
     def test_no_technical_controls_panel_or_executable_replay(self):
         for page in (self.ro, self.en):
@@ -671,7 +688,8 @@ class PublicUXTests(unittest.TestCase):
             self.assertIn(entry[locale]["title"], page)
             self.assertIn(limit, page)
             self.assertIn("qa-emission-gap-20261126.md", page)
-            self.assertNotIn(entry["id"], overview)
+            self.assertEqual(overview.count(entry["id"]), 1)
+            self.assertIn(f'href="/{locale}/research/{entry["id"]}/"', overview)
             self.assertNotIn("Qube", page)
             self.assertNotIn("GitHub Actions", page)
 

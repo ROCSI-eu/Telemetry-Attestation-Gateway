@@ -48,6 +48,17 @@ Keep the open question distinct, all science text and mandatory markings
 intact, and the same template for future RO/EN findings. No scripts, external
 assets, runtime connection, journal schema change or promotion is implied.
 
+### Research entry points on the public overview
+
+The overview gives direct localized journal access in header navigation, a
+secondary hero CTA next to the demonstration, and the existing results CTA.
+The hero and a compact journal preview explain the benefit: articles with
+experimental methods, diagrams, controls, limitations and evidence links.
+At most three selected examples use canonical journal titles and stable
+article URLs, omitting unavailable entries, not a second registry or new
+research claims. Keep the two hero CTAs readable on mobile and the overview
+concise; the catalog, journal source and scientific boundaries stay intact.
+
 ### Public overview reconciliation
 
 The overview derives its finding and populated-theme counts from the validated
