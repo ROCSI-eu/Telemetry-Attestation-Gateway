@@ -432,33 +432,7 @@ RO_TEXT.update({'The Demonstration': 'Demonstrația',
  'Results': 'Rezultate',
  'THE DEMONSTRATION': 'DEMONSTRAȚIA',
  'Telemetry → cryptographic proof → verification': 'Telemetrie → dovadă criptografică → verificare',
- 'We check whether a condition is met without revealing the data behind it. This twenty-second visual sequence illustrates the idea automatically; it is not a live computation.': 'Verificăm '
-                                                                                                                                                                                   'respectarea '
-                                                                                                                                                                                   'unei '
-                                                                                                                                                                                   'condiții '
-                                                                                                                                                                                   'fără '
-                                                                                                                                                                                   'să '
-                                                                                                                                                                                   'dezvăluim '
-                                                                                                                                                                                   'datele '
-                                                                                                                                                                                   'din '
-                                                                                                                                                                                   'spatele '
-                                                                                                                                                                                   'ei. '
-                                                                                                                                                                                   'Secvența '
-                                                                                                                                                                                   'vizuală '
-                                                                                                                                                                                   'de '
-                                                                                                                                                                                   'aproximativ '
-                                                                                                                                                                                   '20 '
-                                                                                                                                                                                   'de '
-                                                                                                                                                                                   'secunde '
-                                                                                                                                                                                   'ilustrează '
-                                                                                                                                                                                   'automat '
-                                                                                                                                                                                   'ideea; '
-                                                                                                                                                                                   'nu '
-                                                                                                                                                                                   'execută '
-                                                                                                                                                                                   'calcule '
-                                                                                                                                                                                   'în '
-                                                                                                                                                                                   'timp '
-                                                                                                                                                                                   'real.',
+ 'The conceptual flow shows how a condition can be checked without revealing the data behind it.': 'Fluxul conceptual arată cum poate fi verificată o condiție fără a dezvălui datele din spatele ei.',
  '01 / TELEMETRY': '01 / TELEMETRIE',
  'Receive observations': 'Recepționăm observații',
  'A simulator produces synthetic observations. The exact value need not be shown to the verifier.': 'Simulatorul produce observații '
@@ -717,12 +691,12 @@ SHARE = {
     "ro": {
         "title": "TAG — Verificarea telemetriei cu divulgare minimă | ROCSI",
         "description": "Descoperă cum observațiile SITL sintetice duc la o dovadă criptografică și verificare independentă, fără expunerea valorilor private.",
-        "image_alt": "Centru de comandă și control TAG: dronă ilustrativă pe traseul sintetic A–B–C, fără telemetrie live.",
+        "image_alt": "TAG: dronă ilustrativă pe traseul sintetic A–B–C.",
     },
     "en": {
         "title": "TAG — Privacy-Preserving Telemetry Attestation | ROCSI",
         "description": "Explore how synthetic SITL observations lead to a cryptographic proof and independent verification, without exposing private values.",
-        "image_alt": "TAG Mission Control: illustrative drone on a synthetic A–B–C route, with no live telemetry.",
+        "image_alt": "TAG: illustrative drone on a synthetic A–B–C route.",
     },
 }
 

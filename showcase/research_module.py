@@ -91,7 +91,7 @@ COPY = {
  "findings":"Rezultate documentate", "demos":"Explorează demonstrațiile", "next":"Direcții deschise",
  "intro":"Rezultatele sunt grupate pe teme, de la cel mai recent la cel mai vechi în fiecare temă. Fiecare constatare are un singur rezumat, limita ei și legături către articol și dovezi.",
  "limit":"Ce înseamnă și ce nu demonstrează", "evidence":"Documentația experimentului",
- "demo_intro":"Exemple selectate din scenarii deterministe, pentru înțelegerea deciziilor. Deschide un exemplu pentru a vedea rezultatul înregistrat; nu se execută un prover sau un verificator.",
+ "demo_intro":"Scenarii deterministe care explică fluxul decizional. Explorează rezultatele preînregistrate.",
  "record":"Rezultat criptografic preînregistrat", "record_valid":"Verificatorul offline a acceptat o dovadă sintetică.", "record_invalid":"Verificatorul offline a respins o dovadă sintetică.",
  "record_limit":"Aceasta este o consemnare JSON minimizată, neautentificată de browser, nu o dovadă verificată aici. Nu confirmă sursa, prospețimea sau adevărul telemetriei.",
  "mock":"Simulare a fluxului", "claim":"Condiție", "crypto":"Rezultat criptografic simulat",
@@ -108,7 +108,7 @@ COPY = {
  "findings":"Documented findings", "demos":"Explore the demonstrations", "next":"Open research directions",
  "intro":"Findings are grouped by theme, newest first within each theme. Each has one summary, its limitation and links to the article and evidence.",
  "limit":"Meaning and limitations", "evidence":"Experiment documentation",
- "demo_intro":"Selected deterministic scenarios help explain the decision flow. Expand an example to see the recorded outcome; no prover or verifier is executed.",
+ "demo_intro":"Deterministic scenarios explain the decision flow. Explore the recorded outcomes.",
  "record":"Recorded cryptographic result", "record_valid":"An offline verifier accepted a synthetic proof.", "record_invalid":"An offline verifier rejected a synthetic proof.",
  "record_limit":"This is a minimized JSON record, not authenticated by the browser, not a proof verified here. It does not establish source identity, freshness or telemetry truth.",
  "mock":"Simulated flow", "claim":"Condition", "crypto":"Simulated cryptographic result",
@@ -152,16 +152,16 @@ ATLAS_MODES = {
     "authenticated_no_zkp": ("Controale de autentificare și consistență; fără ZKP nouă", "Authentication and consistency checks; no new ZKP"),
 }
 ATLAS_COPY = {
-    "ro": {"heading": "Atlasul vizual al cercetării", "intro": "Alege o temă pentru a explora constatările și mini-articolele. Gruparea este conceptuală, nu o scară de maturitate, o relație obligatorie de dependență sau o validare a produsului.",
+    "ro": {"heading": "Atlasul vizual al cercetării", "intro": "Explorează constatările și mini-articolele grupate după teme de cercetare. Gruparea descrie relații conceptuale, nu maturitatea produsului.",
            "count_one": "constatare", "count_many": "constatări", "back": "Înapoi la atlas",
            "boundary": "Mediu experimental · exclusiv date sintetice",
            "flow": "Modelul investigat", "observed": "Scenariu documentat", "control": "Control / caz negativ", "limit": "Limită / contraexemplu",
-           "caption": "Schemă ilustrativă a modelului și a cazurilor documentate. Săgețile descriu relații conceptuale, nu o execuție sau o verificare în browser."},
-    "en": {"heading": "Research visual atlas", "intro": "Choose a theme to explore its findings and articles. This is a conceptual grouping, not a maturity ladder, mandatory dependency relation or product validation.",
+           "caption": "Modelul investigat și relațiile conceptuale dintre cazurile documentate."},
+    "en": {"heading": "Research visual atlas", "intro": "Explore findings and articles grouped by research theme. The grouping describes conceptual relationships, not product maturity.",
            "count_one": "finding", "count_many": "findings", "back": "Back to atlas",
            "boundary": "Experimental environment · synthetic data only",
            "flow": "Investigated model", "observed": "Documented scenario", "control": "Control / negative case", "limit": "Limitation / counterexample",
-           "caption": "Illustrative diagram of the model and documented cases. Arrows describe conceptual relations, not browser execution or verification."},
+           "caption": "Investigated model and conceptual relationships between the documented cases."},
 }
 
 
@@ -211,7 +211,7 @@ OVERVIEW_COPY = {
            "gcs": "Software GCS", "gcs_note": "QGroundControl sau Mission Planner · control separat de TAG",
            "tag": "Companion TAG propus", "receive": "Doar recepție · fără comenzi sau retransmitere de control",
            "proof": "Dovezi exportabile", "verify": "Verificare independentă offline (obiectiv)",
-           "caption": "Schemă conceptuală: observațiile simulatorului sunt disponibile separat GCS și companionului TAG. Săgețile nu reprezintă o integrare realizată, o execuție sau o verificare aici."},
+           "caption": "Arhitectură propusă: observațiile sintetice ar urma să fie recepționate separat de GCS și companionul TAG."},
     "en": {"heading": "From checking a condition to telemetry stream integrity",
            "findings": "Documented findings", "themes": "Research themes",
            "direction": "Development direction: GCS integration",
@@ -221,7 +221,7 @@ OVERVIEW_COPY = {
            "gcs": "GCS software", "gcs_note": "QGroundControl or Mission Planner · control separate from TAG",
            "tag": "Proposed TAG companion", "receive": "Receive-only · no commands or control relay",
            "proof": "Exportable evidence", "verify": "Independent offline verification (objective)",
-           "caption": "Conceptual diagram: simulator observations are available separately to the GCS and TAG companion. Arrows do not represent a completed integration, execution or verification here."},
+           "caption": "Proposed architecture: the GCS and TAG companion would receive the synthetic observations separately."},
 }
 
 
