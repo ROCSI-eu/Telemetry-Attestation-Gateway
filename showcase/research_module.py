@@ -176,6 +176,12 @@ CSS = """
 @media(max-width:700px){.r-wrap{width:calc(100% - 36px)}.r-atlas-map{grid-template-columns:1fr}.r-brand{max-width:100%}.r-header{gap:12px}.r-header-nav{width:100%;justify-content:space-between}.r-entry{padding:18px}.r-article{padding:24px 0 36px}.r-article h1{font-size:clamp(1.95rem,7.8vw,3rem)}.r-article-section-observed,.r-article-section-limitations{padding:16px}.r-contents{gap:4px 10px}.r-section{padding:30px 0}}
 @media(max-width:640px){.r-diagram ol,.r-visual-path{gap:24px}.r-diagram li,.r-visual-node{padding:10px}}
 @media(max-width:360px){.r-wrap{width:calc(100% - 28px)}.r-brand-name{font-size:.67rem}.r-metrics div{padding:10px}.r-entry-actions{align-items:stretch}}
+.r-progress-evidence figure{margin:18px 0 24px;min-width:0}
+.r-progress-evidence img{display:block;width:100%;height:auto;border:1px solid #53696d}
+.r-progress-evidence figcaption{font-size:.92rem;color:#c6d0cb;margin-top:8px;overflow-wrap:anywhere}
+.r-progress-evidence figcaption .r-boundary{display:block;margin-top:8px}
+.r-progress-evidence details{margin:20px 0}
+.r-progress-evidence summary{cursor:pointer;color:#eacb91}
 """ + LANGUAGE_DROPDOWN_CSS
 COPY = {
 "ro": {
@@ -541,6 +547,34 @@ def research_page(journal, scenarios, verifier, lang):
 {journal_footer(lang)}</div></body></html>'''
 
 
+def render_engineering_progress(item: dict, lang: str) -> str:
+    """Supplementary material only; never replaces a finding or its provenance."""
+    progress = item["article"].get("engineering_progress")
+    if progress is None:
+        return ""
+    e = escape
+    local = progress[lang]
+    boundary = " · ".join(progress["labels"])
+    figures = []
+    for figure in progress["figures"]:
+        copy = figure[lang]
+        figures.append(
+            f'<figure><img src="/{e(figure["path"], quote=True)}" '
+            f'width="{figure["width"]}" height="{figure["height"]}" loading="lazy" '
+            f'alt="{e(copy["alt"], quote=True)}">'
+            f'<figcaption>{e(copy["caption"])}<span class="r-boundary">{e(boundary)}'
+            f' · {e(local["prototype"])}</span></figcaption></figure>')
+    extra = (f'<details><summary>{e(local["more"])}</summary>{"".join(figures[1:])}</details>'
+             if len(figures) > 1 else "")
+    return (f'<section class="r-article-section r-progress-evidence" id="engineering-progress">'
+            f'<p class="r-kicker">{e("Progres ingineresc suplimentar" if lang == "ro" else "Supplementary engineering progress")}</p>'
+            f'<h2>{e(local["title"])}</h2><p>{e(local["context"])}</p>'
+            f'<p class="r-boundary">{e(boundary)} · {e(local["prototype"])}</p>'
+            f'{figures[0]}<p>{e(local["result"])}</p>{extra}<p>{e(local["limitation"])}</p>'
+            f'<p><a href="{REPO}/blob/main/{e(progress["evidence_path"], quote=True)}">'
+            f'{e(local["source"])}</a></p></section>')
+
+
 def article_page(item: dict, lang: str) -> str:
     """Static bilingual article from the checked, public-safe journal record."""
     e = escape
@@ -553,6 +587,8 @@ def article_page(item: dict, lang: str) -> str:
     other_url = f"{ORIGIN}/{other}/research/{slug}/"
     nav_keys = ("observed", "question", "principle", "formula", "diagram", "method", "interpretation", "controls", "limitations")
     contents = "".join(f'<a href="#{key}">{e("Diagramă" if lang == "ro" else "Diagram") if key == "diagram" else e(labels[key])}</a>' for key in nav_keys)
+    if "engineering_progress" in item["article"]:
+        contents += '<a href="#engineering-progress">' + e("Progres ingineresc" if lang == "ro" else "Engineering progress") + '</a>'
     return f"""<!doctype html>
 <html lang="{lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{e(copy["title"])} | TAG · ROCSI</title><meta name="robots" content="noindex,nofollow"><meta name="description" content="{e(copy["result"],quote=True)}">
@@ -573,6 +609,7 @@ def article_page(item: dict, lang: str) -> str:
 <section class="r-article-section" id="interpretation"><h2>{e(labels["interpretation"])}</h2><p>{e(article["interpretation"])}</p></section>
 <section class="r-article-section" id="controls"><h2>{e(labels["controls"])}</h2><p>{e(article["controls"])}</p></section>
 <section class="r-article-section r-article-section-limitations" id="limitations"><h2>{e(labels["limitations"])}</h2><p>{e(copy["insight"])}</p></section>
+{render_engineering_progress(item, lang)}
 <div class="r-provenance"><a class="r-primary" href="{REPO}/blob/main/{e(item["evidence_path"],quote=True)}">{e(labels["source"])}</a>
 <a class="r-secondary" href="/{lang}/research/#theme-{item["article"]["visual"]["theme"]}">{e(labels["back"])}</a></div></article></main>
 {journal_footer(lang)}</div></body></html>"""
