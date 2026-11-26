@@ -253,21 +253,35 @@ class PublicUXTests(unittest.TestCase):
 
     def test_visual_atlas_coverage_bilingual_and_fail_closed(self):
         from build import JOURNAL, load_research_journal
-        from research_module import ATLAS_THEMES, ATLAS_KINDS, ATLAS_MODES
+        from research_module import ATLAS_THEMES, ATLAS_KINDS, ATLAS_MODES, atlas_groups
         from html import escape
         journal = load_research_journal()
         for lang in ("ro", "en"):
             index = self.research_ro if lang == "ro" else self.research_en
             atlas = index.split('id="visual-atlas"', 1)[1].split('id="findings"', 1)[0]
             self.assertEqual(atlas.count('class="r-atlas-group"'), len(ATLAS_THEMES))
+            findings = index.split('id="findings"', 1)[1].split('id="demonstrations"', 1)[0]
+            self.assertNotIn('class="r-visual-node"', index)
+            self.assertNotIn('class="r-diagram"', index)
+            for theme, entries in atlas_groups(journal).items():
+                self.assertEqual(atlas.count(f'href="#theme-{theme}"'), 1)
+                self.assertEqual(findings.count(f'id="theme-{theme}"'), 1)
+                group = findings.split(f'id="theme-{theme}"', 1)[1].split('</section>', 1)[0]
+                self.assertEqual(re.findall(r'<article class="r-entry" id="([^"]+)"', group),
+                                 [item["id"] for _, item in entries])
             for item in journal["entries"]:
                 article = (self.folder / lang / "research" / item["id"] / "index.html").read_text()
                 visual = article.split('<figure class="r-diagram"', 1)[1].split("</figure>", 1)[0]
                 self.assertEqual(visual.count('class="r-visual-node"'), 9)
                 self.assertIn("A0_SYNTHETIC", visual)
                 self.assertIn(escape(ATLAS_MODES[item["article"]["visual"]["mode"]][lang == "en"]), visual)
-                self.assertEqual(atlas.count(f'href="/{lang}/research/{item["id"]}/"'), 1)
-                self.assertIn(escape(item[lang]["title"]), atlas)
+                self.assertEqual(index.count(f'href="/{lang}/research/{item["id"]}/"'), 1)
+                self.assertNotIn(escape(item[lang]["title"]), atlas)
+                self.assertEqual(findings.count(f'<h4>{escape(item[lang]["title"])}</h4>'), 1)
+                card = findings.split(f'id="{item["id"]}"', 1)[1].split("</article>", 1)[0]
+                for field in ("result", "insight"):
+                    self.assertIn(escape(item[lang][field]), card)
+                self.assertIn(item["evidence_path"], card)
                 for path, kind in zip(item["article"]["visual"]["paths"], ATLAS_KINDS):
                     self.assertIn(f'class="r-visual-case r-visual-case-{kind}"', visual)
                     for node in path["nodes"]:

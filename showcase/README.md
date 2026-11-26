@@ -16,20 +16,32 @@ remains independent of serving immutable static assets.
 
 The main RO/EN overview remains a short static presentation. The dedicated
 research routes /ro/research/ and /en/research/ render the validated cumulative
-journal, newest first, with technical evidence references and limitations.
+journal, grouped by theme and newest first within each theme, with technical evidence references and limitations.
 Three native HTML disclosure examples use allowlisted deterministic mock
 outcomes. A separately labelled offline cryptographic result is pre-recorded
 and not authenticated or verified by the browser. No JavaScript, live verifier,
 JSON endpoint, upload, operator action or network API is published.
 
-The bilingual visual atlas groups the journal by six research themes, not by
-maturity or dependency. Each article's structured visual record includes three
+The bilingual visual atlas links once to each populated thematic section, not\nto a duplicate article list. Each finding has one index summary with its\nlimitation, article link and evidence reference. Themes are conceptual, not\nmaturity or dependency tiers; detailed diagrams remain inside the articles. Each article's structured visual record includes three
 documented paths (observed scenario, control, limitation/counterexample) with
 paired Romanian and English node labels. The build rejects missing locales,
 unknown themes and unsafe text; the renderer uses inert HTML/CSS and retains
 the original model, evidence link and experimental boundary. Add visual
 records in the same journal entry as each accepted future finding; no new
 proof, test, or publication is implied by a diagram.
+
+### Proposed editorial extension — engineering progress
+
+For separately accepted, public-safe engineering achievements (for example
+future GCS companion increments), reuse the bilingual static visual approach
+but label them as engineering progress, not scientific findings. A proposed
+entry would identify the engineering objective, implemented components and
+integration boundary, diagram of the actually observed flow, scoped acceptance
+and negative checks, evidence link, known limits, six artifact dimensions and
+remaining work. Clearly distinguish proposed architecture, mock/replay, and
+observed execution; do not count engineering milestones as research findings.
+No new publication stream, schema, page, integration, or promotion is
+authorized by this proposal. Adopt it only under a separately scoped decision.
 
 The build emits 15 baseline static assets plus two article pages per accepted journal finding (43 files for the initial 14 findings).
 The CSP permits only the two known inline stylesheet hashes, no scripts or
