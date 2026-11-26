@@ -690,18 +690,64 @@
           ]
         }
       }
+    },
+    {
+      "id": "synthetic-source-emission-end-anchor",
+      "status": "documented_synthetic",
+      "evidence_path": "experiments/source-proof-binding-v0/qa-emission-end-anchor-20261126.md",
+      "ro": {
+        "field": "Integritate · limita terminală",
+        "title": "Detectarea omisiunilor terminale printr-o referință autentificată",
+        "result": "În 13 teste sintetice locale, o referință terminală autentificată a permis detectarea observațiilor numerotate lipsă la sfârșitul secvenței, în raport cu limita declarată. Referințele absente, modificate, contradictorii sau din alt context au fost respinse.",
+        "insight": "O declarație autentică, dar falsă, poate ascunde o omisiune. Evenimentele fizice nenumerotate, acoperirea fizică, originea reală și timpul de încredere rămân nedemonstrate. Rezultatul nu validează produsul."
+      },
+      "en": {
+        "field": "Integrity · terminal boundary",
+        "title": "Detecting terminal omissions through an authenticated end reference",
+        "result": "In 13 local synthetic tests, an authenticated end reference enabled detection of missing numbered observations at the end of a sequence relative to the declared endpoint. Missing, altered, contradictory or out-of-context references were rejected.",
+        "insight": "An authentic but false declaration can conceal an omission. Unnumbered physical events, physical coverage, real origin and trusted time remain unestablished. This does not validate the product."
+      },
+      "article": {
+        "formula": "i_j = i_start + j (0 ≤ j ≤ n−1); i_(n−1) = N_end; n ≥ 1",
+        "ro": {
+          "question": "Poate o referință terminală autentificată să distingă o secvență completă de una trunchiată, în limitele emisiilor numerotate?",
+          "principle": "Verificatorul reutilizează indexul autentificat și ancora inițială. Un HMAC cu aceeași cheie sintetică, dar domeniu criptografic distinct, leagă contextul, epoca, începutul și indicele terminal declarat; nu reprezintă o autoritate independentă.",
+          "formula_note": "După autentificarea observațiilor și a referinței terminale în contextul așteptat, indicii trebuie să fie consecutivi, iar ultimul indice primit să coincidă cu limita declarată. Relația se aplică secvențelor nevide.",
+          "method": "Au fost reutilizate observațiile sintetice autentificate. Cele 13 teste locale izolate au comparat secvența completă de patru observații cu prefixele de lungime unu, doi și trei, precum și referințe invalide și două contraexemple. Nu a fost generată o dovadă ZKP nouă.",
+          "interpretation": "Detectarea sufixului lipsă este condiționată de sinceritatea limitei autentificate. O istorie cu trei emisii și una cu patru emisii, dar cu a patra ascunsă și limita fals declarată ca trei, produc aceleași intrări și același rezultat pentru verificator. Un eveniment fizic nenumerotat rămâne invizibil.",
+          "controls": "Au fost respinse referința absentă, modificarea indicelui, cheia greșită, epoca greșită, contextul sau începutul diferit, reutilizarea MAC-ului de observație, indicele invalid ori contradictoriu și omisiunea internă. Absența referinței nu demonstrează o omisiune. Nu s-au testat prospețimea, unicitatea închiderii, tranzițiile între epoci, starea persistentă sau legarea de ZKP.",
+          "stages": [
+            "Observații numerotate autentificate",
+            "Referință terminală autentificată",
+            "Compararea ultimului indice cu limita declarată"
+          ]
+        },
+        "en": {
+          "question": "Can an authenticated end reference distinguish a complete sequence from a truncated one within the limits of numbered emissions?",
+          "principle": "The verifier reuses the authenticated index and starting anchor. HMAC with the same synthetic key but a distinct cryptographic domain binds context, epoch, start and declared final index; it does not constitute an independent authority.",
+          "formula_note": "After authenticating observations and the end reference in the expected context, indices must be consecutive and the last received index must equal the declared endpoint. This relation applies to nonempty sequences.",
+          "method": "Earlier authenticated synthetic observations were reused. The 13 isolated local tests compared a complete four-observation sequence with prefixes of length one, two and three, invalid references and two counterexamples. No new ZKP was generated.",
+          "interpretation": "Detection of a missing suffix is conditional on a truthful authenticated endpoint. A three-emission history and a four-emission history with the fourth withheld and a falsely declared endpoint of three yield identical verifier inputs and results. An unnumbered physical event remains invisible.",
+          "controls": "Missing reference, altered index, wrong key, wrong epoch, different scope or start, observation MAC reuse, invalid or conflicting index and internal omission were rejected. Absence of a reference does not prove omission. Freshness, unique closure, epoch transitions, persistent state and ZKP binding were not tested.",
+          "stages": [
+            "Authenticated numbered observations",
+            "Authenticated end reference",
+            "Compare last index with declared endpoint"
+          ]
+        }
+      }
     }
   ],
   "next_question": {
     "ro": {
       "label": "Întrebare deschisă",
-      "title": "Cum atestăm limitele unei secvențe de emisie?",
-      "description": "Detectarea unei omisiuni numerotate între observații autentificate nu rezolvă finalul neancorat, tranzițiile între epoci, acoperirea fizică, originea și timpul real de încredere."
+      "title": "Cum distingem o declarație terminală sinceră de una contradictorie sau falsă?",
+      "description": "Referința terminală autentificată limitează secvența declarată, dar nu rezolvă unicitatea și prospețimea închiderii, tranzițiile între epoci, acoperirea fizică, originea reală sau timpul de încredere."
     },
     "en": {
       "label": "Open research question",
-      "title": "How can emission sequence boundaries be attested?",
-      "description": "Detection of a numbered omission among authenticated observations does not resolve an unanchored end, epoch transitions, physical coverage, real trusted origin or time."
+      "title": "How can a truthful terminal declaration be distinguished from a conflicting or false one?",
+      "description": "An authenticated end reference bounds the declared sequence, but does not resolve unique and fresh closure, epoch transitions, physical coverage, real origin or trusted time."
     }
   }
 }

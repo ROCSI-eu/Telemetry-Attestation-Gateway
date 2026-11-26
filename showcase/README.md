@@ -159,7 +159,7 @@ python3 -m unittest discover -s showcase -p 'test_*.py' -v
 \`\`\`
 
 Use a local static HTTP server in an authorized isolated QA environment to
-inspect the baseline **15 files** and each generated RO/EN mini-article page (currently **45 files** total). The allowlisted package is:
+inspect the baseline **15 files** and each generated RO/EN mini-article page (currently **47 files** total). The allowlisted package is:
 
 - \`ro/index.html\`: Romanian-default public page (**Centru de comandă și control**);
   \`en/index.html\`: English page (**Mission Control**). Both use the same
