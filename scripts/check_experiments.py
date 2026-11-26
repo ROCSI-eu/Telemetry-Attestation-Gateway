@@ -26,6 +26,7 @@ APPROVED_TESTS = (
     "experiments/source-proof-binding-v0/test_aggregate_crypto.py",
     "experiments/source-proof-binding-v0/test_emission_gap.py",
     "experiments/source-proof-binding-v0/test_emission_end_anchor.py",
+    "experiments/source-proof-binding-v0/test_emission_end_consistency.py",
     "experiments/source-proof-binding-v0/test_interval_continuity.py",
     "experiments/source-proof-binding-v0/test_interval_recovery.py",
     "experiments/source-proof-binding-v0/test_state_rollback.py",
