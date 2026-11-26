@@ -214,7 +214,7 @@ class PublicUXTests(unittest.TestCase):
     def test_research_articles_bilingual_static_reconciled(self):
         from build import load_research_journal
         journal = load_research_journal()
-        self.assertEqual(len(journal["entries"]), 14)
+        self.assertEqual(len(journal["entries"]), 15)
         headers = (self.folder / "_headers").read_text()
         for item in journal["entries"]:
             for lang in ("ro", "en"):
@@ -368,7 +368,7 @@ class PublicUXTests(unittest.TestCase):
     def test_state_commit_uncertainty_research_finding(self):
         from build import load_research_journal
         journal = load_research_journal()
-        self.assertEqual(len(journal["entries"]), 14)
+        self.assertEqual(len(journal["entries"]), 15)
         self.assertEqual(journal["entries"][12]["id"], "synthetic-state-commit-uncertainty")
         for page, overview, title, mock, ambiguity, limit, proof in (
             (self.research_ro, self.ro, "Rezultatul incert al unei actualizări de stare",
@@ -389,7 +389,7 @@ class PublicUXTests(unittest.TestCase):
     def test_synthetic_aggregate_crypto_e2e_finding_is_scoped(self):
         from build import load_research_journal
         journal = load_research_journal()
-        self.assertEqual(len(journal["entries"]), 14)
+        self.assertEqual(len(journal["entries"]), 15)
         self.assertEqual(journal["entries"][13]["id"], "synthetic-aggregate-crypto-atomic")
         for page, overview, title, proof, commit, limitation in (
             (self.research_ro, self.ro, "O dovadă pentru trei observații și un singur commit",
@@ -402,6 +402,21 @@ class PublicUXTests(unittest.TestCase):
                 self.assertIn(required, page)
             self.assertNotIn(title, overview)
             self.assertNotIn("synthetic-aggregate-crypto-atomic", overview)
+            self.assertNotIn("Qube", page)
+            self.assertNotIn("GitHub Actions", page)
+
+    def test_source_emission_gap_finding_is_scoped(self):
+        from build import load_research_journal
+        entry = load_research_journal()["entries"][14]
+        self.assertEqual(entry["id"], "synthetic-source-emission-gap")
+        for page, overview, locale, limit in (
+            (self.research_ro, self.ro, "ro", "Un eveniment fizic nenumerotat"),
+            (self.research_en, self.en, "en", "An unnumbered physical event"),
+        ):
+            self.assertIn(entry[locale]["title"], page)
+            self.assertIn(limit, page)
+            self.assertIn("qa-emission-gap-20261126.md", page)
+            self.assertNotIn(entry["id"], overview)
             self.assertNotIn("Qube", page)
             self.assertNotIn("GitHub Actions", page)
 
