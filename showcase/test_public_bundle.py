@@ -373,6 +373,46 @@ class PublicUXTests(unittest.TestCase):
         self.assertIn('Simulated cryptographic result', self.research_en)
         self.assertIn('Rezultat criptografic simulat', self.research_ro)
 
+    def test_research_journal_visual_coherence(self):
+        from build import load_research_journal
+        from research_module import atlas_groups, ATLAS_THEMES, JOURNAL_ICONS
+        from html import escape
+        journal = load_research_journal()
+        groups = atlas_groups(journal)
+        self.assertTrue(set(ATLAS_THEMES).issubset(JOURNAL_ICONS))
+        for lang, index, name in (
+            ("ro", self.research_ro, "Inițiativa Română pentru Spațiul Cibernetic"),
+            ("en", self.research_en, "Romanian Cyber Space Initiative"),
+        ):
+            self.assertIn(f'<span class="r-brand-name">{name}</span>', index)
+            self.assertIn(f'<dd>{len(journal["entries"])}</dd>', index)
+            self.assertIn(f'<dd>{len(groups)}</dd>', index)
+            self.assertEqual(index.count('class="r-entry-actions"'), len(journal["entries"]))
+            self.assertEqual(index.count('<summary data-kind="observed"'), 1)
+            self.assertEqual(index.count('<summary data-kind="control"'), 2)
+            self.assertIn('grid-column:1/-1', index)
+            self.assertIn(escape(journal["next_question"][lang]["description"]), index)
+            for item in journal["entries"]:
+                article = (self.folder / lang / "research" / item["id"] / "index.html").read_text()
+                self.assertIn(f'<span class="r-brand-name">{name}</span>', article)
+                self.assertIn('class="r-affiliation"', article)
+                self.assertIn('class="r-contents"', article)
+                self.assertLess(article.index('id="observed"'), article.index('id="question"'))
+                for field in ("result", "insight"):
+                    self.assertIn(escape(item[lang][field]), article)
+                for key, value in item["article"][lang].items():
+                    for part in value if isinstance(value, list) else [value]:
+                        self.assertIn(escape(part), article, key)
+                self.assertIn(escape(item["article"]["formula"]), article)
+                self.assertIn(item["evidence_path"], article)
+                parsed = PageLinks()
+                parsed.feed(article)
+                for href in parsed.hrefs:
+                    if href.startswith("#"):
+                        self.assertIn(href[1:], parsed.ids)
+                self.assertIn(f'/research/#theme-{item["article"]["visual"]["theme"]}', article)
+                self.assertIn('aria-hidden="true" focusable="false"', article)
+
     def test_research_articles_bilingual_static_reconciled(self):
         from build import load_research_journal
         journal = load_research_journal()
