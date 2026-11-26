@@ -22,6 +22,15 @@ outcomes. A separately labelled offline cryptographic result is pre-recorded
 and not authenticated or verified by the browser. No JavaScript, live verifier,
 JSON endpoint, upload, operator action or network API is published.
 
+The bilingual visual atlas groups the journal by six research themes, not by
+maturity or dependency. Each article's structured visual record includes three
+documented paths (observed scenario, control, limitation/counterexample) with
+paired Romanian and English node labels. The build rejects missing locales,
+unknown themes and unsafe text; the renderer uses inert HTML/CSS and retains
+the original model, evidence link and experimental boundary. Add visual
+records in the same journal entry as each accepted future finding; no new
+proof, test, or publication is implied by a diagram.
+
 The build emits 15 baseline static assets plus two article pages per accepted journal finding (43 files for the initial 14 findings).
 The CSP permits only the two known inline stylesheet hashes, no scripts or
 connections; both language pairs share their respective stylesheet. Historical

@@ -19,7 +19,7 @@ import re
 
 from localization import localize_404, romanian_html, social_metadata
 from visual_refresh import redesign_public_html, simplify_public_html
-from research_module import COPY as RESEARCH_COPY, research_page, article_page
+from research_module import COPY as RESEARCH_COPY, research_page, article_page, ATLAS_THEMES, ATLAS_KINDS, ATLAS_MODES
 
 ROOT = Path(__file__).resolve().parents[1]
 JOURNAL = ROOT / "showcase/research_journal.json"
@@ -412,7 +412,26 @@ def load_research_journal(path: Path = JOURNAL) -> dict:
             raise ValueError("journal evidence reference not found: " + ref)
         for language in ("ro", "en"):
             fields(item[language], {"field", "title", "result", "insight"}, item["id"] + "/" + language)
-        article = exact_fields(item["article"], {"formula", "ro", "en"}, "article")
+        article = exact_fields(item["article"], {"formula", "ro", "en", "visual"}, "article")
+        visual = exact_fields(article["visual"], {"theme", "paths", "mode"}, "article visual")
+        if type(visual["theme"]) is not str or visual["theme"] not in ATLAS_THEMES:
+            raise ValueError("invalid atlas theme")
+        if type(visual["mode"]) is not str or visual["mode"] not in ATLAS_MODES:
+            raise ValueError("invalid atlas evidence mode")
+        paths = visual["paths"]
+        if type(paths) is not list or len(paths) != len(ATLAS_KINDS):
+            raise ValueError("invalid atlas paths")
+        for path, kind in zip(paths, ATLAS_KINDS):
+            path = exact_fields(path, {"kind", "nodes"}, "atlas path")
+            if path["kind"] != kind:
+                raise ValueError("invalid atlas path kind")
+            nodes = path["nodes"]
+            if type(nodes) is not list or len(nodes) != 3:
+                raise ValueError("invalid atlas nodes")
+            for node in nodes:
+                fields(node, {"ro", "en"}, "atlas node")
+                if any(not 5 <= len(v) <= 150 for v in node.values()):
+                    raise ValueError("invalid atlas node length")
         formula = article["formula"]
         if (type(formula) is not str or not 1 <= len(formula) <= 240
             or "\x00" in formula or re.search(r"<\s*[/!A-Za-z]", formula)):

@@ -44,6 +44,63 @@
             "Offline proof generation",
             "Independent verifier"
           ]
+        },
+        "visual": {
+          "theme": "foundations",
+          "paths": [
+            {
+              "kind": "observed",
+              "nodes": [
+                {
+                  "ro": "Valoare privată + limită publică",
+                  "en": "Private value + public bound"
+                },
+                {
+                  "ro": "Circuit Noir și dovadă Barretenberg",
+                  "en": "Noir circuit and Barretenberg proof"
+                },
+                {
+                  "ro": "Verificator separat: VALID",
+                  "en": "Separate verifier: VALID"
+                }
+              ]
+            },
+            {
+              "kind": "control",
+              "nodes": [
+                {
+                  "ro": "Dovadă modificată / intrări nepotrivite",
+                  "en": "Altered proof / mismatched inputs"
+                },
+                {
+                  "ro": "Controale ale verificatorului asociat",
+                  "en": "Associated verifier controls"
+                },
+                {
+                  "ro": "Acceptarea nu este presupusă",
+                  "en": "Acceptance is not assumed"
+                }
+              ]
+            },
+            {
+              "kind": "limit",
+              "nodes": [
+                {
+                  "ro": "Dovadă validă",
+                  "en": "Valid proof"
+                },
+                {
+                  "ro": "Originea măsurătorii necunoscută",
+                  "en": "Unknown measurement origin"
+                },
+                {
+                  "ro": "Adevărul telemetriei nedemonstrat",
+                  "en": "Telemetry truth not established"
+                }
+              ]
+            }
+          ],
+          "mode": "genuine"
         }
       }
     },
@@ -90,6 +147,63 @@
             "Receive-only path",
             "Typed normalization"
           ]
+        },
+        "visual": {
+          "theme": "foundations",
+          "paths": [
+            {
+              "kind": "observed",
+              "nodes": [
+                {
+                  "ro": "ArduPilot SITL izolat",
+                  "en": "Isolated ArduPilot SITL"
+                },
+                {
+                  "ro": "Două observații sintetice recepționate pasiv",
+                  "en": "Two synthetic observations received passively"
+                },
+                {
+                  "ro": "Normalizare tipizată; fără comenzi",
+                  "en": "Typed normalization; no commands"
+                }
+              ]
+            },
+            {
+              "kind": "control",
+              "nodes": [
+                {
+                  "ro": "Cadre malformate / sursă pierdută",
+                  "en": "Malformed frames / source loss"
+                },
+                {
+                  "ro": "Limite de recepție și parsare",
+                  "en": "Reception and parsing limits"
+                },
+                {
+                  "ro": "Controale separate ale componentei",
+                  "en": "Separate component controls"
+                }
+              ]
+            },
+            {
+              "kind": "limit",
+              "nodes": [
+                {
+                  "ro": "Cadru recepționat",
+                  "en": "Frame received"
+                },
+                {
+                  "ro": "Altă sursă poate imita fluxul",
+                  "en": "Another source can mimic the stream"
+                },
+                {
+                  "ro": "Identitatea sursei nu este stabilită",
+                  "en": "Source identity is not established"
+                }
+              ]
+            }
+          ],
+          "mode": "passive"
         }
       }
     },
@@ -136,6 +250,63 @@
             "Synthetic ZKP",
             "Two verification environments"
           ]
+        },
+        "visual": {
+          "theme": "foundations",
+          "paths": [
+            {
+              "kind": "observed",
+              "nodes": [
+                {
+                  "ro": "Două observații MAVLink2 per execuție",
+                  "en": "Two MAVLink2 observations per run"
+                },
+                {
+                  "ro": "Noir / Barretenberg: limită 600 cm/s",
+                  "en": "Noir / Barretenberg: 600 cm/s bound"
+                },
+                {
+                  "ro": "VALID în două medii sintetice",
+                  "en": "VALID in two synthetic environments"
+                }
+              ]
+            },
+            {
+              "kind": "control",
+              "nodes": [
+                {
+                  "ro": "Captură malformată / dovadă alterată / versiune incompatibilă",
+                  "en": "Malformed capture / altered proof / incompatible version"
+                },
+                {
+                  "ro": "Controale documentate în fluxul CLI",
+                  "en": "Documented CLI workflow controls"
+                },
+                {
+                  "ro": "Verificarea nu este implicită",
+                  "en": "Verification is not implicit"
+                }
+              ]
+            },
+            {
+              "kind": "limit",
+              "nodes": [
+                {
+                  "ro": "Dovadă acceptată",
+                  "en": "Accepted proof"
+                },
+                {
+                  "ro": "Sursă UNSIGNED; timp neautentificat",
+                  "en": "UNSIGNED source; unauthenticated time"
+                },
+                {
+                  "ro": "Nu stabilește acoperirea misiunii",
+                  "en": "Does not establish mission coverage"
+                }
+              ]
+            }
+          ],
+          "mode": "genuine"
         }
       }
     },
@@ -182,6 +353,63 @@
             "Independent frame digest",
             "Frame-bound proof"
           ]
+        },
+        "visual": {
+          "theme": "source",
+          "paths": [
+            {
+              "kind": "observed",
+              "nodes": [
+                {
+                  "ro": "Cadru MAVLink2 semnat cu cheie de test",
+                  "en": "MAVLink2 frame signed with test key"
+                },
+                {
+                  "ro": "Verificare semnătură + digest BLAKE2s",
+                  "en": "Signature check + BLAKE2s digest"
+                },
+                {
+                  "ro": "Dovadă legată de cadru: VALID",
+                  "en": "Frame-bound proof: VALID"
+                }
+              ]
+            },
+            {
+              "kind": "control",
+              "nodes": [
+                {
+                  "ro": "Digest, cheie sau dovadă nepotrivită",
+                  "en": "Mismatched digest, key or proof"
+                },
+                {
+                  "ro": "Teste de referință / compunere cu verificator simulat",
+                  "en": "Reference / composition tests with mock verifier"
+                },
+                {
+                  "ro": "Respingere fără avansarea stării",
+                  "en": "Rejection without state advancement"
+                }
+              ]
+            },
+            {
+              "kind": "limit",
+              "nodes": [
+                {
+                  "ro": "Cheie sintetică publică",
+                  "en": "Public synthetic key"
+                },
+                {
+                  "ro": "Legătură autenticată în model",
+                  "en": "Authenticated binding in the model"
+                },
+                {
+                  "ro": "Fără identitate reală sau timp de încredere",
+                  "en": "No real identity or trusted time"
+                }
+              ]
+            }
+          ],
+          "mode": "genuine"
         }
       }
     },
@@ -228,6 +456,63 @@
             "Persisted watermark",
             "Replay rejected on restart"
           ]
+        },
+        "visual": {
+          "theme": "source",
+          "paths": [
+            {
+              "kind": "observed",
+              "nodes": [
+                {
+                  "ro": "Observație admisă (verificator simulat)",
+                  "en": "Observation admitted (mock verifier)"
+                },
+                {
+                  "ro": "Watermark persistent actualizat",
+                  "en": "Persistent watermark updated"
+                },
+                {
+                  "ro": "Restart: stare reluată",
+                  "en": "Restart: state reopened"
+                }
+              ]
+            },
+            {
+              "kind": "control",
+              "nodes": [
+                {
+                  "ro": "Aceeași observație după restart",
+                  "en": "Same observation after restart"
+                },
+                {
+                  "ro": "Secvența nu depășește watermark-ul",
+                  "en": "Sequence does not exceed watermark"
+                },
+                {
+                  "ro": "Replay respins; stare neschimbată",
+                  "en": "Replay rejected; state unchanged"
+                }
+              ]
+            },
+            {
+              "kind": "limit",
+              "nodes": [
+                {
+                  "ro": "Restaurare istorică validă",
+                  "en": "Valid historical restoration"
+                },
+                {
+                  "ro": "Watermark revine în trecut",
+                  "en": "Watermark moves backward"
+                },
+                {
+                  "ro": "Replay posibil",
+                  "en": "Replay possible"
+                }
+              ]
+            }
+          ],
+          "mode": "mock"
         }
       }
     },
@@ -274,6 +559,63 @@
             "Authenticated ingress receipt",
             "Freshness policy"
           ]
+        },
+        "visual": {
+          "theme": "source",
+          "paths": [
+            {
+              "kind": "observed",
+              "nodes": [
+                {
+                  "ro": "Captură + referință de recepție autentificată",
+                  "en": "Capture + authenticated ingress receipt"
+                },
+                {
+                  "ro": "Ceas decizional separat: 0 ≤ vârstă, sub 1000 ms",
+                  "en": "Separate decision clock: 0 ≤ age, below 1000 ms"
+                },
+                {
+                  "ro": "Admitere în model; verificator simulat",
+                  "en": "Admission in model; mock verifier"
+                }
+              ]
+            },
+            {
+              "kind": "control",
+              "nodes": [
+                {
+                  "ro": "Referință lipsă, viitoare, expirată sau alterată",
+                  "en": "Missing, future, expired or altered receipt"
+                },
+                {
+                  "ro": "Verificare MAC și fereastră",
+                  "en": "MAC and window check"
+                },
+                {
+                  "ro": "Respingere; stare neschimbată",
+                  "en": "Rejection; state unchanged"
+                }
+              ]
+            },
+            {
+              "kind": "limit",
+              "nodes": [
+                {
+                  "ro": "Date de senzor potențial vechi",
+                  "en": "Potentially old sensor data"
+                },
+                {
+                  "ro": "Recepție nouă cu referință proaspătă",
+                  "en": "New ingress with fresh receipt"
+                },
+                {
+                  "ro": "Admitere posibilă; nu atestă timpul fizic",
+                  "en": "Admission possible; not physical time attestation"
+                }
+              ]
+            }
+          ],
+          "mode": "mock"
         }
       }
     },
@@ -320,6 +662,63 @@
             "Three authenticated slots",
             "Accept or reject"
           ]
+        },
+        "visual": {
+          "theme": "coverage",
+          "paths": [
+            {
+              "kind": "observed",
+              "nodes": [
+                {
+                  "ro": "Interval sintetic de 300 ms",
+                  "en": "300 ms synthetic interval"
+                },
+                {
+                  "ro": "Sloturi nominale: +50 / +150 / +250 ms (±10 ms)",
+                  "en": "Nominal slots: +50 / +150 / +250 ms (±10 ms)"
+                },
+                {
+                  "ro": "Trei recepții admise; un commit (verificator simulat)",
+                  "en": "Three receipts admitted; one commit (mock verifier)"
+                }
+              ]
+            },
+            {
+              "kind": "control",
+              "nodes": [
+                {
+                  "ro": "Slot lipsă, duplicat sau reordonat",
+                  "en": "Missing, duplicate or reordered slot"
+                },
+                {
+                  "ro": "Verificare în stare temporară",
+                  "en": "Check in staged state"
+                },
+                {
+                  "ro": "Respingere; watermark neschimbat",
+                  "en": "Rejection; watermark unchanged"
+                }
+              ]
+            },
+            {
+              "kind": "limit",
+              "nodes": [
+                {
+                  "ro": "Trei sloturi de recepție complete",
+                  "en": "Three complete ingress slots"
+                },
+                {
+                  "ro": "Eveniment fizic între sloturi necunoscut",
+                  "en": "Physical event between slots unknown"
+                },
+                {
+                  "ro": "Fără ZKP agregată sau acoperire fizică",
+                  "en": "No aggregate ZKP or physical coverage"
+                }
+              ]
+            }
+          ],
+          "mode": "mock"
         }
       }
     },
@@ -366,6 +765,63 @@
             "Shared boundary and commit",
             "Next interval"
           ]
+        },
+        "visual": {
+          "theme": "coverage",
+          "paths": [
+            {
+              "kind": "observed",
+              "nodes": [
+                {
+                  "ro": "Interval [A,B) admis",
+                  "en": "Interval [A,B) admitted"
+                },
+                {
+                  "ro": "Următorul interval începe la B",
+                  "en": "Next interval starts at B"
+                },
+                {
+                  "ro": "Limită și watermark salvate împreună",
+                  "en": "Boundary and watermark saved together"
+                }
+              ]
+            },
+            {
+              "kind": "control",
+              "nodes": [
+                {
+                  "ro": "Următorul interval începe după sau înainte de B",
+                  "en": "Next interval starts after or before B"
+                },
+                {
+                  "ro": "Gol / suprapunere / replay",
+                  "en": "Gap / overlap / replay"
+                },
+                {
+                  "ro": "Respingere înainte de verificatorul simulat",
+                  "en": "Rejection before mock verifier"
+                }
+              ]
+            },
+            {
+              "kind": "limit",
+              "nodes": [
+                {
+                  "ro": "Intervale consecutive în model",
+                  "en": "Consecutive model intervals"
+                },
+                {
+                  "ro": "Restaurare istorică a stării",
+                  "en": "Historical state restoration"
+                },
+                {
+                  "ro": "Continuitatea nu garantează observația fizică",
+                  "en": "Continuity does not guarantee physical observation"
+                }
+              ]
+            }
+          ],
+          "mode": "mock"
         }
       }
     },
@@ -412,6 +868,63 @@
             "Recovery authorization",
             "New segment, history retained"
           ]
+        },
+        "visual": {
+          "theme": "coverage",
+          "paths": [
+            {
+              "kind": "observed",
+              "nodes": [
+                {
+                  "ro": "Segment acceptat",
+                  "en": "Accepted segment"
+                },
+                {
+                  "ro": "Gol declarat + autorizare simulată",
+                  "en": "Declared gap + simulated authorization"
+                },
+                {
+                  "ro": "Segment nou; istoricul rămâne",
+                  "en": "New segment; history retained"
+                }
+              ]
+            },
+            {
+              "kind": "control",
+              "nodes": [
+                {
+                  "ro": "Tentativă de acoperire peste gol",
+                  "en": "Attempt to claim coverage across gap"
+                },
+                {
+                  "ro": "Regresie / replay / lipsă autorizare",
+                  "en": "Regression / replay / missing authorization"
+                },
+                {
+                  "ro": "Respingere în modelul simulat",
+                  "en": "Rejection in simulated model"
+                }
+              ]
+            },
+            {
+              "kind": "limit",
+              "nodes": [
+                {
+                  "ro": "Segment anterior | GOL | segment nou",
+                  "en": "Prior segment | GAP | new segment"
+                },
+                {
+                  "ro": "Acoperire numai în interiorul unui segment",
+                  "en": "Coverage only within one segment"
+                },
+                {
+                  "ro": "Nicio acoperire fizică sau ZKP agregată",
+                  "en": "No physical coverage or aggregate ZKP"
+                }
+              ]
+            }
+          ],
+          "mode": "mock"
         }
       }
     },
@@ -458,6 +971,63 @@
             "Simulated reference comparison",
             "Block on divergence"
           ]
+        },
+        "visual": {
+          "theme": "state",
+          "paths": [
+            {
+              "kind": "observed",
+              "nodes": [
+                {
+                  "ro": "Stare locală curentă",
+                  "en": "Current local state"
+                },
+                {
+                  "ro": "Digest al stării = referință simulată",
+                  "en": "State digest = simulated reference"
+                },
+                {
+                  "ro": "Continuare permisă în model",
+                  "en": "Continuation permitted in model"
+                }
+              ]
+            },
+            {
+              "kind": "control",
+              "nodes": [
+                {
+                  "ro": "Restaurare doar a stării locale",
+                  "en": "Local state alone restored"
+                },
+                {
+                  "ro": "Digest diferit de referință",
+                  "en": "Digest differs from reference"
+                },
+                {
+                  "ro": "Blocare la divergență",
+                  "en": "Blocked on divergence"
+                }
+              ]
+            },
+            {
+              "kind": "limit",
+              "nodes": [
+                {
+                  "ro": "Restaurare simultană a ambelor copii",
+                  "en": "Both copies restored together"
+                },
+                {
+                  "ro": "Digesturile coincid din nou",
+                  "en": "Digests match again"
+                },
+                {
+                  "ro": "Regresie nedetectată; referință neindependentă",
+                  "en": "Regression undetected; reference not independent"
+                }
+              ]
+            }
+          ],
+          "mode": "mock"
         }
       }
     },
@@ -504,6 +1074,63 @@
             "Prepared candidate and reference",
             "Explicit reconciliation"
           ]
+        },
+        "visual": {
+          "theme": "state",
+          "paths": [
+            {
+              "kind": "observed",
+              "nodes": [
+                {
+                  "ro": "Candidat pregătit; referință avansată",
+                  "en": "Prepared candidate; reference advanced"
+                },
+                {
+                  "ro": "Stare locală încă veche",
+                  "en": "Local state still old"
+                },
+                {
+                  "ro": "Reconciliere explicită spre starea nouă; istoric păstrat",
+                  "en": "Explicit forward reconciliation; history retained"
+                }
+              ]
+            },
+            {
+              "kind": "control",
+              "nodes": [
+                {
+                  "ro": "Candidat absent, vechi sau incompatibil",
+                  "en": "Missing, historical or incompatible candidate"
+                },
+                {
+                  "ro": "Comparare cu referința curentă",
+                  "en": "Compare with current reference"
+                },
+                {
+                  "ro": "Blocare; fără recuperare implicită",
+                  "en": "Blocked; no implicit recovery"
+                }
+              ]
+            },
+            {
+              "kind": "limit",
+              "nodes": [
+                {
+                  "ro": "Toate cele trei copii restaurate",
+                  "en": "All three copies restored"
+                },
+                {
+                  "ro": "Stare și referință compatibile",
+                  "en": "State and reference match"
+                },
+                {
+                  "ro": "Replay posibil; istoricul golului poate fi pierdut",
+                  "en": "Replay possible; gap history may be lost"
+                }
+              ]
+            }
+          ],
+          "mode": "mock"
         }
       }
     },
@@ -550,6 +1177,63 @@
             "Reopen and compare",
             "Continue or reconcile"
           ]
+        },
+        "visual": {
+          "theme": "state",
+          "paths": [
+            {
+              "kind": "observed",
+              "nodes": [
+                {
+                  "ro": "Întrerupere înainte de înlocuire",
+                  "en": "Interruption before replacement"
+                },
+                {
+                  "ro": "Stare veche + referință veche",
+                  "en": "Old state + old reference"
+                },
+                {
+                  "ro": "Redeschidere normală",
+                  "en": "Normal reopening"
+                }
+              ]
+            },
+            {
+              "kind": "control",
+              "nodes": [
+                {
+                  "ro": "Referință avansată; stare încă veche",
+                  "en": "Reference advanced; state still old"
+                },
+                {
+                  "ro": "Divergență la redeschidere",
+                  "en": "Divergence on reopening"
+                },
+                {
+                  "ro": "Reconciliere explicită; fără dovezi suficiente: blocare",
+                  "en": "Explicit reconciliation; insufficient evidence: blocked"
+                }
+              ]
+            },
+            {
+              "kind": "limit",
+              "nodes": [
+                {
+                  "ro": "Întrerupere după înlocuire locală",
+                  "en": "Interruption after local replacement"
+                },
+                {
+                  "ro": "Stare nouă vizibilă în testul de proces",
+                  "en": "New state visible in process test"
+                },
+                {
+                  "ro": "Nu demonstrează durabilitatea la pierderea alimentării",
+                  "en": "Does not establish power-loss durability"
+                }
+              ]
+            }
+          ],
+          "mode": "mock"
         }
       }
     },
@@ -596,6 +1280,63 @@
             "Inspect effective state",
             "Safe retry or block"
           ]
+        },
+        "visual": {
+          "theme": "state",
+          "paths": [
+            {
+              "kind": "observed",
+              "nodes": [
+                {
+                  "ro": "Eroare înainte de aplicare",
+                  "en": "Error before application"
+                },
+                {
+                  "ro": "Stare veche confirmată prin referință",
+                  "en": "Old state confirmed by reference"
+                },
+                {
+                  "ro": "O reîncercare permisă (verificator simulat)",
+                  "en": "One retry allowed (mock verifier)"
+                }
+              ]
+            },
+            {
+              "kind": "control",
+              "nodes": [
+                {
+                  "ro": "Confirmare pierdută după aplicare",
+                  "en": "Acknowledgement lost after application"
+                },
+                {
+                  "ro": "Stare nouă confirmată",
+                  "en": "New state confirmed"
+                },
+                {
+                  "ro": "Replay respins; fără al doilea commit",
+                  "en": "Replay rejected; no second commit"
+                }
+              ]
+            },
+            {
+              "kind": "limit",
+              "nodes": [
+                {
+                  "ro": "Stare divergentă / referință absentă",
+                  "en": "Divergent state / missing reference"
+                },
+                {
+                  "ro": "Nu se cunoaște rezultatul real",
+                  "en": "Actual outcome uncertain"
+                },
+                {
+                  "ro": "Blocare; fără retry orb sau garanție exactly-once",
+                  "en": "Blocked; no blind retry or exactly-once guarantee"
+                }
+              ]
+            }
+          ],
+          "mode": "mock"
         }
       }
     },
@@ -642,6 +1383,63 @@
             "ZKP with 98 public inputs",
             "VALID then one atomic commit"
           ]
+        },
+        "visual": {
+          "theme": "aggregate",
+          "paths": [
+            {
+              "kind": "observed",
+              "nodes": [
+                {
+                  "ro": "Trei cadre sintetice autentificate",
+                  "en": "Three authenticated synthetic frames"
+                },
+                {
+                  "ro": "O dovadă reală; 98 intrări publice reconstruite",
+                  "en": "One genuine proof; 98 reconstructed public inputs"
+                },
+                {
+                  "ro": "VALID independent → un commit atomic",
+                  "en": "Independent VALID → one atomic commit"
+                }
+              ]
+            },
+            {
+              "kind": "control",
+              "nodes": [
+                {
+                  "ro": "Dovadă absentă, alterată, VK greșită sau altă secvență",
+                  "en": "Missing or altered proof, wrong VK or different sequence"
+                },
+                {
+                  "ro": "Verificare independentă",
+                  "en": "Independent verification"
+                },
+                {
+                  "ro": "UNVERIFIABLE; watermark neschimbat",
+                  "en": "UNVERIFIABLE; watermark unchanged"
+                }
+              ]
+            },
+            {
+              "kind": "limit",
+              "nodes": [
+                {
+                  "ro": "Trei observații verificate",
+                  "en": "Three verified observations"
+                },
+                {
+                  "ro": "Nu se cunoaște ce s-a petrecut între observații",
+                  "en": "Events between observations unknown"
+                },
+                {
+                  "ro": "Fără acoperire fizică sau validare de produs",
+                  "en": "No physical coverage or product validation"
+                }
+              ]
+            }
+          ],
+          "mode": "genuine"
         }
       }
     },
@@ -688,6 +1486,63 @@
             "Check against the starting anchor",
             "Continuity or detected gap"
           ]
+        },
+        "visual": {
+          "theme": "emission",
+          "paths": [
+            {
+              "kind": "observed",
+              "nodes": [
+                {
+                  "ro": "Ancoră inițială autentificată",
+                  "en": "Authenticated initial anchor"
+                },
+                {
+                  "ro": "Indici consecutivi: 1 → 2 → 3",
+                  "en": "Consecutive indices: 1 → 2 → 3"
+                },
+                {
+                  "ro": "Secvență admisă",
+                  "en": "Sequence admitted"
+                }
+              ]
+            },
+            {
+              "kind": "control",
+              "nodes": [
+                {
+                  "ro": "Indici: 1 → 3 (2 lipsește)",
+                  "en": "Indices: 1 → 3 (2 missing)"
+                },
+                {
+                  "ro": "Comparare cu indexul așteptat",
+                  "en": "Compare with expected index"
+                },
+                {
+                  "ro": "Discontinuitate detectată",
+                  "en": "Discontinuity detected"
+                }
+              ]
+            },
+            {
+              "kind": "limit",
+              "nodes": [
+                {
+                  "ro": "Prefix 1 → 2; fără ancoră terminală",
+                  "en": "Prefix 1 → 2; no terminal anchor"
+                },
+                {
+                  "ro": "Sursă oprită sau final omis",
+                  "en": "Source stopped or tail omitted"
+                },
+                {
+                  "ro": "Indistincte; eveniment nenumerotat invizibil",
+                  "en": "Indistinguishable; unnumbered event invisible"
+                }
+              ]
+            }
+          ],
+          "mode": "authenticated_no_zkp"
         }
       }
     },
@@ -734,6 +1589,63 @@
             "Authenticated end reference",
             "Compare last index with declared endpoint"
           ]
+        },
+        "visual": {
+          "theme": "emission",
+          "paths": [
+            {
+              "kind": "observed",
+              "nodes": [
+                {
+                  "ro": "Observații 1 → 2 → 3 → 4",
+                  "en": "Observations 1 → 2 → 3 → 4"
+                },
+                {
+                  "ro": "Referință terminală autentică: final 4",
+                  "en": "Authentic terminal reference: end 4"
+                },
+                {
+                  "ro": "Secvență închisă admisă",
+                  "en": "Closed sequence admitted"
+                }
+              ]
+            },
+            {
+              "kind": "control",
+              "nodes": [
+                {
+                  "ro": "Prefix 1 → 2 → 3",
+                  "en": "Prefix 1 → 2 → 3"
+                },
+                {
+                  "ro": "Referință autentică: final 4",
+                  "en": "Authentic reference: end 4"
+                },
+                {
+                  "ro": "Omisiune terminală detectată",
+                  "en": "Terminal omission detected"
+                }
+              ]
+            },
+            {
+              "kind": "limit",
+              "nodes": [
+                {
+                  "ro": "Prefix 1 → 2 → 3",
+                  "en": "Prefix 1 → 2 → 3"
+                },
+                {
+                  "ro": "Declarație autentică, dar falsă: final 3",
+                  "en": "Authentic but false declaration: end 3"
+                },
+                {
+                  "ro": "Admitere posibilă; fără adevăr fizic",
+                  "en": "Admission possible; no physical truth"
+                }
+              ]
+            }
+          ],
+          "mode": "authenticated_no_zkp"
         }
       }
     },
@@ -780,6 +1692,63 @@
             "Persistent local reference",
             "Identical repetition or conflict"
           ]
+        },
+        "visual": {
+          "theme": "emission",
+          "paths": [
+            {
+              "kind": "observed",
+              "nodes": [
+                {
+                  "ro": "Prima închidere autentică: final 3",
+                  "en": "First authentic closure: end 3"
+                },
+                {
+                  "ro": "Referință persistentă pentru context",
+                  "en": "Persistent reference for context"
+                },
+                {
+                  "ro": "Repetare identică: IDEMPOTENT",
+                  "en": "Identical repeat: IDEMPOTENT"
+                }
+              ]
+            },
+            {
+              "kind": "control",
+              "nodes": [
+                {
+                  "ro": "Altă închidere autentică: final 4",
+                  "en": "Another authentic closure: end 4"
+                },
+                {
+                  "ro": "Același context; referința rămâne final 3",
+                  "en": "Same context; reference remains end 3"
+                },
+                {
+                  "ro": "CONFLICT; prima referință păstrată",
+                  "en": "CONFLICT; first reference retained"
+                }
+              ]
+            },
+            {
+              "kind": "limit",
+              "nodes": [
+                {
+                  "ro": "Primă declarație falsă, dar autentică",
+                  "en": "False but authentic first declaration"
+                },
+                {
+                  "ro": "Repetare consecventă",
+                  "en": "Consistent repetition"
+                },
+                {
+                  "ro": "Falsul nu se detectează fără referință independentă",
+                  "en": "Falsehood undetected without independent reference"
+                }
+              ]
+            }
+          ],
+          "mode": "authenticated_no_zkp"
         }
       }
     },
@@ -826,6 +1795,63 @@
             "Active epoch and local reference",
             "Contextual admission or rejection"
           ]
+        },
+        "visual": {
+          "theme": "emission",
+          "paths": [
+            {
+              "kind": "observed",
+              "nodes": [
+                {
+                  "ro": "Epocă A activă; declarație A autentică",
+                  "en": "Epoch A active; authentic A declaration"
+                },
+                {
+                  "ro": "Tranziție explicită spre B",
+                  "en": "Explicit transition to B"
+                },
+                {
+                  "ro": "Declarație B admisă în contextul activ",
+                  "en": "B declaration admitted in active context"
+                }
+              ]
+            },
+            {
+              "kind": "control",
+              "nodes": [
+                {
+                  "ro": "Declarație veche A încă autentică",
+                  "en": "Old A declaration still authentic"
+                },
+                {
+                  "ro": "Epoca activă B",
+                  "en": "Active epoch B"
+                },
+                {
+                  "ro": "Respingere contextuală; fără mutație",
+                  "en": "Contextual rejection; no mutation"
+                }
+              ]
+            },
+            {
+              "kind": "limit",
+              "nodes": [
+                {
+                  "ro": "Restaurare simultană a stării și referinței",
+                  "en": "State and reference restored together"
+                },
+                {
+                  "ro": "Epoca activă revine la A",
+                  "en": "Active epoch returns to A"
+                },
+                {
+                  "ro": "Declarația A poate fi readmisă",
+                  "en": "A declaration may be readmitted"
+                }
+              ]
+            }
+          ],
+          "mode": "authenticated_no_zkp"
         }
       }
     },
@@ -872,6 +1898,63 @@
             "Scope, active epoch and fixed policy",
             "Transition admitted or rejected"
           ]
+        },
+        "visual": {
+          "theme": "emission",
+          "paths": [
+            {
+              "kind": "observed",
+              "nodes": [
+                {
+                  "ro": "Autorizare HMAC: domeniu, A → B",
+                  "en": "HMAC authorization: scope, A → B"
+                },
+                {
+                  "ro": "MAC valid + A activă + B permisă",
+                  "en": "Valid MAC + A active + B allowed"
+                },
+                {
+                  "ro": "Tranziție A → B admisă",
+                  "en": "A → B transition admitted"
+                }
+              ]
+            },
+            {
+              "kind": "control",
+              "nodes": [
+                {
+                  "ro": "Câmp alterat / domeniu greșit / succesor nepermis",
+                  "en": "Altered field / wrong scope / disallowed successor"
+                },
+                {
+                  "ro": "Verificare autenticitate și politică",
+                  "en": "Authentication and policy check"
+                },
+                {
+                  "ro": "Respingere fără mutație",
+                  "en": "Rejection without mutation"
+                }
+              ]
+            },
+            {
+              "kind": "limit",
+              "nodes": [
+                {
+                  "ro": "Stare și referință restaurate la A",
+                  "en": "State and reference restored to A"
+                },
+                {
+                  "ro": "Autorizare autentică A → B reutilizată",
+                  "en": "Authentic A → B authorization reused"
+                },
+                {
+                  "ro": "Tranziție readmisă; prospețime nedemonstrată",
+                  "en": "Transition readmitted; freshness not established"
+                }
+              ]
+            }
+          ],
+          "mode": "authenticated_no_zkp"
         }
       }
     },
@@ -918,6 +2001,63 @@
             "Comparison with the first retained reference",
             "Different successor: conflict detected"
           ]
+        },
+        "visual": {
+          "theme": "emission",
+          "paths": [
+            {
+              "kind": "observed",
+              "nodes": [
+                {
+                  "ro": "Prima autorizare autentică A → B",
+                  "en": "First authentic A → B authorization"
+                },
+                {
+                  "ro": "Referința locală păstrează A → B",
+                  "en": "Local reference retains A → B"
+                },
+                {
+                  "ro": "Repetare identică: IDEMPOTENT",
+                  "en": "Identical repeat: IDEMPOTENT"
+                }
+              ]
+            },
+            {
+              "kind": "control",
+              "nodes": [
+                {
+                  "ro": "A doua autorizare autentică A → C",
+                  "en": "Second authentic A → C authorization"
+                },
+                {
+                  "ro": "Același domeniu și aceeași epocă A",
+                  "en": "Same scope and previous epoch A"
+                },
+                {
+                  "ro": "CONFLICT; nu decide succesorul legitim",
+                  "en": "CONFLICT; no legitimate successor determination"
+                }
+              ]
+            },
+            {
+              "kind": "limit",
+              "nodes": [
+                {
+                  "ro": "Ambele copii restaurate la starea inițială",
+                  "en": "Both copies restored to initial state"
+                },
+                {
+                  "ro": "Referința primei autorizări pierdută",
+                  "en": "Reference to first authorization lost"
+                },
+                {
+                  "ro": "A → C poate fi observată prima; fără protecție globală",
+                  "en": "A → C may be observed first; no global protection"
+                }
+              ]
+            }
+          ],
+          "mode": "authenticated_no_zkp"
         }
       }
     }

@@ -251,6 +251,45 @@ class PublicUXTests(unittest.TestCase):
             load_research_journal(bad_journal)
         self.assertEqual(journal["schema_version"], "TAG_RESEARCH_JOURNAL_V2")
 
+    def test_visual_atlas_coverage_bilingual_and_fail_closed(self):
+        from build import JOURNAL, load_research_journal
+        from research_module import ATLAS_THEMES, ATLAS_KINDS, ATLAS_MODES
+        from html import escape
+        journal = load_research_journal()
+        for lang in ("ro", "en"):
+            index = self.research_ro if lang == "ro" else self.research_en
+            atlas = index.split('id="visual-atlas"', 1)[1].split('id="findings"', 1)[0]
+            self.assertEqual(atlas.count('class="r-atlas-group"'), len(ATLAS_THEMES))
+            for item in journal["entries"]:
+                article = (self.folder / lang / "research" / item["id"] / "index.html").read_text()
+                visual = article.split('<figure class="r-diagram"', 1)[1].split("</figure>", 1)[0]
+                self.assertEqual(visual.count('class="r-visual-node"'), 9)
+                self.assertIn("A0_SYNTHETIC", visual)
+                self.assertIn(escape(ATLAS_MODES[item["article"]["visual"]["mode"]][lang == "en"]), visual)
+                self.assertEqual(atlas.count(f'href="/{lang}/research/{item["id"]}/"'), 1)
+                self.assertIn(escape(item[lang]["title"]), atlas)
+                for path, kind in zip(item["article"]["visual"]["paths"], ATLAS_KINDS):
+                    self.assertIn(f'class="r-visual-case r-visual-case-{kind}"', visual)
+                    for node in path["nodes"]:
+                        self.assertIn(escape(node[lang]), visual)
+                self.assertNotIn("<script", visual)
+        # Reject unapproved themes, missing translations, missing control and injected HTML/URL.
+        for change in (
+            lambda v: v.update(theme="unapproved"),
+            lambda v: v.update(mode="production"),
+            lambda v: v["paths"][0]["nodes"][0].pop("en"),
+            lambda v: v["paths"].pop(1),
+            lambda v: v["paths"][1].update(kind="observed"),
+            lambda v: v["paths"][0]["nodes"][0].update(ro="<img src=x>"),
+            lambda v: v["paths"][0]["nodes"][0].update(en="https://example.org"),
+        ):
+            candidate = json.loads(JOURNAL.read_text())
+            change(candidate["entries"][0]["article"]["visual"])
+            path = self.folder / "bad-atlas.json"
+            path.write_text(json.dumps(candidate), encoding="utf-8")
+            with self.assertRaises(ValueError):
+                load_research_journal(path)
+
     def test_interval_coverage_finding_is_research_only(self):
         for page, overview, title, limit, proof_limit in (
             (self.research_ro, self.ro, "Completitudinea unei secvențe sintetice",

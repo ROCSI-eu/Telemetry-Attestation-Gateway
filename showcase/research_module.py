@@ -38,13 +38,32 @@ CSS = """
 .r-article h2{font-size:1.45rem;line-height:1.25;margin:28px 0 10px;color:#eacb91}
 .r-article p{color:#d2dbd5;margin:0 0 16px}
 .r-article .r-equation{border:1px solid #596567;background:#141f22;padding:19px;white-space:pre-wrap;overflow-wrap:anywhere;color:#f1e4cb;font-size:1rem}
-.r-diagram{border:1px solid #506263;background:#162427;padding:22px;margin:22px 0}
-.r-diagram ol{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:25px;margin:10px 0;padding:0;list-style:none;counter-reset:stage}
-.r-diagram li{position:relative;border:1px solid #76807b;padding:14px 11px;text-align:center;min-height:74px;color:#f1e4cb;display:flex;align-items:center;justify-content:center;counter-increment:stage}
-.r-diagram li:not(:last-child):after{content:'→';position:absolute;right:-22px;font-size:1.3rem;color:#eacb91}
-.r-diagram figcaption{color:#aebdb6;font-size:.88rem;margin-top:12px}
+/* Static visual atlas: text labels, not color alone, carry meaning. */
+.r-diagram{border:1px dashed #7b8d92;border-radius:12px;background:#121e22;padding:clamp(12px,3vw,24px);margin:24px 0}
+.r-diagram .r-atlas-boundary{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:#b8c5c6;text-align:center;margin:0 0 16px}
+.r-diagram .r-atlas-mode{color:#eacb91;letter-spacing:0;text-transform:none;font-size:.85rem;font-weight:650}
+.r-diagram ol,.r-visual-path{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;margin:0;padding:0;list-style:none}
+.r-diagram li,.r-visual-node{position:relative;min-width:0;overflow-wrap:anywhere;border:1px solid #6c8490;border-radius:8px;background:#202e35;padding:12px 10px;text-align:center;color:#eef3f3;display:flex;align-items:center;justify-content:center;min-height:74px;font-size:.95rem;line-height:1.45}
+.r-diagram li:not(:last-child):after,.r-visual-node:not(:last-child):after{content:'→';position:absolute;right:-20px;top:50%;transform:translateY(-50%);font-size:1.2rem;color:#bac9ce}
+.r-diagram ol li:nth-child(2){border-color:#3ba7a0;background:#173333}
+.r-visual-heading{margin:22px 0 8px;font-size:.8rem;letter-spacing:.07em;text-transform:uppercase;color:#c3d1d1;font-weight:700}
+.r-visual-case{margin:12px 0;padding:12px;border:1px solid #4a6267;border-radius:10px;background:#182529}
+.r-visual-case h3{margin:0 0 10px;font-size:.83rem;letter-spacing:.06em;text-transform:uppercase;color:#c9d6d5}
+.r-visual-case .r-visual-node:nth-child(2){border-color:#3ba7a0;background:#173333}
+.r-visual-case-observed .r-visual-node:last-child{border-color:#79bfa0;background:#20382e;color:#c5f0d8}
+.r-visual-case-control .r-visual-node:last-child{border-color:#df9292;background:#38292b;color:#ffdddd}
+.r-visual-case-limit .r-visual-node:last-child{border-color:#c3a369;background:#352f25;color:#f3e4c5}
+.r-visual-case-limit{border-style:dashed}
+.r-diagram figcaption{color:#c5cecb;font-size:.85rem;margin-top:16px}
+.r-atlas-map{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.r-atlas-group{min-width:0;border:1px solid #4b6469;border-radius:10px;background:#162427;padding:18px}
+.r-atlas-group h3{margin:0 0 10px;color:#a6e0d9;font-size:1.02rem;line-height:1.4}
+.r-atlas-group ul{margin:0;padding-left:1.2rem}
+.r-atlas-group li{margin:7px 0;overflow-wrap:anywhere;font-size:.9rem}
+.r-atlas-group a{color:#e9dfc3}
 .r-article a{overflow-wrap:anywhere}
-@media(max-width:560px){.r-diagram ol{grid-template-columns:1fr;gap:26px}.r-diagram li:not(:last-child):after{content:'↓';right:50%;top:auto;bottom:-28px;transform:translateX(50%)}}
+@media(max-width:700px){.r-atlas-map{grid-template-columns:1fr}}
+@media(max-width:640px){.r-diagram ol,.r-visual-path{grid-template-columns:1fr;gap:24px}.r-diagram li,.r-visual-node{min-height:0;padding:12px}.r-diagram li:not(:last-child):after,.r-visual-node:not(:last-child):after{content:'↓';right:50%;top:auto;bottom:-24px;transform:translateX(50%)}}
 .r-feature{border-left:3px solid #bda36d;background:#1b282a;padding:22px 24px;margin:0 0 20px}
 .r-feature h3{font-size:1.2rem;margin:0 0 8px;color:#f2e8d2}
 .r-feature p{margin:6px 0;color:#d2dbd5}
@@ -113,6 +132,71 @@ ARTICLE_LABELS = {
            "source": "Provenance: inspectable experimental record"},
 }
 
+# Categories are thematic, not milestones, dependencies or assurance tiers.
+ATLAS_THEMES = {
+    "foundations": ("Fundamente criptografice și simulare", "Cryptographic foundations and simulation"),
+    "source": ("Legarea de sursă și prospețime", "Source binding and freshness"),
+    "coverage": ("Completitudine și continuitate", "Completeness and continuity"),
+    "state": ("Integritatea stării", "State integrity"),
+    "aggregate": ("Agregare criptografică", "Cryptographic aggregation"),
+    "emission": ("Consistența emisiilor și epocilor", "Emission and epoch consistency"),
+}
+ATLAS_KINDS = ("observed", "control", "limit")
+ATLAS_MODES = {
+    "genuine": ("Dovadă criptografică reală în experimentul sintetic", "Genuine cryptographic proof in the synthetic experiment"),
+    "passive": ("Recepție pasivă; fără dovadă în acest pas", "Passive reception; no proof at this step"),
+    "mock": ("Verificator de dovezi simulat; fără ZKP nouă", "Mock proof verifier; no new ZKP"),
+    "authenticated_no_zkp": ("Controale de autentificare și consistență; fără ZKP nouă", "Authentication and consistency checks; no new ZKP"),
+}
+ATLAS_COPY = {
+    "ro": {"heading": "Atlasul vizual al cercetării", "intro": "Cele șase teme reunesc constatările documentate. Gruparea este conceptuală, nu o scară de maturitate, o relație obligatorie de dependență sau o validare a produsului.",
+           "boundary": "Mediu experimental · exclusiv date sintetice",
+           "flow": "Modelul investigat", "observed": "Scenariu documentat", "control": "Control / caz negativ", "limit": "Limită / contraexemplu",
+           "caption": "Schemă ilustrativă a modelului și a cazurilor documentate. Săgețile descriu relații conceptuale, nu o execuție sau o verificare în browser."},
+    "en": {"heading": "Research visual atlas", "intro": "Six themes group the documented findings. This is a conceptual grouping, not a maturity ladder, mandatory dependency relation or product validation.",
+           "boundary": "Experimental environment · synthetic data only",
+           "flow": "Investigated model", "observed": "Documented scenario", "control": "Control / negative case", "limit": "Limitation / counterexample",
+           "caption": "Illustrative diagram of the model and documented cases. Arrows describe conceptual relations, not browser execution or verification."},
+}
+
+
+def render_visual_diagram(item: dict, lang: str) -> str:
+    """Static, semantic HTML; all node text is escaped and data comes from journal."""
+    c = ATLAS_COPY[lang]
+    article = item["article"]
+    stages = "".join(f"<li>{escape(stage)}</li>" for stage in article[lang]["stages"])
+    mode = ATLAS_MODES[article["visual"]["mode"]][lang == "en"]
+    cases = []
+    for path in article["visual"]["paths"]:
+        kind = path["kind"]
+        nodes = "".join(f'<div class="r-visual-node" role="listitem">{escape(node[lang])}</div>'
+                        for node in path["nodes"])
+        cases.append(f'<section class="r-visual-case r-visual-case-{kind}"><h3>{escape(c[kind])}</h3>'
+                     f'<div class="r-visual-path" role="list" aria-label="{escape(c[kind], quote=True)}">{nodes}</div></section>')
+    return (f'<figure class="r-diagram" aria-label="{escape(item[lang]["title"], quote=True)}">'
+            f'<p class="r-atlas-boundary">{escape(c["boundary"])} · A0_SYNTHETIC</p>'
+            f'<p class="r-atlas-boundary r-atlas-mode">{escape(mode)}</p>'
+            f'<h3 class="r-visual-heading">{escape(c["flow"])}</h3><ol>{stages}</ol>'
+            + "".join(cases) + f'<figcaption>{escape(c["caption"])}</figcaption></figure>')
+
+
+def render_atlas_map(journal: dict, lang: str) -> str:
+    c = ATLAS_COPY[lang]
+    groups = []
+    for theme, labels in ATLAS_THEMES.items():
+        items = []
+        for i, item in enumerate(journal["entries"], 1):
+            if item["article"]["visual"]["theme"] == theme:
+                items.append(f'<li><a href="/{lang}/research/{escape(item["id"], quote=True)}/">'
+                             f'{i:02d} · {escape(item[lang]["title"])}</a></li>')
+        if items:
+            groups.append(f'<section class="r-atlas-group"><h3>{escape(labels[lang == "en"])}</h3>'
+                          f'<ul>{"".join(items)}</ul></section>')
+    return (f'<section class="r-section" id="visual-atlas"><h2>{escape(c["heading"])}</h2>'
+            f'<p class="r-section-intro">{escape(c["intro"])}</p>'
+            f'<div class="r-atlas-map">{"".join(groups)}</div></section>')
+
+
 def research_page(journal, scenarios, verifier, lang):
     c=COPY[lang]
     e=escape
@@ -137,7 +221,8 @@ def research_page(journal, scenarios, verifier, lang):
 <meta property="og:title" content="{e(c["title"],quote=True)} | TAG · ROCSI"><meta property="og:description" content="{e(c["lead"],quote=True)}"><meta property="og:url" content="{url}"><meta property="og:image" content="{ORIGIN}/og/{lang}.png"><meta property="og:type" content="website">
 <style>{CSS}</style></head><body class="research-page"><div class="r-wrap">
 <header class="r-header"><a class="r-brand" href="/{lang}/"><img src="/assets/rocsi-mark.svg" alt="">TAG / ROCSI</a><a href="/{lang}/">{e(c["home"])}</a><nav class="r-lang" aria-label="Limbă / Language"><a href="/ro/research/" hreflang="ro" lang="ro" aria-current="{"page" if lang=="ro" else "false"}">RO</a><a href="/en/research/" hreflang="en" lang="en" aria-current="{"page" if lang=="en" else "false"}">EN</a></nav></header>
-<main><section class="r-hero"><p class="r-kicker">{e(c["label"])}</p><h1>{e(c["title"])}</h1><p class="r-lead">{e(c["lead"])}</p><p class="r-boundary">{e(c["boundary"])}</p><nav class="r-nav" aria-label="{e(c["title"],quote=True)}"><a href="#findings">{e(c["findings"])}</a><a href="#demonstrations">{e(c["demos"])}</a><a href="#next">{e(c["next"])}</a></nav></section>
+<main><section class="r-hero"><p class="r-kicker">{e(c["label"])}</p><h1>{e(c["title"])}</h1><p class="r-lead">{e(c["lead"])}</p><p class="r-boundary">{e(c["boundary"])}</p><nav class="r-nav" aria-label="{e(c["title"],quote=True)}"><a href="#visual-atlas">{e(ATLAS_COPY[lang]["heading"])}</a><a href="#findings">{e(c["findings"])}</a><a href="#demonstrations">{e(c["demos"])}</a><a href="#next">{e(c["next"])}</a></nav></section>
+{render_atlas_map(journal, lang)}
 <section class="r-section" id="findings"><p class="r-kicker">01 / TAG</p><h2>{e(c["findings"])}</h2><p class="r-section-intro">{e(c["intro"])}</p><div class="r-grid">{"".join(entries)}</div></section>
 <section class="r-section" id="demonstrations"><p class="r-kicker">02 / TAG</p><h2>{e(c["demos"])}</h2><p class="r-section-intro">{e(c["demo_intro"])}</p><aside class="r-feature"><h3>{e(c["record"])}</h3><p>{e(recorded)}</p><p>{e(c["record_limit"])}</p></aside>{"".join(demos)}</section>
 <section class="r-section" id="next"><p class="r-kicker">03 / TAG</p><h2>{e(c["next"])}</h2><div class="r-questions"><h3>{e(question["title"])}</h3><p>{e(question["description"])}</p></div></section></main>
@@ -154,7 +239,6 @@ def article_page(item: dict, lang: str) -> str:
     other = "en" if lang == "ro" else "ro"
     url = f"{ORIGIN}/{lang}/research/{slug}/"
     other_url = f"{ORIGIN}/{other}/research/{slug}/"
-    stages = "".join(f"<li>{e(stage)}</li>" for stage in article["stages"])
     return f"""<!doctype html>
 <html lang="{lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{e(copy["title"])} | TAG · ROCSI</title><meta name="robots" content="noindex,nofollow"><meta name="description" content="{e(copy["result"],quote=True)}">
@@ -167,7 +251,7 @@ def article_page(item: dict, lang: str) -> str:
 <h2>{e(labels["principle"])}</h2><p>{e(article["principle"])}</p>
 <h2>{e(labels["formula"])}</h2><pre class="r-equation"><code>{e(item["article"]["formula"])}</code></pre>
 <p>{e(article["formula_note"])}</p>
-<figure class="r-diagram"><ol>{stages}</ol><figcaption>{e(labels["figure"])}</figcaption></figure>
+{render_visual_diagram(item, lang)}
 <h2>{e(labels["method"])}</h2><p>{e(article["method"])}</p>
 <h2>{e(labels["observed"])}</h2><p>{e(copy["result"])}</p>
 <h2>{e(labels["interpretation"])}</h2><p>{e(article["interpretation"])}</p>
