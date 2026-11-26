@@ -782,18 +782,64 @@
           ]
         }
       }
+    },
+    {
+      "id": "synthetic-source-emission-end-freshness",
+      "status": "documented_synthetic",
+      "evidence_path": "experiments/source-proof-binding-v0/qa-emission-end-freshness-20261126.md",
+      "ro": {
+        "field": "Integritate · prospețime contextuală",
+        "title": "Prospețimea contextuală a declarațiilor terminale autentificate",
+        "result": "În 10 teste sintetice locale, reținerea epocii active de către verificator și tranziția explicită către o epocă distinctă au permis respingerea unei declarații terminale istorice, chiar dacă aceasta rămânea autentică și validă în contextul original.",
+        "insight": "Restaurarea simultană a stării și a referinței locale a permis readmiterea declarației. Fără o referință independentă nu se poate garanta prospețimea contextuală împotriva unei asemenea restaurări."
+      },
+      "en": {
+        "field": "Integrity · contextual freshness",
+        "title": "Contextual freshness of authenticated terminal declarations",
+        "result": "In 10 local synthetic tests, verifier-retained active epoch state and an explicit transition to a distinct epoch enabled rejection of a historical terminal declaration even when it remained authentic and valid in its original context.",
+        "insight": "Restoring both local state and the local reference admitted the declaration again. Without an independent reference, contextual freshness cannot be guaranteed against such restoration."
+      },
+      "article": {
+        "formula": "Admit(d) ⇒ epoch(d) = e_active; e_active = B ∧ epoch(d) = A ∧ A ≠ B ⇒ reject(d)",
+        "ro": {
+          "question": "Poate fi respinsă o declarație terminală autentică dintr-o epocă anterioară fără a nega validitatea sa în contextul original?",
+          "principle": "Verificatorul păstrează epoca activă și o compară cu epoca declarației înaintea verificării de consistență terminală. Epocile sunt identificatori opaci, iar tranziția este permisă explicit într-un singur sens. Referința locală separată trebuie să corespundă stării înaintea admiterii.",
+          "formula_note": "A și B desemnează epoci distincte; e_active este epoca reținută de verificator. În formulă ACCEPT se referă la o declarație admisă, inclusiv idempotent; egalitatea epocii este necesară, nu suficientă. Nu reprezintă o relație temporală.",
+          "method": "Experimentul a reutilizat autentificarea terminală, consistența în aceeași epocă și scrierea atomică a referinței locale. Cele 10 teste izolate au verificat acceptarea, repetarea, tranziția, respingerea declarației istorice, reluarea și restaurarea stării. Nu a fost generată o nouă dovadă ZKP.",
+          "interpretation": "O declarație autentică rămâne validă în epoca originală, dar nu este admisibilă în epoca nouă. Restaurarea ambelor copii locale a permis readmiterea idempotentă a declarației istorice. Referința separată simulează o autoritate independentă, nu este una. Nu sunt demonstrate timpul de încredere, sinceritatea sursei, completitudinea fizică sau originea reală.",
+          "controls": "Epoca viitoare înaintea tranziției și regresia neautorizată au fost respinse. Referința absentă sau invalidă și restaurarea exclusivă a stării au blocat admiterea; o sesiune existentă a recitit epoca activă. Nu au fost testate istorii arbitrare, concurența adversarială sau întreruperile în timpul scrierii.",
+          "stages": [
+            "Declarație terminală autentică",
+            "Epocă activă și referință locală",
+            "Admitere contextuală sau respingere"
+          ]
+        },
+        "en": {
+          "question": "Can an authentic terminal declaration from an earlier epoch be rejected without denying its validity in its original context?",
+          "principle": "The verifier retains the active epoch and compares it with the declaration epoch before terminal consistency verification. Epochs are opaque identifiers; one explicit directed transition is permitted. The separate local reference must match state before admission.",
+          "formula_note": "A and B denote distinct epochs; e_active is the epoch retained by the verifier. ACCEPT refers to an admitted declaration, including idempotent repetition; epoch equality is necessary, not sufficient. This is not a temporal relation.",
+          "method": "The experiment reused terminal authentication, same-epoch consistency and atomic local reference writes. Ten isolated tests covered acceptance, repetition, transition, historical declaration rejection, restart and state restoration. No new ZKP was generated.",
+          "interpretation": "An authentic declaration remains valid in its original epoch but is inadmissible in the new epoch. Restoring both local copies admitted the historical declaration idempotently. The separate reference simulates an independent authority; it is not one. Trusted time, source truthfulness, physical completeness and real origin remain unestablished.",
+          "controls": "The future epoch before transition and an unauthorized regression were rejected. Missing or invalid reference and restoration of local state alone blocked admission; an existing session re-read the active epoch. Arbitrary histories, adversarial concurrency and interruption during writes were not tested.",
+          "stages": [
+            "Authentic terminal declaration",
+            "Active epoch and local reference",
+            "Contextual admission or rejection"
+          ]
+        }
+      }
     }
   ],
   "next_question": {
     "ro": {
       "label": "Întrebare deschisă",
       "title": "Cum distingem o declarație terminală autentică și consecventă, dar falsă, de una sinceră?",
-      "description": "Unicitatea locală a închiderii nu rezolvă prospețimea declarației, tranzițiile între epoci sau lipsa unei referințe independente privind emisiile efective. Acoperirea fizică, originea reală și timpul de încredere rămân nedemonstrate."
+      "description": "Unicitatea locală a închiderii și prospețimea contextuală condiționată nu rezolvă restaurarea simultană a referințelor sau lipsa unei referințe independente privind emisiile efective. Acoperirea fizică, originea reală și timpul de încredere rămân nedemonstrate."
     },
     "en": {
       "label": "Open research question",
       "title": "How can an authentic and consistent but false terminal declaration be distinguished from a truthful one?",
-      "description": "Local closure uniqueness does not resolve declaration freshness, epoch transitions or the absence of an independent reference for actual emissions. Physical coverage, real origin and trusted time remain unestablished."
+      "description": "Local closure uniqueness and conditional contextual freshness do not resolve simultaneous reference restoration or the absence of an independent reference for actual emissions. Physical coverage, real origin and trusted time remain unestablished."
     }
   }
 }
