@@ -828,18 +828,64 @@
           ]
         }
       }
+    },
+    {
+      "id": "synthetic-source-epoch-transition-binding",
+      "status": "documented_synthetic",
+      "evidence_path": "experiments/source-proof-binding-v0/qa-epoch-transition-binding-20261126.md",
+      "ro": {
+        "field": "Integritate · autorizarea tranziției",
+        "title": "Legarea autentificată a tranziției între epoci",
+        "result": "În 15 teste sintetice locale, autentificarea domeniului și a perechii direcționale de epoci, combinată cu starea curentă și politica fixă a verificatorului, a permis respingerea autorizărilor modificate, emise pentru alt context sau reutilizate după tranziție.",
+        "insight": "Restaurarea simultană a stării și a referinței locale a permis reutilizarea autorizării autentice. Autentificarea nu garantează singură prospețimea tranziției."
+      },
+      "en": {
+        "field": "Integrity · transition authorization",
+        "title": "Authenticated epoch transition binding",
+        "result": "In 15 local synthetic tests, authenticating the scope and directed epoch pair, combined with verifier-retained current state and fixed policy, enabled rejection of altered authorizations, authorizations issued for another context, and replay after transition.",
+        "insight": "Restoring both local state and the local reference permitted reuse of the authentic authorization. Authentication alone does not guarantee transition freshness."
+      },
+      "article": {
+        "formula": "ADMIT ⇔ AUTH_VALID ∧ SCOPE_MATCH ∧ PREVIOUS_ACTIVE ∧ SUCCESSOR_AUTHORIZED",
+        "ro": {
+          "question": "Poate o autorizare autentificată fi limitată la domeniul și perechea direcțională de epoci pentru care a fost emisă?",
+          "principle": "Verificatorul autentifică domeniul, epoca precedentă și succesoare în ordine, apoi compară domeniul și epoca activă cu politica sa fixă. Referința locală trebuie să fie disponibilă, validă și concordantă. Epocile sunt identificatori opaci.",
+          "formula_note": "Relația se aplică autorizărilor bine formate și unei stări cu referință validă și concordantă; politica permite numai perechea direcțională fixă. Nu exprimă timp de încredere.",
+          "method": "Experimentul a reutilizat mecanismele de consistență terminală și persistență, cu HMAC-SHA256 și separare de domeniu criptografic pentru autorizare, folosind numai o cheie sintetică. Cele 15 teste au inclus tranziția validă, controale negative, restart și restaurare. Nu a fost generată o nouă dovadă ZKP.",
+          "interpretation": "O autorizare autentică pentru alt context sau o tranziție nepermisă poate fi respinsă chiar dacă MAC-ul este valid. Restaurarea simultană a stării și a referinței locale permite reutilizarea autorizării autentice. Referința nu este independentă; nu sunt demonstrate legitimitatea autorității, timpul de încredere, sinceritatea sursei, completitudinea fizică sau originea reală.",
+          "controls": "Modificarea fiecărui câmp autentificat, MAC-ul invalid, cheia incorectă, domeniul diferit, perechea nepermisă, replay-ul și inversarea neautorizată au fost respinse. Referința absentă sau invalidă și restaurarea doar a stării au blocat tranziția. Nu au fost testate istorii arbitrare, concurența adversarială, întreruperile la scriere sau ciclul de viață al cheilor.",
+          "stages": [
+            "Autorizare autentificată",
+            "Domeniu, epocă activă și politică fixă",
+            "Tranziție admisă sau respinsă"
+          ]
+        },
+        "en": {
+          "question": "Can an authenticated authorization be restricted to the scope and directed epoch pair for which it was issued?",
+          "principle": "The verifier authenticates scope, previous epoch and successor epoch in order, then compares scope and active epoch with its fixed policy. The local reference must be available, valid and consistent. Epochs are opaque identifiers.",
+          "formula_note": "The relation applies to well-formed authorizations and state with a valid matching reference; the policy permits only the fixed directed pair. It expresses no trusted time.",
+          "method": "The experiment reused terminal consistency and persistence mechanisms, with HMAC-SHA256 and cryptographic domain separation for authorization, using only a synthetic key. Fifteen tests covered valid transition, negative controls, restart and restoration. No new ZKP was generated.",
+          "interpretation": "An authentic authorization for another context or an unauthorized transition can be rejected even when its MAC is valid. Restoring both local state and the local reference permits reuse of the authentic authorization. The reference is not independent; authority legitimacy, trusted time, source truthfulness, physical completeness and real origin remain unestablished.",
+          "controls": "Mutation of each authenticated field, invalid MAC, incorrect key, different scope, disallowed pair, replay and unauthorized reversal were rejected. Missing or invalid reference and restoration of local state alone blocked transition. Arbitrary histories, adversarial concurrency, interrupted writes and key lifecycle were not tested.",
+          "stages": [
+            "Authenticated authorization",
+            "Scope, active epoch and fixed policy",
+            "Transition admitted or rejected"
+          ]
+        }
+      }
     }
   ],
   "next_question": {
     "ro": {
       "label": "Întrebare deschisă",
       "title": "Cum distingem o declarație terminală autentică și consecventă, dar falsă, de una sinceră?",
-      "description": "Unicitatea locală a închiderii și prospețimea contextuală condiționată nu rezolvă restaurarea simultană a referințelor sau lipsa unei referințe independente privind emisiile efective. Acoperirea fizică, originea reală și timpul de încredere rămân nedemonstrate."
+      "description": "Unicitatea locală a închiderii, prospețimea contextuală și autorizarea autentificată a tranziției nu rezolvă restaurarea simultană a referințelor sau lipsa unei referințe independente privind emisiile efective. Acoperirea fizică, originea reală și timpul de încredere rămân nedemonstrate."
     },
     "en": {
       "label": "Open research question",
       "title": "How can an authentic and consistent but false terminal declaration be distinguished from a truthful one?",
-      "description": "Local closure uniqueness and conditional contextual freshness do not resolve simultaneous reference restoration or the absence of an independent reference for actual emissions. Physical coverage, real origin and trusted time remain unestablished."
+      "description": "Local closure uniqueness, contextual freshness and authenticated transition authorization do not resolve simultaneous reference restoration or the absence of an independent reference for actual emissions. Physical coverage, real origin and trusted time remain unestablished."
     }
   }
 }
