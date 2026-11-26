@@ -94,7 +94,8 @@ except BindingRejected as e:
 else:
     raise AssertionError("missing conflict")
 """
-        subprocess.run([sys.executable, "-B", "-c", script, str(self.root)], check=True)
+        subprocess.run([sys.executable, "-B", "-c", script, str(self.root)],
+                       cwd=Path(__file__).resolve().parent, check=True)
         self.assertEqual(before, self.snapshot())
 
     def test_invalid_reference(self):

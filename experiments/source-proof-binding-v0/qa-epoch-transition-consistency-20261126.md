@@ -32,7 +32,7 @@ bwrap --unshare-all --die-with-parent --new-session --ro-bind /usr /usr --symlin
 ## SHA-256
 
 epoch_transition_consistency.py 87c857c9f7349034f32d9a5980244b7a234a79553f36a7f86ce53c2979665a1a
-test_epoch_transition_consistency.py bc6bb09234147252860b0ca0c094a5567ff02eb3cafd044546877394d4d291fd
+test_epoch_transition_consistency.py efa555fa467f5a1e9c4816795569364627128417c776c4178e51701b5cf74069 (corrected integration test; original local test bc6bb09234147252860b0ca0c094a5567ff02eb3cafd044546877394d4d291fd)
 epoch_transition_binding.py 2d6d58955706c28083fcb6265a73241f7d2d7e2e599d667f402d9c29b4741bc7
 test_epoch_transition_binding.py 4a8783195363274229b7ee2218a7d32d7a0485af4b1f4c4854fcf28f6a2a6eb9
 emission_end_freshness.py f13f6c128b0f80894f96a0f22e2a1bd5c5b3b15c1e7a925f3acc03a9c7787aed
@@ -56,4 +56,8 @@ RO: Într-un experiment sintetic, un verificator care păstrează o referință 
 
 EN: In a synthetic experiment, a verifier retaining a local reference to the first authenticated authorization for the same scope and previous epoch can detect an authenticated authorization naming a different successor, independently of actual transition admissibility. Restoring both local state and its reference to the initial snapshot nevertheless permits acceptance of the conflicting authorization; local detection neither establishes which authorization is legitimate nor prevents global equivocation.
 
-Owner explicitly accepted finding 20 and authorized focused Draft integration on 2026-11-26. Ready, merge and publication remain separate decisions. Original local evidence SHA-256: f049b3375e333cee0dee0a9c81d29a7556a7ea6a2c2739415fccd8f599473aef. Implementation and focal tests unchanged.
+Owner explicitly accepted finding 20 and authorized focused Draft integration on 2026-11-26. Ready, merge and publication remain separate decisions. Original local evidence SHA-256: f049b3375e333cee0dee0a9c81d29a7556a7ea6a2c2739415fccd8f599473aef. Implementation unchanged; focal test launch corrected as described below.
+
+## Draft integration portability correction — 2026-11-26
+
+PR #198 initial HEAD ff65d5464028bce4d84e99f6a4ee9f3b449b5f49, CI #45831262652: documentation PASS; experimental gate FAIL solely because the child interpreter in test_restart_process could not import epoch_transition_consistency when launched from the repository root without the sandbox's PYTHONPATH. Twelve of thirteen new tests passed; the showcase steps were skipped. Owner authorized the minimal correction. The subprocess now uses cwd=Path(__file__).resolve().parent; the test assertions, implementation and scientific finding remain unchanged. Original local observation and digest retained above. On Qube, Python 3.14.4, bwrap read-only candidate source, isolated namespaces, disposable tmpfs, cleared environment without PYTHONPATH, repository-root working directory, direct invocation `python3 -B experiments/source-proof-binding-v0/test_epoch_transition_consistency.py`: 13/13 PASS in 0.114 s, PID 193525, exit 0. This reproduces the CI invocation context, not the entire runner environment. No new proof or provisioning.
