@@ -1523,11 +1523,11 @@ PUBLIC_THEME_CSS = """
     .hero-art{position:relative;overflow:hidden;isolation:isolate;min-height:0;aspect-ratio:760/700;align-self:center;border:1px solid #355056;background:radial-gradient(ellipse at 58% 53%,#203e47 0,#0d1a20 53%,#0b1216 88%)}
     .hero-art-label{position:absolute;z-index:2;top:22px;left:22px;color:#d4d7cf}
     .hero-scene{display:block;position:absolute;inset:0;width:100%;height:100%;overflow:hidden}
-    .hero-flight{transform-box:view-box;transform-origin:0 0;animation:public-flight 2.4s linear 2}
-    .hero-sweep{transform-origin:385px 350px;animation:public-radar 4.8s linear 1}
-    .hero-route-flow{animation:public-route 2.4s linear 2}
-    .hero-rotor-disc{transform-box:fill-box;transform-origin:center;animation:public-rotor .3s linear 16}
-    .hero-beacon-pulse{transform-box:fill-box;transform-origin:center;animation:public-beacon 2.4s ease-out 2}
+    .hero-flight{transform-box:view-box;transform-origin:0 0;animation:public-flight 3s linear infinite}
+    .hero-sweep{transform-origin:385px 350px;animation:public-radar 6s linear infinite}
+    .hero-route-flow{animation:public-route 3s linear infinite}
+    .hero-rotor-disc{transform-box:fill-box;transform-origin:center;animation:public-rotor .375s linear infinite}
+    .hero-beacon-pulse{transform-box:fill-box;transform-origin:center;animation:public-beacon 3s ease-out infinite}
     @keyframes public-flight{
       0%,100%{transform:translate(180px,510px) scale(.52) translate(-389px,-350px)}
       16%{transform:translate(210px,325px) scale(.52) translate(-389px,-350px)}
@@ -1592,7 +1592,7 @@ PUBLIC_SIMPLE_CSS = """
 
 
 def public_hero_flight(hero: str) -> str:
-    """Adapt only the public hero: closed synthetic route, finite CSS motion."""
+    """Adapt only the public hero: closed synthetic route, continuous CSS motion."""
     old_route = "M98 548C225 522 305 439 389 350S569 203 681 136"
     route = "M180 510L210 325L385 180L510 245L580 450L370 570Z"
     if hero.count(old_route) != 4 or hero.count('<g class="hero-floor-shadow">') != 1:
