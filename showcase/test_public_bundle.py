@@ -67,8 +67,8 @@ class PublicUXTests(unittest.TestCase):
             self.assertEqual(page.count('class="public-result"'), 3)
             self.assertLess(page.index('id="hero-title"'), page.index('id="demonstration"'))
             self.assertLess(page.index('id="demonstration"'), page.index('id="results"'))
-        self.assertIn("Verificăm respectarea unei condiții fără să dezvăluim datele din spatele ei", self.ro)
-        self.assertIn("We check whether a condition is met without revealing the data behind it", self.en)
+        self.assertIn("Fluxul conceptual arată cum poate fi verificată o condiție fără a dezvălui datele din spatele ei", self.ro)
+        self.assertIn("The conceptual flow shows how a condition can be checked without revealing the data behind it", self.en)
 
     def test_demo_stage_specific_iconography(self):
         for page in (self.ro, self.en):
@@ -209,6 +209,28 @@ class PublicUXTests(unittest.TestCase):
             self.assertEqual(page.count('href="#demonstration"'), 2)
             self.assertNotIn('href="#mission-control"', page)
             self.assertNotIn('href="#research"', page)
+
+    def test_concise_public_illustration_copy(self):
+        for lang, page, index, lead, caption in (
+            ("ro", self.ro, self.research_ro,
+             "Fluxul conceptual arată cum poate fi verificată o condiție",
+             "Modelul investigat și relațiile conceptuale dintre cazurile documentate."),
+            ("en", self.en, self.research_en,
+             "The conceptual flow shows how a condition can be checked",
+             "Investigated model and conceptual relationships between the documented cases."),
+        ):
+            self.assertIn(lead, page)
+            self.assertNotIn("twenty-second visual sequence", page)
+            self.assertNotIn("aproximativ 20 de secunde", page)
+            self.assertNotIn("it is not a live computation", page)
+            self.assertNotIn("nu execută calcule în timp real", page)
+            self.assertIn('class="public-limits"', page)
+            self.assertIn('class="r-boundary"', index)
+            for article in (self.folder / lang / "research").glob("*/index.html"):
+                html = article.read_text(encoding="utf-8")
+                self.assertIn(caption, html)
+                self.assertIn("A0_SYNTHETIC", html)
+                self.assertIn('class="r-boundary"', html)
 
     def test_synthetic_truth_limits_are_plain_and_bilingual(self):
         self.assertIn('nu autenticitatea telemetriei de zbor', self.ro)

@@ -87,6 +87,16 @@ validator/condition symbols. The proof token is visually consistent
 between the last two stages. The illustrations remain conceptual, with
 unchanged text, timing, layout and reduced-motion behavior.
 
+### Public editorial clarity
+
+Use concise, positive descriptions of conceptual illustrations and recorded
+examples instead of repeating browser-execution disclaimers or animation
+durations in captions. Keep the substantive experimental/synthetic,
+recorded-versus-mock, proof/telemetry-truth and non-authorization boundaries
+in the dedicated limits, evidence explanations and per-page markings.
+Proposed integrations remain explicitly proposed. Do not edit the accepted
+scientific findings, methods, evidence or counterexamples for style alone.
+
 ### Lower overview visual coherence
 
 The demonstration uses three original decorative SVG illustrations with

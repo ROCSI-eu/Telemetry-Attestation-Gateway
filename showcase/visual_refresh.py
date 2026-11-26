@@ -1758,7 +1758,7 @@ def simplify_public_html(html: str) -> str:
     demo = '''<section class="public-demo" id="demonstration" aria-labelledby="demo-title">
       <p class="section-overline">THE DEMONSTRATION</p>
       <h2 class="section-display" id="demo-title">Telemetry → cryptographic proof → verification</h2>
-      <p class="public-demo-lead">We check whether a condition is met without revealing the data behind it. This twenty-second visual sequence illustrates the idea automatically; it is not a live computation.</p>
+      <p class="public-demo-lead">The conceptual flow shows how a condition can be checked without revealing the data behind it.</p>
       <ol class="public-steps" aria-label="Three stages of the conceptual verification flow">
         <li class="public-step"><small>01 / TELEMETRY</small><h3>Receive observations</h3><p>A simulator produces synthetic observations. The exact value need not be shown to the verifier.</p></li>
         <li class="public-step"><small>02 / CRYPTOGRAPHIC PROOF</small><h3>Generate a proof</h3><p>A zero-knowledge proof supports a defined condition using the private input.</p></li>
