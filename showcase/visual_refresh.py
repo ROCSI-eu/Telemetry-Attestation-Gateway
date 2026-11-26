@@ -1643,9 +1643,14 @@ PUBLIC_SIMPLE_CSS = """
     .public-result strong{color:#e8e8df;margin-bottom:6px}
     .public-result-mark{width:28px;height:28px;color:#a6d9cd}
     .public-limits{max-width:none;margin:0;padding:clamp(18px,3vw,30px);border-left:3px solid #bca47c}
-    .public-evidence{display:grid;grid-template-columns:1fr;gap:14px;padding:20px 0;border-bottom:1px solid #415256}
+    .public-evidence{display:grid;grid-template-columns:1fr;gap:14px;padding:20px 0 0}
     .public-evidence .public-documentation{margin:0;justify-self:start}
     .public-evidence a{display:inline-flex;align-items:center;min-height:44px;padding:10px 15px;border:1px solid #bca47c;text-decoration:none}
+    .public-outcomes{padding-bottom:0}
+    .rocsi-affiliation{margin:clamp(24px,3vw,36px) 0}
+    .rocsi-affiliation-actions a{display:inline-flex;align-items:center;min-height:44px;padding:10px 15px;border:1px solid #bca47c;text-decoration:none}
+    .rocsi-affiliation-actions a:hover{background:#e5c18a;color:#111617}
+    .rocsi-affiliation-actions a:focus-visible{outline:2px solid #f1d4a2;outline-offset:3px}
     .public-evidence a:hover{background:#e5c18a;color:#111617}
     .public-research-summary .public-documentation a{display:inline-flex;align-items:center;min-height:44px;padding:12px 20px;background:#e5c18a;color:#111617;text-decoration:none;font-weight:750}
     .public-research-summary .public-documentation a:hover{background:#f0d9ad}
@@ -1774,7 +1779,7 @@ def simplify_public_html(html: str) -> str:
         <article class="public-result"><strong>Independent verification passed</strong><p>A separate verifier successfully checked the synthetic proof offline.</p></article>
       </div>
       <p class="public-progress"><strong>Research progress.</strong> In a synthetic experiment, we checked the signing key and signature, applied session-local replay protection and independently verified a zero-knowledge proof bound to the observation. Separate tests with a mock proof verifier rejected replay after restart using retained local state. Restoring old state defeats this protection. Separate synthetic tests with a mock proof verifier checked reception freshness using an authenticated time reference from a simulated authority separate from the telemetry source. This does not establish physical capture time or a real trusted-time service. The signing key is a publicly known test key; real vehicle identity remains unproven.</p>
-      <p class="public-limits"><strong>Experimental and synthetic only.</strong> The tests confirm an isolated end-to-end research path, not authentic flight telemetry. A valid proof does not authenticate its source, timestamp or the full mission. The published illustration and JSON recordings are not independently authenticated by this website. No live vehicle, proving, verification or operational authorization is provided.</p>
+      <p class="public-limits"><strong>Research scope.</strong> Isolated laboratory tests use synthetic data, not authentic flight telemetry. A valid proof does not authenticate its source, timestamp or the full mission. Published illustrations and JSON records are not independently authenticated by this site.</p>
       <p class="public-documentation"><a href="https://github.com/ROCSI-eu/Telemetry-Attestation-Gateway">Technical documentation and research evidence on GitHub</a></p>
     </section>'''
     for index, art in enumerate(PUBLIC_DEMO_ART, start=1):

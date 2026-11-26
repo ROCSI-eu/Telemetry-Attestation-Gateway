@@ -146,9 +146,9 @@ class PublicUXTests(unittest.TestCase):
         from research_module import render_overview_progress
         journal = load_research_journal()
         for lang, page, label, boundary in (
-            ("ro", self.ro, "PROPUS · Integrarea GCS nu a fost încă demonstrată.",
+            ("ro", self.ro, "Arhitectură propusă",
              "Doar recepție · fără comenzi sau retransmitere de control"),
-            ("en", self.en, "PROPOSED · GCS integration has not yet been demonstrated.",
+            ("en", self.en, "Proposed architecture",
              "Receive-only · no commands or control relay"),
         ):
             self.assertIn(render_overview_progress(journal, lang), page)
@@ -232,8 +232,22 @@ class PublicUXTests(unittest.TestCase):
                 self.assertIn("A0_SYNTHETIC", html)
                 self.assertIn('class="r-boundary"', html)
 
+    def test_public_editorial_balance(self):
+        for page in (self.ro, self.en):
+            self.assertEqual(page.count('class="public-research-balance"'), 1)
+            self.assertEqual(page.count('class="public-research-metrics"'), 1)
+            self.assertEqual(page.count('class="public-gcs-flow"'), 1)
+            self.assertIn('.public-research-balance{grid-template-columns:1fr;gap:18px}', page)
+            self.assertIn('@media(prefers-reduced-motion:reduce){.public-gcs-flow,.public-gcs-branch::before,.public-gcs-branch::after{animation:none!important}}', page)
+            self.assertIn('.public-evidence{display:grid;grid-template-columns:1fr;gap:14px;padding:20px 0 0}', page)
+            self.assertIn('class="rocsi-affiliation-actions"', page)
+        self.assertIn('Domeniul cercetării.', self.ro)
+        self.assertIn('Research scope.', self.en)
+        self.assertIn('nu sunt autentificate independent de acest site', self.ro)
+        self.assertIn('not independently authenticated by this site', self.en)
+
     def test_synthetic_truth_limits_are_plain_and_bilingual(self):
-        self.assertIn('nu autenticitatea telemetriei de zbor', self.ro)
+        self.assertIn('nu telemetrie de zbor autentică', self.ro)
         self.assertIn('not authentic flight telemetry', self.en)
         self.assertIn('href="/ro/research/"', self.ro)
         self.assertIn('href="/en/research/"', self.en)

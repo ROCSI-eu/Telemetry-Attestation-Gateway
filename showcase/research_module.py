@@ -200,26 +200,37 @@ OVERVIEW_CSS = """
 .public-gcs-arrow svg{width:32px;height:28px}
 .public-gcs-branch:last-child .public-gcs-node{background:#142c31}
 @media(max-width:600px){.public-gcs-fork{display:none}.public-gcs-source{max-width:none}.public-gcs-branches{gap:12px;margin-left:12px;padding:14px 0 0 18px;border-left:1px solid #9bd3cf}.public-gcs-branch{position:relative}.public-gcs-branch::before{content:"";position:absolute;top:24px;left:-18px;width:17px;border-top:1px solid #9bd3cf}.public-gcs-branch::after{content:"";position:absolute;top:21px;left:-7px;width:6px;height:6px;border-top:1px solid #9bd3cf;border-right:1px solid #9bd3cf;transform:rotate(45deg)}.public-gcs-icon{width:42px;height:38px}.public-gcs-node,.public-gcs-source{gap:10px;padding:12px}.public-research-counts div{padding:10px}}
+/* Balance the summary and illustrate proposed observation flow only. */
+.public-research-balance{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(20px,4vw,48px);align-items:center}
+.public-research-metrics{min-width:0}
+.public-research-balance .public-research-counts{max-width:none;margin-bottom:16px}
+.public-research-balance .public-documentation,.public-research-balance .public-progress{margin:0;max-width:none}
+.public-gcs-flow{animation:public-gcs-flow 3s linear infinite}
+@keyframes public-gcs-flow{to{stroke-dashoffset:-36}}
+@keyframes public-gcs-branch-pulse{0%,100%{opacity:.55}50%{opacity:1}}
+@media(max-width:750px){.public-research-balance{grid-template-columns:1fr;gap:18px}}
+@media(max-width:600px){.public-gcs-branch::before,.public-gcs-branch::after{border-color:#e5c18a;animation:public-gcs-branch-pulse 3s ease-in-out infinite}}
+@media(prefers-reduced-motion:reduce){.public-gcs-flow,.public-gcs-branch::before,.public-gcs-branch::after{animation:none!important}}
 """
 OVERVIEW_COPY = {
     "ro": {"heading": "De la verificarea unei condiții la integritatea fluxului de telemetrie",
            "findings": "Constatări documentate", "themes": "Teme de cercetare",
-           "direction": "Direcția de dezvoltare: integrarea GCS",
-           "proposed": "PROPUS · Integrarea GCS nu a fost încă demonstrată.",
+           "direction": "Integrarea TAG cu sistemele GCS",
+           "proposed": "Arhitectură propusă",
            "intro": "Următorul obiectiv este un companion TAG experimental, complementar software-ului existent de comandă și control (GCS), într-un mediu izolat, exclusiv sintetic.",
            "source": "ArduPilot SITL", "synthetic": "Observații sintetice",
            "gcs": "Software GCS", "gcs_note": "QGroundControl sau Mission Planner · control separat de TAG",
-           "tag": "Companion TAG propus", "receive": "Doar recepție · fără comenzi sau retransmitere de control",
+           "tag": "Companion TAG", "receive": "Doar recepție · fără comenzi sau retransmitere de control",
            "proof": "Dovezi exportabile", "verify": "Verificare independentă offline (obiectiv)",
            "caption": "Arhitectură propusă: observațiile sintetice ar urma să fie recepționate separat de GCS și companionul TAG."},
     "en": {"heading": "From checking a condition to telemetry stream integrity",
            "findings": "Documented findings", "themes": "Research themes",
-           "direction": "Development direction: GCS integration",
-           "proposed": "PROPOSED · GCS integration has not yet been demonstrated.",
+           "direction": "TAG integration with GCS systems",
+           "proposed": "Proposed architecture",
            "intro": "The next objective is an experimental TAG companion alongside existing ground control station (GCS) software, in an isolated, synthetic-only environment.",
            "source": "ArduPilot SITL", "synthetic": "Synthetic observations",
            "gcs": "GCS software", "gcs_note": "QGroundControl or Mission Planner · control separate from TAG",
-           "tag": "Proposed TAG companion", "receive": "Receive-only · no commands or control relay",
+           "tag": "TAG companion", "receive": "Receive-only · no commands or control relay",
            "proof": "Exportable evidence", "verify": "Independent offline verification (objective)",
            "caption": "Proposed architecture: the GCS and TAG companion would receive the synthetic observations separately."},
 }
@@ -244,14 +255,14 @@ def render_overview_progress(journal: dict, lang: str) -> str:
     arrow = ('<div class="public-gcs-arrow" aria-hidden="true"><svg viewBox="0 0 32 28" fill="none" stroke="currentColor" stroke-width="1.5">'
              '<path d="M16 1v23m-6-6 6 6 6-6"/></svg></div>')
     fork = ('<svg class="public-gcs-fork" viewBox="0 0 840 44" preserveAspectRatio="none" aria-hidden="true" '
-            'fill="none" stroke="currentColor" stroke-width="1.5"><path d="M420 0v15H210v26m-6-6 6 6 6-6M420 15h210v26m-6-6 6 6 6-6"/></svg>')
+            'fill="none" stroke="currentColor" stroke-width="1.5"><path d="M420 0v15H210v26m-6-6 6 6 6-6M420 15h210v26m-6-6 6 6 6-6"/><path class="public-gcs-flow" d="M420 0v15H210v26M420 0v15h210v26" stroke="#e5c18a" stroke-dasharray="3 15"/></svg>')
     return (
         f'<section class="public-research-summary" aria-labelledby="public-research-title">'
         f'<h3 id="public-research-title">{e(c["heading"])}</h3>'
-        f'<dl class="public-research-counts"><div><dt>{e(c["findings"])}</dt><dd id="public-finding-count">{findings}</dd></div>'
+        f'<div class="public-research-balance"><div class="public-research-metrics"><dl class="public-research-counts"><div><dt>{e(c["findings"])}</dt><dd id="public-finding-count">{findings}</dd></div>'
         f'<div><dt>{e(c["themes"])}</dt><dd id="public-theme-count">{themes}</dd></div></dl>'
-        f'<p class="public-progress">{e(COPY[lang]["home_progress"])}</p>'
-        f'<p class="public-documentation"><a href="/{lang}/research/">{e(COPY[lang]["cta"])}</a></p></section>'
+        f'<p class="public-documentation"><a href="/{lang}/research/">{e(COPY[lang]["cta"])}</a></p></div>'
+        f'<p class="public-progress">{e(COPY[lang]["home_progress"])}</p></div></section>'
         f'<section class="public-gcs" aria-labelledby="public-gcs-title">'
         f'<h3 id="public-gcs-title">{e(c["direction"])}</h3><p><strong>{e(c["proposed"])}</strong></p>'
         f'<p>{e(c["intro"])}</p><figure aria-label="{e(c["direction"], quote=True)}">'

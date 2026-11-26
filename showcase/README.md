@@ -87,6 +87,17 @@ validator/condition symbols. The proof token is visually consistent
 between the last two stages. The illustrations remain conceptual, with
 unchanged text, timing, layout and reduced-motion behavior.
 
+### Public editorial balance
+
+The overview summary places derived counts and its catalog CTA beside the
+existing research explanation, stacking on mobile. The GCS architecture
+is explicitly proposed, with an illustrative observation-only CSS flow
+and reduced-motion support; no command or proof-execution implication.
+The concise research scope retains synthetic-only, proof/source/time/mission
+and record-authentication limits; the mandatory footer and catalog
+boundaries are unchanged. The final evidence/affiliation area uses one
+separator and a secondary ROCSI CTA. No scientific or catalog change.
+
 ### Public editorial clarity
 
 Use concise, positive descriptions of conceptual illustrations and recorded
