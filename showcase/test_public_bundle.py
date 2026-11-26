@@ -70,6 +70,29 @@ class PublicUXTests(unittest.TestCase):
         self.assertIn("Verificăm respectarea unei condiții fără să dezvăluim datele din spatele ei", self.ro)
         self.assertIn("We check whether a condition is met without revealing the data behind it", self.en)
 
+    def test_overview_catalog_counts_and_proposed_gcs_boundary(self):
+        from build import load_research_journal
+        from research_module import render_overview_progress
+        journal = load_research_journal()
+        for lang, page, label, boundary in (
+            ("ro", self.ro, "PROPUS · Integrarea GCS nu a fost încă demonstrată.",
+             "Doar recepție · fără comenzi sau retransmitere de control"),
+            ("en", self.en, "PROPOSED · GCS integration has not yet been demonstrated.",
+             "Receive-only · no commands or control relay"),
+        ):
+            self.assertIn(render_overview_progress(journal, lang), page)
+            self.assertIn(f'id="public-finding-count">{len(journal["entries"])}</dd>', page)
+            self.assertIn(f'id="public-theme-count">{len({e["article"]["visual"]["theme"] for e in journal["entries"]})}</dd>', page)
+            self.assertEqual(page.count(f'href="/{lang}/research/"'), 1)
+            for name in (label, boundary, "ArduPilot SITL", "QGroundControl", "Mission Planner"):
+                self.assertIn(name, page)
+            self.assertNotIn('class="r-entry"', page)
+            self.assertNotIn('class="r-diagram"', page)
+            subset = {"entries": journal["entries"][:1]}
+            html = render_overview_progress(subset, lang)
+            self.assertIn('id="public-finding-count">1</dd>', html)
+            self.assertIn('id="public-theme-count">1</dd>', html)
+
     def test_no_technical_controls_panel_or_executable_replay(self):
         for page in (self.ro, self.en):
             for forbidden in ('<script', '<details', '<select', '<button', '<form',
