@@ -30,6 +30,17 @@ the original model, evidence link and experimental boundary. Add visual
 records in the same journal entry as each accepted future finding; no new
 proof, test, or publication is implied by a diagram.
 
+### Public overview reconciliation
+
+The overview derives its finding and populated-theme counts from the validated
+journal at build time. Its concise research summary links to the sole detailed
+catalog. The GCS companion diagram is explicitly proposed and synthetic-only,
+with the GCS control boundary separate from receive-only TAG. It describes the
+direction recorded in the delivery plan, not completed interoperability,
+product readiness or authorization. Retain the existing demonstration,
+limitations, animation and static CSP; update the high-level copy only when
+the accepted research or documented direction materially changes.
+
 ### Proposed editorial extension — engineering progress
 
 For separately accepted, public-safe engineering achievements (for example

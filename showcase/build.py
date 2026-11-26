@@ -19,7 +19,7 @@ import re
 
 from localization import localize_404, romanian_html, social_metadata
 from visual_refresh import redesign_public_html, simplify_public_html
-from research_module import COPY as RESEARCH_COPY, research_page, article_page, ATLAS_THEMES, ATLAS_KINDS, ATLAS_MODES
+from research_module import research_page, article_page, ATLAS_THEMES, ATLAS_KINDS, ATLAS_MODES, OVERVIEW_CSS, render_overview_progress
 
 ROOT = Path(__file__).resolve().parents[1]
 JOURNAL = ROOT / "showcase/research_journal.json"
@@ -548,13 +548,11 @@ def build(out: Path) -> tuple[str, ...]:
     html_en = social_metadata(html, "en")
     html_ro = social_metadata(romanian_html(html), "ro")
     def overview(page, lang):
-        c = RESEARCH_COPY[lang]
         pattern = r'<p class="public-progress">.*?</p>'
-        if len(re.findall(pattern, page, re.S)) != 1:
-            raise ValueError("overview progress anchor changed")
-        return re.sub(pattern, lambda _: '<p class="public-progress">' +
-                      escape(c["home_progress"]) + '</p><p class="public-documentation"><a href="/' +
-                      lang + '/research/">' + escape(c["cta"]) + '</a></p>', page, count=1, flags=re.S)
+        if len(re.findall(pattern, page, re.S)) != 1 or page.count("</style>") != 1:
+            raise ValueError("overview progress or stylesheet anchor changed")
+        page = re.sub(pattern, lambda _: render_overview_progress(journal, lang), page, count=1, flags=re.S)
+        return page.replace("</style>", OVERVIEW_CSS + "</style>", 1)
     html_en = overview(html_en, "en")
     html_ro = overview(html_ro, "ro")
     research_ro = research_page(journal, scenarios, verifier, "ro")

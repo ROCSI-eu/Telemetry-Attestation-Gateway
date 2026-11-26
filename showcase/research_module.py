@@ -100,7 +100,8 @@ COPY = {
  "satisfied":"Îndeplinită", "not_satisfied":"Neîndeplinită", "valid":"Acceptat", "invalid":"Respins", "not_checked":"Neverificat",
  "cases":[("below_limit_local_publication","Condiție îndeplinită","Fluxul simulat continuă până la verificare."),("over_limit","Limită depășită","Condiția nu este îndeplinită; nu se verifică o dovadă."),("tampered_proof","Dovadă alterată","Chiar dacă rezultatul condiției este favorabil, verificarea simulată respinge dovada.")],
  "foot":"Cercetare ROCSI. Fără telemetrie reală, comenzi, calcule criptografice în browser sau autorizare operațională.",
- "github":"Repository și documentație", "cta":"Explorează cercetarea", "home_progress":"Am demonstrat experimental legarea unei dovezi de o observație semnată, protecția împotriva reutilizării și verificarea prospețimii recepției cu o autoritate temporală simulată. Rezultatele detaliate și limitele sunt disponibile în secțiunea de cercetare."
+ "github":"Repository și documentație", "cta":"Explorează cercetarea",
+ "home_progress":"Cercetăm verificarea criptografică a condițiilor, legarea dovezilor de observații semnate sintetic, protecția împotriva reutilizării și prospețimea recepției cu o autoritate temporală simulată. Experimentele distincte investighează și completitudinea, continuitatea, integritatea stării, agregarea și consistența emisiilor și epocilor. Nu toate aceste rezultate implică dovezi criptografice noi; limitele și contraexemplele sunt documentate în catalog."
 },
 "en": {
  "home":"Overview", "title":"Research and experimental results", "label":"ROCSI / Telemetry Attestation Gateway",
@@ -116,7 +117,8 @@ COPY = {
  "satisfied":"Satisfied", "not_satisfied":"Not satisfied", "valid":"Accepted", "invalid":"Rejected", "not_checked":"Not checked",
  "cases":[("below_limit_local_publication","Condition satisfied","The simulated flow proceeds to verification."),("over_limit","Limit exceeded","The condition is not met; no proof is checked."),("tampered_proof","Tampered proof","Even with a favorable condition outcome, simulated verification rejects the proof.")],
  "foot":"ROCSI research. No real telemetry, commands, browser cryptography or operational authorization.",
- "github":"Repository and documentation", "cta":"Explore the research", "home_progress":"We experimentally demonstrated proof binding to a signed observation, replay protection and reception freshness checks with a simulated time authority. Detailed findings and limitations are available in the research section."
+ "github":"Repository and documentation", "cta":"Explore the research",
+ "home_progress":"We investigate cryptographic verification of conditions, proof binding to synthetically signed observations, replay protection and reception freshness with a simulated time authority. Separate experiments also investigate completeness, continuity, state integrity, aggregation, and emission and epoch consistency. Not all these results involve new cryptographic proofs; limitations and counterexamples are documented in the catalog."
 }}
 ARTICLE_LABELS = {
     "ro": {"open": "Citește articolul", "back": "Înapoi la jurnal",
@@ -163,6 +165,79 @@ ATLAS_COPY = {
            "flow": "Investigated model", "observed": "Documented scenario", "control": "Control / negative case", "limit": "Limitation / counterexample",
            "caption": "Illustrative diagram of the model and documented cases. Arrows describe conceptual relations, not browser execution or verification."},
 }
+
+
+# Overview-only styles, appended to the existing inert stylesheet at build time.
+OVERVIEW_CSS = """
+.public-research-summary{margin:28px 0 24px}
+.public-research-summary h3,.public-gcs h3{font-size:clamp(1.3rem,2.4vw,1.8rem);line-height:1.25;color:#f1e4cb;margin:0 0 14px}
+.public-research-counts{display:flex;flex-wrap:wrap;gap:12px 30px;margin:0 0 20px}
+.public-research-counts div{min-width:0;flex:0 1 190px}
+.public-research-counts dt{color:#c8d4d0;font-size:.88rem}
+.public-research-counts dd{margin:0;color:#e4c58e;font-size:2rem;font-weight:750;line-height:1.2}
+.public-gcs{margin:32px 0 24px;padding:clamp(15px,3vw,26px);border:1px solid #466168;background:#102329}
+.public-gcs p{color:#ccd7d0;line-height:1.6;margin:0 0 12px}
+.public-gcs figure{margin:20px auto 0;max-width:680px}
+.public-gcs-source,.public-gcs-node{min-width:0;overflow-wrap:anywhere;border:1px solid #6c8490;background:#17282c;padding:14px;text-align:center;color:#e5efeb}
+.public-gcs-source{max-width:300px;margin:auto}
+.public-gcs-source strong,.public-gcs-node strong{display:block;color:#ebd1a4;margin-bottom:5px}
+.public-gcs-arrow{text-align:center;color:#a6e0d9;font-size:1.1rem;margin:5px 0}
+.public-gcs-branches{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+.public-gcs-branch{min-width:0}
+.public-gcs-branch:last-child .public-gcs-node{border-color:#69aba3;border-style:dashed}
+.public-gcs figcaption{font-size:.84rem;color:#c8d4d0;margin-top:14px}
+@media(max-width:600px){.public-gcs-branches{grid-template-columns:1fr;gap:16px}.public-research-counts div{flex:1 1 120px}}
+"""
+OVERVIEW_COPY = {
+    "ro": {"heading": "De la verificarea unei condiții la integritatea fluxului de telemetrie",
+           "findings": "Constatări documentate", "themes": "Teme de cercetare",
+           "direction": "Direcția de dezvoltare: integrarea GCS",
+           "proposed": "PROPUS · Integrarea GCS nu a fost încă demonstrată.",
+           "intro": "Următorul obiectiv este un companion TAG experimental, complementar software-ului existent de comandă și control (GCS), într-un mediu izolat, exclusiv sintetic.",
+           "source": "ArduPilot SITL", "synthetic": "Observații sintetice",
+           "gcs": "Software GCS", "gcs_note": "QGroundControl sau Mission Planner · control separat de TAG",
+           "tag": "Companion TAG propus", "receive": "Doar recepție · fără comenzi sau retransmitere de control",
+           "proof": "Dovezi exportabile", "verify": "Verificare independentă offline (obiectiv)",
+           "caption": "Schemă conceptuală: observațiile simulatorului sunt disponibile separat GCS și companionului TAG. Săgețile nu reprezintă o integrare realizată, o execuție sau o verificare aici."},
+    "en": {"heading": "From checking a condition to telemetry stream integrity",
+           "findings": "Documented findings", "themes": "Research themes",
+           "direction": "Development direction: GCS integration",
+           "proposed": "PROPOSED · GCS integration has not yet been demonstrated.",
+           "intro": "The next objective is an experimental TAG companion alongside existing ground control station (GCS) software, in an isolated, synthetic-only environment.",
+           "source": "ArduPilot SITL", "synthetic": "Synthetic observations",
+           "gcs": "GCS software", "gcs_note": "QGroundControl or Mission Planner · control separate from TAG",
+           "tag": "Proposed TAG companion", "receive": "Receive-only · no commands or control relay",
+           "proof": "Exportable evidence", "verify": "Independent offline verification (objective)",
+           "caption": "Conceptual diagram: simulator observations are available separately to the GCS and TAG companion. Arrows do not represent a completed integration, execution or verification here."},
+}
+
+
+def render_overview_progress(journal: dict, lang: str) -> str:
+    """Derived counts and proposed architecture, never a separate evidence registry."""
+    c = OVERVIEW_COPY[lang]
+    e = escape
+    findings = len(journal["entries"])
+    themes = len({item["article"]["visual"]["theme"] for item in journal["entries"]})
+    def node(title, note, cls="public-gcs-node"):
+        return f'<div class="{cls}"><strong>{e(c[title])}</strong>{e(c[note])}</div>'
+    arrow = '<div class="public-gcs-arrow" aria-hidden="true">↓</div>'
+    return (
+        f'<section class="public-research-summary" aria-labelledby="public-research-title">'
+        f'<h3 id="public-research-title">{e(c["heading"])}</h3>'
+        f'<dl class="public-research-counts"><div><dt>{e(c["findings"])}</dt><dd id="public-finding-count">{findings}</dd></div>'
+        f'<div><dt>{e(c["themes"])}</dt><dd id="public-theme-count">{themes}</dd></div></dl>'
+        f'<p class="public-progress">{e(COPY[lang]["home_progress"])}</p>'
+        f'<p class="public-documentation"><a href="/{lang}/research/">{e(COPY[lang]["cta"])}</a></p></section>'
+        f'<section class="public-gcs" aria-labelledby="public-gcs-title">'
+        f'<h3 id="public-gcs-title">{e(c["direction"])}</h3><p><strong>{e(c["proposed"])}</strong></p>'
+        f'<p>{e(c["intro"])}</p><figure aria-label="{e(c["direction"], quote=True)}">'
+        + node("source", "synthetic", "public-gcs-source")
+        + '<div class="public-gcs-branches"><div class="public-gcs-branch">'
+        + arrow + node("gcs", "gcs_note")
+        + '</div><div class="public-gcs-branch">'
+        + arrow + node("tag", "receive") + arrow + node("proof", "verify")
+        + f'</div></div><figcaption>{e(c["caption"])}</figcaption></figure></section>'
+    )
 
 
 def render_visual_diagram(item: dict, lang: str) -> str:
