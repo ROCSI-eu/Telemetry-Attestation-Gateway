@@ -29,7 +29,7 @@ CSS = """
 .r-section-intro{color:#bbc7c3;max-width:78ch;margin:0 0 24px}
 .r-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 .r-entry{background:#162427;border:1px solid #415254;padding:24px;min-width:0;display:flex;flex-direction:column;align-items:flex-start}
-.r-entry h3{font-size:1.2rem;line-height:1.3;color:#f1e4cb;margin:5px 0 12px}
+.r-entry h4{font-size:1.2rem;line-height:1.3;color:#f1e4cb;margin:5px 0 12px}
 .r-entry p{margin:0 0 12px;color:#d2dbd5}
 .r-entry .r-limit{border-top:1px solid #405052;padding-top:12px;color:#c3cbc4;font-size:.92rem}
 .r-entry a{margin-top:auto;font-size:.88rem}
@@ -57,10 +57,13 @@ CSS = """
 .r-diagram figcaption{color:#c5cecb;font-size:.85rem;margin-top:16px}
 .r-atlas-map{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .r-atlas-group{min-width:0;border:1px solid #4b6469;border-radius:10px;background:#162427;padding:18px}
-.r-atlas-group h3{margin:0 0 10px;color:#a6e0d9;font-size:1.02rem;line-height:1.4}
-.r-atlas-group ul{margin:0;padding-left:1.2rem}
-.r-atlas-group li{margin:7px 0;overflow-wrap:anywhere;font-size:.9rem}
-.r-atlas-group a{color:#e9dfc3}
+.r-atlas-group{display:flex;flex-direction:column;justify-content:center;gap:6px;min-height:84px;text-decoration:none;overflow-wrap:anywhere}
+.r-atlas-group strong{color:#a6e0d9;font-size:1.02rem;line-height:1.4;text-decoration:underline;text-underline-offset:4px}
+.r-atlas-group span{color:#c3cbc4;font-size:.82rem}
+.r-atlas-group:hover,.r-atlas-group:focus-visible{background:#203134}
+.r-theme{margin:28px 0 0;scroll-margin-top:20px}
+.r-theme>h3{font-size:1.25rem;color:#a6e0d9;margin:0 0 12px;line-height:1.3}
+.r-theme-back{display:inline-block;margin-top:12px;font-size:.85rem}
 .r-article a{overflow-wrap:anywhere}
 @media(max-width:700px){.r-atlas-map{grid-template-columns:1fr}}
 @media(max-width:640px){.r-diagram ol,.r-visual-path{grid-template-columns:1fr;gap:24px}.r-diagram li,.r-visual-node{min-height:0;padding:12px}.r-diagram li:not(:last-child):after,.r-visual-node:not(:last-child):after{content:'↓';right:50%;top:auto;bottom:-24px;transform:translateX(50%)}}
@@ -88,7 +91,7 @@ COPY = {
  "lead":"Ce-am demonstrat în laborator, ce limite au rezultatele și ce întrebări rămân deschise. O evidență cumulativă a cercetării TAG, separată de prezentarea generală.",
  "boundary":"EXPERIMENTAL · DOAR DATE SINTETICE · A0_SYNTHETIC · FĂRĂ VALIDARE SAU AUTORIZARE OPERAȚIONALĂ",
  "findings":"Rezultate documentate", "demos":"Explorează demonstrațiile", "next":"Direcții deschise",
- "intro":"Rezultatele confirmate sunt prezentate de la cel mai recent la cel mai vechi. Fiecare include observația, semnificația și limita ei, cu trimitere la documentația tehnică.",
+ "intro":"Rezultatele sunt grupate pe teme, de la cel mai recent la cel mai vechi în fiecare temă. Fiecare constatare are un singur rezumat, limita ei și legături către articol și dovezi.",
  "limit":"Ce înseamnă și ce nu demonstrează", "evidence":"Documentația experimentului",
  "demo_intro":"Exemple selectate din scenarii deterministe, pentru înțelegerea deciziilor. Deschide un exemplu pentru a vedea rezultatul înregistrat; nu se execută un prover sau un verificator.",
  "record":"Rezultat criptografic preînregistrat", "record_valid":"Verificatorul offline a acceptat o dovadă sintetică.", "record_invalid":"Verificatorul offline a respins o dovadă sintetică.",
@@ -104,7 +107,7 @@ COPY = {
  "lead":"What we have demonstrated in the lab, what the results cannot establish, and what remains open. A cumulative record of TAG research, separate from the general overview.",
  "boundary":"EXPERIMENTAL · SYNTHETIC ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION",
  "findings":"Documented findings", "demos":"Explore the demonstrations", "next":"Open research directions",
- "intro":"Confirmed findings appear newest first. Each records what was observed, what it means and its limitation, with a reference to the technical evidence.",
+ "intro":"Findings are grouped by theme, newest first within each theme. Each has one summary, its limitation and links to the article and evidence.",
  "limit":"Meaning and limitations", "evidence":"Experiment documentation",
  "demo_intro":"Selected deterministic scenarios help explain the decision flow. Expand an example to see the recorded outcome; no prover or verifier is executed.",
  "record":"Recorded cryptographic result", "record_valid":"An offline verifier accepted a synthetic proof.", "record_invalid":"An offline verifier rejected a synthetic proof.",
@@ -149,11 +152,13 @@ ATLAS_MODES = {
     "authenticated_no_zkp": ("Controale de autentificare și consistență; fără ZKP nouă", "Authentication and consistency checks; no new ZKP"),
 }
 ATLAS_COPY = {
-    "ro": {"heading": "Atlasul vizual al cercetării", "intro": "Cele șase teme reunesc constatările documentate. Gruparea este conceptuală, nu o scară de maturitate, o relație obligatorie de dependență sau o validare a produsului.",
+    "ro": {"heading": "Atlasul vizual al cercetării", "intro": "Alege o temă pentru a explora constatările și mini-articolele. Gruparea este conceptuală, nu o scară de maturitate, o relație obligatorie de dependență sau o validare a produsului.",
+           "count_one": "constatare", "count_many": "constatări", "back": "Înapoi la atlas",
            "boundary": "Mediu experimental · exclusiv date sintetice",
            "flow": "Modelul investigat", "observed": "Scenariu documentat", "control": "Control / caz negativ", "limit": "Limită / contraexemplu",
            "caption": "Schemă ilustrativă a modelului și a cazurilor documentate. Săgețile descriu relații conceptuale, nu o execuție sau o verificare în browser."},
-    "en": {"heading": "Research visual atlas", "intro": "Six themes group the documented findings. This is a conceptual grouping, not a maturity ladder, mandatory dependency relation or product validation.",
+    "en": {"heading": "Research visual atlas", "intro": "Choose a theme to explore its findings and articles. This is a conceptual grouping, not a maturity ladder, mandatory dependency relation or product validation.",
+           "count_one": "finding", "count_many": "findings", "back": "Back to atlas",
            "boundary": "Experimental environment · synthetic data only",
            "flow": "Investigated model", "observed": "Documented scenario", "control": "Control / negative case", "limit": "Limitation / counterexample",
            "caption": "Illustrative diagram of the model and documented cases. Arrows describe conceptual relations, not browser execution or verification."},
@@ -180,21 +185,46 @@ def render_visual_diagram(item: dict, lang: str) -> str:
             + "".join(cases) + f'<figcaption>{escape(c["caption"])}</figcaption></figure>')
 
 
-def render_atlas_map(journal: dict, lang: str) -> str:
+def atlas_groups(journal: dict):
+    """One grouping, newest finding first within each theme; no parallel registry."""
+    groups = {}
+    for number, item in reversed(list(enumerate(journal["entries"], 1))):
+        groups.setdefault(item["article"]["visual"]["theme"], []).append((number, item))
+    return groups
+
+
+def render_atlas_map(groups: dict, lang: str) -> str:
     c = ATLAS_COPY[lang]
-    groups = []
-    for theme, labels in ATLAS_THEMES.items():
-        items = []
-        for i, item in enumerate(journal["entries"], 1):
-            if item["article"]["visual"]["theme"] == theme:
-                items.append(f'<li><a href="/{lang}/research/{escape(item["id"], quote=True)}/">'
-                             f'{i:02d} · {escape(item[lang]["title"])}</a></li>')
-        if items:
-            groups.append(f'<section class="r-atlas-group"><h3>{escape(labels[lang == "en"])}</h3>'
-                          f'<ul>{"".join(items)}</ul></section>')
+    links = []
+    for theme, items in groups.items():
+        label = ATLAS_THEMES[theme][lang == "en"]
+        count = len(items)
+        unit = c["count_one" if count == 1 else "count_many"]
+        links.append(f'<a class="r-atlas-group" href="#theme-{theme}"><strong>{escape(label)}</strong>'
+                     f'<span>{count} {escape(unit)} →</span></a>')
     return (f'<section class="r-section" id="visual-atlas"><h2>{escape(c["heading"])}</h2>'
             f'<p class="r-section-intro">{escape(c["intro"])}</p>'
-            f'<div class="r-atlas-map">{"".join(groups)}</div></section>')
+            f'<nav class="r-atlas-map" aria-label="{escape(c["heading"], quote=True)}">{"".join(links)}</nav></section>')
+
+
+def render_theme_findings(groups: dict, lang: str) -> str:
+    c = COPY[lang]
+    e = escape
+    sections = []
+    for theme, items in groups.items():
+        entries = []
+        for number, item in items:
+            copy = item[lang]
+            slug = e(item["id"], quote=True)
+            entries.append(f'<article class="r-entry" id="{slug}"><p class="r-kicker">{number:02d} · {e(copy["field"])}</p>'
+                           f'<h4>{e(copy["title"])}</h4><p>{e(copy["result"])}</p>'
+                           f'<p class="r-limit"><strong>{e(c["limit"])}:</strong> {e(copy["insight"])}</p>'
+                           f'<a href="/{lang}/research/{slug}/">{e(ARTICLE_LABELS[lang]["open"])}</a>'
+                           f'<a href="{REPO}/blob/main/{e(item["evidence_path"], quote=True)}">{e(c["evidence"])}</a></article>')
+        sections.append(f'<section class="r-theme" id="theme-{theme}"><h3>{e(ATLAS_THEMES[theme][lang == "en"])}</h3>'
+                        f'<div class="r-grid">{"".join(entries)}</div>'
+                        f'<a class="r-theme-back" href="#visual-atlas">{e(ATLAS_COPY[lang]["back"])}</a></section>')
+    return "".join(sections)
 
 
 def research_page(journal, scenarios, verifier, lang):
@@ -202,10 +232,7 @@ def research_page(journal, scenarios, verifier, lang):
     e=escape
     other="en" if lang=="ro" else "ro"
     url=f"{ORIGIN}/{lang}/research/"
-    entries=[]
-    for item in reversed(journal["entries"]):
-        copy=item[lang]
-        entries.append(f'<article class="r-entry" id="{e(item["id"])}"><p class="r-kicker">{e(copy["field"])}</p><h3>{e(copy["title"])}</h3><p>{e(copy["result"])}</p><p class="r-limit"><strong>{e(c["limit"])}:</strong> {e(copy["insight"])}</p><a href="/{lang}/research/{e(item["id"])}/">{e(ARTICLE_LABELS[lang]["open"])}</a><a href="{REPO}/blob/main/{e(item["evidence_path"],quote=True)}">{e(c["evidence"])}</a></article>')
+    groups = atlas_groups(journal)
     demos=[]
     for case,title,note in c["cases"]:
         data=scenarios["cases"][case]
@@ -222,8 +249,8 @@ def research_page(journal, scenarios, verifier, lang):
 <style>{CSS}</style></head><body class="research-page"><div class="r-wrap">
 <header class="r-header"><a class="r-brand" href="/{lang}/"><img src="/assets/rocsi-mark.svg" alt="">TAG / ROCSI</a><a href="/{lang}/">{e(c["home"])}</a><nav class="r-lang" aria-label="Limbă / Language"><a href="/ro/research/" hreflang="ro" lang="ro" aria-current="{"page" if lang=="ro" else "false"}">RO</a><a href="/en/research/" hreflang="en" lang="en" aria-current="{"page" if lang=="en" else "false"}">EN</a></nav></header>
 <main><section class="r-hero"><p class="r-kicker">{e(c["label"])}</p><h1>{e(c["title"])}</h1><p class="r-lead">{e(c["lead"])}</p><p class="r-boundary">{e(c["boundary"])}</p><nav class="r-nav" aria-label="{e(c["title"],quote=True)}"><a href="#visual-atlas">{e(ATLAS_COPY[lang]["heading"])}</a><a href="#findings">{e(c["findings"])}</a><a href="#demonstrations">{e(c["demos"])}</a><a href="#next">{e(c["next"])}</a></nav></section>
-{render_atlas_map(journal, lang)}
-<section class="r-section" id="findings"><p class="r-kicker">01 / TAG</p><h2>{e(c["findings"])}</h2><p class="r-section-intro">{e(c["intro"])}</p><div class="r-grid">{"".join(entries)}</div></section>
+{render_atlas_map(groups, lang)}
+<section class="r-section" id="findings"><p class="r-kicker">01 / TAG</p><h2>{e(c["findings"])}</h2><p class="r-section-intro">{e(c["intro"])}</p>{render_theme_findings(groups, lang)}</section>
 <section class="r-section" id="demonstrations"><p class="r-kicker">02 / TAG</p><h2>{e(c["demos"])}</h2><p class="r-section-intro">{e(c["demo_intro"])}</p><aside class="r-feature"><h3>{e(c["record"])}</h3><p>{e(recorded)}</p><p>{e(c["record_limit"])}</p></aside>{"".join(demos)}</section>
 <section class="r-section" id="next"><p class="r-kicker">03 / TAG</p><h2>{e(c["next"])}</h2><div class="r-questions"><h3>{e(question["title"])}</h3><p>{e(question["description"])}</p></div></section></main>
 <footer class="r-footer"><a href="{REPO}">{e(c["github"])}</a><p>{e(c["foot"])}</p><p>EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION</p></footer></div></body></html>'''
