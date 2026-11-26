@@ -70,6 +70,21 @@ class PublicUXTests(unittest.TestCase):
         self.assertIn("Verificăm respectarea unei condiții fără să dezvăluim datele din spatele ei", self.ro)
         self.assertIn("We check whether a condition is met without revealing the data behind it", self.en)
 
+    def test_lower_overview_visual_coherence(self):
+        for page in (self.ro, self.en):
+            self.assertEqual(page.count('class="public-demo-art"'), 3)
+            self.assertEqual(page.count('class="public-result-mark"'), 3)
+            self.assertEqual(page.count('class="public-gcs-icon"'), 4)
+            self.assertEqual(page.count('class="public-gcs-fork"'), 1)
+            self.assertEqual(page.count('class="public-evidence"'), 1)
+            self.assertIn('@media(prefers-reduced-motion:reduce){.public-demo-art *{animation:none!important}}', page)
+            evidence = re.search(r'<div class="public-evidence">.*?</div>', page, re.S).group()
+            self.assertIn('class="public-limits"', evidence)
+            self.assertIn('https://github.com/ROCSI-eu/Telemetry-Attestation-Gateway', evidence)
+            self.assertIn('class="public-research-summary"', page)
+            self.assertNotIn('<animate', page)
+            self.assertNotIn('<script', page)
+
     def test_hero_flight_continuous_and_static_fallback(self):
         for page in (self.ro, self.en):
             scene = re.search(r'<svg class="hero-scene".*?</svg>', page, re.S).group()
