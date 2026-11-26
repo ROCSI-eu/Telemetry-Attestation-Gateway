@@ -63,6 +63,14 @@ same-route RO/EN links; no scripts, forms or client-side redirects. The
 homepage header uses the full localized public organization name from
 ROCSI-Website's organization identity source, not the legal SRL name.
 
+### Desktop hero initial viewport
+
+Above 750px the hero uses height-aware heading sizing, vertical spacing and
+art width, with a tighter layout on short desktop viewports. The full copy
+and primary CTA remain in normal document flow; no clipping or hiding,
+and scrolling remains available for unusually short or zoomed viewports.
+The accepted mobile layout, illustration geometry and animation are unchanged.
+
 ### Lower overview visual coherence
 
 The demonstration uses three original decorative SVG illustrations with
