@@ -85,6 +85,14 @@ class PublicUXTests(unittest.TestCase):
             self.assertNotIn('<animate', page)
             self.assertNotIn('<script', page)
 
+    def test_public_concept_vertical_alignment(self):
+        for page in (self.ro, self.en):
+            self.assertIn('.primer .primer-visual{display:contents}', page)
+            self.assertIn('.primer .primer-visual .concept-cinema{grid-column:1;grid-row:2;align-self:center}', page)
+            self.assertIn('.primer .primer-copy{grid-column:2;grid-row:2;align-self:center}', page)
+            self.assertIn('@media(min-width:751px){', page)
+            self.assertIn('.primer .primer-visual{width:100%;order:0}', page)
+
     def test_desktop_hero_height_aware_layout(self):
         for page in (self.ro, self.en):
             self.assertIn('@media(min-width:751px)', page)

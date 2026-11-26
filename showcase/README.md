@@ -71,6 +71,14 @@ and primary CTA remain in normal document flow; no clipping or hiding,
 and scrolling remains available for unusually short or zoomed viewports.
 The accepted mobile layout, illustration geometry and animation are unchanged.
 
+### Concept section alignment
+
+Above 750px the concept label occupies its own grid row and the diagram
+and explanatory copy share a second row with vertical centering. This
+aligns their visual midpoints even when localized text wraps differently.
+The existing stacked mobile order and all concept text and artwork remain
+unchanged.
+
 ### Lower overview visual coherence
 
 The demonstration uses three original decorative SVG illustrations with
