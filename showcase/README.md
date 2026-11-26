@@ -87,6 +87,15 @@ validator/condition symbols. The proof token is visually consistent
 between the last two stages. The illustrations remain conceptual, with
 unchanged text, timing, layout and reduced-motion behavior.
 
+### Public final polish
+
+The public overview uses consistent unnumbered section labels, two shorter
+research-summary paragraphs and a plain-language research scope. Secondary
+descriptive text is modestly enlarged (approximately 5–10%, including the
+concept diagram and footer); the hero, animations, claims, catalog, and
+mandatory experimental markings remain intact. Distinguish cryptographic
+validity from source/time/mission assurance and retain record provenance.
+
 ### Public editorial balance
 
 The overview summary places derived counts and its catalog CTA beside the
