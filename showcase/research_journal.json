@@ -644,18 +644,64 @@
           ]
         }
       }
+    },
+    {
+      "id": "synthetic-source-emission-gap",
+      "status": "documented_synthetic",
+      "evidence_path": "experiments/source-proof-binding-v0/qa-emission-gap-20261126.md",
+      "ro": {
+        "field": "Integritate · continuitatea emisiilor",
+        "title": "Mesaje numerotate lipsă și limitele detectării",
+        "result": "În nouă teste sintetice locale, indexul autentificat al observației a permis detectarea unui mesaj numerotat omis, pornind de la o ancoră cunoscută. Autentificarea incorectă, epoca neacceptată și repetarea indexului au fost respinse.",
+        "insight": "Un eveniment fizic nenumerotat rămâne invizibil. Fără o referință terminală autentificată, lipsa ultimelor mesaje nu se distinge de oprirea sursei. Rezultatul nu demonstrează originea reală, timpul fizic, acoperirea continuă sau validarea produsului."
+      },
+      "en": {
+        "field": "Integrity · emission continuity",
+        "title": "Missing numbered messages and detection limits",
+        "result": "In nine local synthetic tests, an authenticated observation index enabled detection of an omitted numbered message from a known anchor. Incorrect authentication, an unaccepted epoch and repeated indices were rejected.",
+        "insight": "An unnumbered physical event remains invisible. Without an authenticated terminal reference, missing final messages cannot be distinguished from a stopped source. This does not establish real origin, physical time, continuous coverage or product validation."
+      },
+      "article": {
+        "formula": "∀ j ∈ {0,…,n−1}: i_j = i_start + j",
+        "ro": {
+          "question": "Poate un index autentificat să distingă absența unei observații numerotate de continuitatea unei secvențe primite, fără a pretinde acoperire fizică?",
+          "principle": "O autoritate sintetică presupusă onestă autentifică domeniul, epoca, indexul și amprenta observației prin HMAC cu o cheie de test distinctă. Verificatorul folosește o ancoră inițială și o epocă stabilite independent de mesaj.",
+          "formula_note": "Pentru toate observațiile furnizate și autentificate, indexul trebuie să fie consecutiv față de ancora inițială. O valoare mai mare decât cea așteptată indică o discontinuitate; una mai mică indică repetare sau regresie.",
+          "method": "Au fost reutilizate observațiile sintetice autentificate din cercetarea anterioară. Într-un mediu local izolat, nouă teste au verificat acceptarea secvenței consecutive, respingerea abaterilor și două limite ale observabilității. Nu a fost generată o dovadă ZKP nouă.",
+          "interpretation": "Continuitatea indexului este o proprietate condiționată de emiterea onestă și ancorele disponibile. Două istorii fizice ipotetice cu aceleași observații numerotate sunt indistincte pentru verificator. O secvență acceptată nu dovedește că toate evenimentele fizice au fost măsurate.",
+          "controls": "Au fost respinse omisiunea internă și cea inițială față de ancoră, indexul repetat, epoca greșită și autentificarea invalidă, inclusiv asocierea greșită cu observația. Evenimentul nenumerotat și lipsa unui final fără ancoră terminală nu au putut fi distinse. Nu s-au testat tranziții între epoci, starea persistentă sau legarea indexului de ZKP.",
+          "stages": [
+            "Observații și indici autentificați",
+            "Verificare față de ancora inițială",
+            "Continuitate sau discontinuitate"
+          ]
+        },
+        "en": {
+          "question": "Can an authenticated index distinguish a missing numbered observation from continuity of a received sequence without claiming physical coverage?",
+          "principle": "An assumed honest synthetic authority authenticates scope, epoch, index and observation digest using HMAC with a separate test key. The verifier uses a starting anchor and an epoch configured independently of the message.",
+          "formula_note": "For all supplied authenticated observations, indices must be consecutive relative to the starting anchor. A value above the expected index indicates a gap; a lower value indicates replay or regression.",
+          "method": "Authenticated synthetic observations from earlier research were reused. Nine tests in an isolated local runtime checked consecutive sequence acceptance, rejection of deviations and two observability limits. No new ZKP was generated.",
+          "interpretation": "Index continuity is conditional on honest issuance and available anchors. Two hypothetical physical histories with identical numbered observations are indistinguishable to the verifier. An accepted sequence does not prove every physical event was measured.",
+          "controls": "Internal and anchored initial omissions, repeated index, wrong epoch and invalid authentication including mismatched observation binding were rejected. An unnumbered event and a missing suffix without a terminal anchor could not be distinguished. Epoch transitions, persistent state and ZKP binding of the index were not tested.",
+          "stages": [
+            "Authenticated observations and indices",
+            "Check against the starting anchor",
+            "Continuity or detected gap"
+          ]
+        }
+      }
     }
   ],
   "next_question": {
     "ro": {
       "label": "Întrebare deschisă",
-      "title": "Cum demonstrăm acoperirea fizică și încrederea în sursă?",
-      "description": "Am verificat criptografic o condiție pentru trei observații sintetice și un commit atomic local. Acoperirea fizică între observații, momentul real al măsurării, sursa independentă de încredere și durabilitatea în condiții reale rămân de cercetat."
+      "title": "Cum atestăm limitele unei secvențe de emisie?",
+      "description": "Detectarea unei omisiuni numerotate între observații autentificate nu rezolvă finalul neancorat, tranzițiile între epoci, acoperirea fizică, originea și timpul real de încredere."
     },
     "en": {
       "label": "Open research question",
-      "title": "How can we establish physical coverage and source trust?",
-      "description": "We cryptographically verified a condition for three synthetic observations and one local atomic commit. Physical coverage between observations, real measurement time, independently trusted source provenance and real-world durability remain open research questions."
+      "title": "How can emission sequence boundaries be attested?",
+      "description": "Detection of a numbered omission among authenticated observations does not resolve an unanchored end, epoch transitions, physical coverage, real trusted origin or time."
     }
   }
 }
