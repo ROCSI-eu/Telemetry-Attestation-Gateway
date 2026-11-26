@@ -1520,15 +1520,22 @@ PUBLIC_THEME_CSS = """
     .hero-actions{margin-top:25px;display:flex;gap:12px;flex-wrap:wrap}
     .hero-actions a{display:inline-flex;align-items:center;justify-content:center;padding:14px 18px;background:#e5c18a;border:1px solid #e5c18a;color:#111617;text-decoration:none;font-size:.81rem;font-weight:750}
     .hero-actions a:hover{background:#f0d9ad}
-    .hero-art{position:relative;overflow:hidden;isolation:isolate;min-height:clamp(400px,47vw,680px);border:1px solid #355056;background:radial-gradient(ellipse at 58% 53%,#203e47 0,#0d1a20 53%,#0b1216 88%)}
+    .hero-art{position:relative;overflow:hidden;isolation:isolate;min-height:0;aspect-ratio:760/700;align-self:center;border:1px solid #355056;background:radial-gradient(ellipse at 58% 53%,#203e47 0,#0d1a20 53%,#0b1216 88%)}
     .hero-art-label{position:absolute;z-index:2;top:22px;left:22px;color:#d4d7cf}
     .hero-scene{display:block;position:absolute;inset:0;width:100%;height:100%;overflow:hidden}
-    .hero-vehicle{animation:public-hover 10s ease-in-out infinite}
-    .hero-sweep{transform-origin:385px 350px;animation:public-radar 20s linear infinite}
-    .hero-route-flow{animation:public-route 11s linear infinite}
-    .hero-rotor-disc{transform-box:fill-box;transform-origin:center;animation:public-rotor .3s linear infinite}
-    .hero-beacon-pulse{transform-box:fill-box;transform-origin:center;animation:public-beacon 5s ease-out infinite}
-    @keyframes public-hover{0%,100%{transform:translate(389px,350px)}50%{transform:translate(389px,341px)}}
+    .hero-flight{transform-box:view-box;transform-origin:0 0;animation:public-flight 2.4s linear 2}
+    .hero-sweep{transform-origin:385px 350px;animation:public-radar 4.8s linear 1}
+    .hero-route-flow{animation:public-route 2.4s linear 2}
+    .hero-rotor-disc{transform-box:fill-box;transform-origin:center;animation:public-rotor .3s linear 16}
+    .hero-beacon-pulse{transform-box:fill-box;transform-origin:center;animation:public-beacon 2.4s ease-out 2}
+    @keyframes public-flight{
+      0%,100%{transform:translate(180px,510px) scale(.52) translate(-389px,-350px)}
+      16%{transform:translate(210px,325px) scale(.52) translate(-389px,-350px)}
+      33%{transform:translate(385px,180px) scale(.52) translate(-389px,-350px)}
+      48%{transform:translate(510px,245px) scale(.52) translate(-389px,-350px)}
+      65%{transform:translate(580px,450px) scale(.52) translate(-389px,-350px)}
+      83%{transform:translate(370px,570px) scale(.52) translate(-389px,-350px)}
+    }
     @keyframes public-radar{to{transform:rotate(360deg)}}
     @keyframes public-route{to{stroke-dashoffset:-390}}
     @keyframes public-rotor{to{transform:rotate(360deg)}}
@@ -1545,8 +1552,8 @@ PUBLIC_THEME_CSS = """
     .rocsi-affiliation-actions a{color:#e4c58e;text-decoration:underline;text-underline-offset:5px;font-weight:700;font-size:.87rem}
     footer{font-size:.76rem;color:#aebdb7;line-height:1.6}
     @media(max-width:1100px){.section-nav{order:3;flex-basis:100%;margin-left:0}.hero{min-height:0}}
-    @media(max-width:750px){html{scroll-behavior:auto}.wrap{padding:0 18px 44px}.site-header{min-height:0;gap:12px 18px}.section-nav{gap:12px 18px}.header-status .pill{display:none}.hero{grid-template-columns:1fr;gap:24px;padding:40px 0 55px}.hero h1{font-size:clamp(2.8rem,10.8vw,4.6rem);margin:13px 0 18px}.hero .sub{font-size:.94rem}.hero-art{min-height:300px}.primer{padding:54px 0}.rocsi-affiliation{align-items:flex-start}}
-    @media(max-width:420px){.brand-detail{font-size:.58rem}.section-nav{gap:9px 16px}.section-nav a{font-size:.7rem}.header-cta{font-size:.7rem}.hero h1{font-size:clamp(2.6rem,12vw,3.3rem)}.hero-art{min-height:245px}.hero-art-label{top:14px;left:13px;font-size:.61rem}.hero-actions a{width:100%}}
+    @media(max-width:750px){html{scroll-behavior:auto}.wrap{padding:0 18px 44px}.site-header{min-height:0;gap:12px 18px}.section-nav{gap:12px 18px}.header-status .pill{display:none}.hero{grid-template-columns:1fr;gap:24px;padding:40px 0 55px}.hero h1{font-size:clamp(2.8rem,10.8vw,4.6rem);margin:13px 0 18px}.hero .sub{font-size:.94rem}.hero-art{min-height:0}.primer{padding:54px 0}.rocsi-affiliation{align-items:flex-start}}
+    @media(max-width:420px){.brand-detail{font-size:.58rem}.section-nav{gap:9px 16px}.section-nav a{font-size:.7rem}.header-cta{font-size:.7rem}.hero h1{font-size:clamp(2.6rem,12vw,3.3rem)}.hero-art{min-height:0}.hero-art-label{top:14px;left:13px;font-size:.61rem}.hero-actions a{width:100%}}
     @media(prefers-reduced-motion:reduce){.hero-scene *{animation:none!important}}
 """
 
@@ -1584,6 +1591,36 @@ PUBLIC_SIMPLE_CSS = """
 """
 
 
+def public_hero_flight(hero: str) -> str:
+    """Adapt only the public hero: closed synthetic route, finite CSS motion."""
+    old_route = "M98 548C225 522 305 439 389 350S569 203 681 136"
+    route = "M180 510L210 325L385 180L510 245L580 450L370 570Z"
+    if hero.count(old_route) != 4 or hero.count('<g class="hero-floor-shadow">') != 1:
+        raise ValueError("public hero route anchor changed")
+    hero = hero.replace(old_route, route)
+    for old, new in (("translate(98 548)", "translate(180 510)"),
+                     ("translate(389 350)", "translate(385 180)"),
+                     ("translate(681 136)", "translate(580 450)")):
+        # Only the waypoint groups: keep the original vehicle's local transform.
+        anchor = '<g transform="' + old + '">'
+        if hero.count(anchor) != 1:
+            raise ValueError("public hero waypoint anchor changed")
+        hero = hero.replace(anchor, '<g transform="' + new + '">', 1)
+    old_labels = '<text x="78" y="582">A</text><text x="409" y="340" opacity=".68">B</text><text x="683" y="117">C</text>'
+    new_labels = '<text x="75" y="565">A</text><text x="382" y="87">B</text><text x="688" y="452">C</text>'
+    if hero.count(old_labels) != 1 or hero.count('</svg>') < 1:
+        raise ValueError("public hero label anchor changed")
+    hero = hero.replace(old_labels, new_labels, 1)
+    # The shadow and original artwork move together. The SVG attribute is the
+    # exact resting pose, including when reduced motion disables all animation.
+    hero = hero.replace('<g class="hero-floor-shadow">',
+                        '<g class="hero-flight" transform="translate(180 510) scale(.52) translate(-389 -350)"><g class="hero-floor-shadow">', 1)
+    end = '<!-- The route and A/B/C landmarks are intentionally self-explanatory; no internal instrument labels. -->'
+    if hero.count(end) != 1:
+        raise ValueError("public hero flight end anchor changed")
+    return hero.replace(end, '</g>' + end, 1)
+
+
 def simplify_public_html(html: str) -> str:
     """Replace the visitor body at known static landmarks; fail closed on drift."""
     def unique(pattern: str, label: str) -> str:
@@ -1607,6 +1644,7 @@ def simplify_public_html(html: str) -> str:
     hero = re.sub(r'<div class="hero-actions">.*?</div>',
         '<div class="hero-actions"><a href="#demonstration">See the demonstration</a></div>',
         hero, count=1, flags=re.S)
+    hero = public_hero_flight(hero)
     # Retain the original artwork and the original explanation of the private value.
     demo = '''<section class="public-demo" id="demonstration" aria-labelledby="demo-title">
       <p class="section-overline">THE DEMONSTRATION</p>
