@@ -214,7 +214,7 @@ class PublicUXTests(unittest.TestCase):
     def test_research_articles_bilingual_static_reconciled(self):
         from build import load_research_journal
         journal = load_research_journal()
-        self.assertEqual(len(journal["entries"]), 19)
+        self.assertEqual(len(journal["entries"]), 20)
         headers = (self.folder / "_headers").read_text()
         for item in journal["entries"]:
             for lang in ("ro", "en"):
@@ -368,7 +368,7 @@ class PublicUXTests(unittest.TestCase):
     def test_state_commit_uncertainty_research_finding(self):
         from build import load_research_journal
         journal = load_research_journal()
-        self.assertEqual(len(journal["entries"]), 19)
+        self.assertEqual(len(journal["entries"]), 20)
         self.assertEqual(journal["entries"][12]["id"], "synthetic-state-commit-uncertainty")
         for page, overview, title, mock, ambiguity, limit, proof in (
             (self.research_ro, self.ro, "Rezultatul incert al unei actualizări de stare",
@@ -389,7 +389,7 @@ class PublicUXTests(unittest.TestCase):
     def test_synthetic_aggregate_crypto_e2e_finding_is_scoped(self):
         from build import load_research_journal
         journal = load_research_journal()
-        self.assertEqual(len(journal["entries"]), 19)
+        self.assertEqual(len(journal["entries"]), 20)
         self.assertEqual(journal["entries"][13]["id"], "synthetic-aggregate-crypto-atomic")
         for page, overview, title, proof, commit, limitation in (
             (self.research_ro, self.ro, "O dovadă pentru trei observații și un singur commit",
@@ -423,7 +423,7 @@ class PublicUXTests(unittest.TestCase):
     def test_source_emission_end_anchor_finding_is_scoped(self):
         from build import load_research_journal
         journal = load_research_journal()
-        self.assertEqual(len(journal["entries"]), 19)
+        self.assertEqual(len(journal["entries"]), 20)
         entry = journal["entries"][15]
         self.assertEqual(entry["id"], "synthetic-source-emission-end-anchor")
         for page, overview, locale, limit, control in (
@@ -443,7 +443,7 @@ class PublicUXTests(unittest.TestCase):
     def test_source_emission_end_consistency_finding_is_scoped(self):
         from build import load_research_journal
         journal = load_research_journal()
-        self.assertEqual(len(journal["entries"]), 19)
+        self.assertEqual(len(journal["entries"]), 20)
         entry = journal["entries"][16]
         self.assertEqual(entry["id"], "synthetic-source-emission-end-consistency")
         for page, overview, locale, limit, control, question in (
@@ -466,7 +466,7 @@ class PublicUXTests(unittest.TestCase):
     def test_source_emission_end_freshness_finding_is_scoped(self):
         from build import load_research_journal
         journal = load_research_journal()
-        self.assertEqual(len(journal["entries"]), 19)
+        self.assertEqual(len(journal["entries"]), 20)
         entry = journal["entries"][17]
         self.assertEqual(entry["id"], "synthetic-source-emission-end-freshness")
         for page, overview, locale, limitation, control in (
@@ -488,7 +488,7 @@ class PublicUXTests(unittest.TestCase):
     def test_source_epoch_transition_binding_finding_is_scoped(self):
         from build import load_research_journal
         journal = load_research_journal()
-        self.assertEqual(len(journal["entries"]), 19)
+        self.assertEqual(len(journal["entries"]), 20)
         entry = journal["entries"][18]
         self.assertEqual(entry["id"], "synthetic-source-epoch-transition-binding")
         for page, overview, locale, limitation, control in (
@@ -502,6 +502,28 @@ class PublicUXTests(unittest.TestCase):
                 self.assertIn(entry[locale]["title"], rendered)
                 self.assertIn(limitation, rendered)
                 self.assertIn("qa-epoch-transition-binding-20261126.md", rendered)
+                self.assertNotIn("Qube", rendered)
+                self.assertNotIn("GitHub Actions", rendered)
+            self.assertIn(control, article)
+            self.assertNotIn(entry["id"], overview)
+
+    def test_source_epoch_transition_consistency_finding_is_scoped(self):
+        from build import load_research_journal
+        journal = load_research_journal()
+        self.assertEqual(len(journal["entries"]), 20)
+        entry = journal["entries"][19]
+        self.assertEqual(entry["id"], "synthetic-source-epoch-transition-consistency")
+        for page, overview, locale, limitation, control in (
+            (self.research_ro, self.ro, "ro", "Restaurarea simultană a stării și a referinței locale",
+             "restaurarea doar a stării"),
+            (self.research_en, self.en, "en", "Restoring both local state and its reference",
+             "restoration of state alone"),
+        ):
+            article = (self.folder / locale / "research" / entry["id"] / "index.html").read_text(encoding="utf-8")
+            for rendered in (page, article):
+                self.assertIn(entry[locale]["title"], rendered)
+                self.assertIn(limitation, rendered)
+                self.assertIn("qa-epoch-transition-consistency-20261126.md", rendered)
                 self.assertNotIn("Qube", rendered)
                 self.assertNotIn("GitHub Actions", rendered)
             self.assertIn(control, article)

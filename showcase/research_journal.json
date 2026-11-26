@@ -874,18 +874,64 @@
           ]
         }
       }
+    },
+    {
+      "id": "synthetic-source-epoch-transition-consistency",
+      "status": "documented_synthetic",
+      "evidence_path": "experiments/source-proof-binding-v0/qa-epoch-transition-consistency-20261126.md",
+      "ro": {
+        "field": "Integritate · consistența autorizărilor",
+        "title": "Consistența autorizărilor tranzițiilor între epoci",
+        "result": "În 13 teste sintetice locale, un verificator care păstrează o referință a primei autorizări autentificate pentru același domeniu și aceeași epocă precedentă a putut detecta autorizarea autentificată cu un succesor diferit, independent de admisibilitatea efectivă a tranziției.",
+        "insight": "Restaurarea simultană a stării și a referinței locale la starea inițială a permis acceptarea autorizării contradictorii. Detectarea locală nu stabilește care autorizare este legitimă și nu previne echivocul global."
+      },
+      "en": {
+        "field": "Integrity · authorization consistency",
+        "title": "Epoch transition authorization consistency",
+        "result": "In 13 local synthetic tests, a verifier retaining a reference to the first authenticated authorization for the same scope and previous epoch detected an authenticated authorization naming a different successor, independently of actual transition admissibility.",
+        "insight": "Restoring both local state and its reference to the initial snapshot permitted acceptance of the conflicting authorization. Local detection neither establishes which authorization is legitimate nor prevents global equivocation."
+      },
+      "article": {
+        "formula": "AUTH_VALID(a₁) ∧ AUTH_VALID(a₂) ∧ SAME_SCOPE ∧ SAME_PREVIOUS ∧ DIFFERENT_SUCCESSOR ⇒ CONFLICT",
+        "ro": {
+          "question": "Poate un verificator detecta două autorizări autentice pentru aceeași epocă precedentă, dar cu succesori diferiți, fără a decide dacă tranziția este admisibilă?",
+          "principle": "Verificatorul autentifică domeniul, epoca precedentă și succesorul, apoi compară angajamentul primei autorizări cu cel al următoarei, într-un registru preinițializat pentru același context. Epocile sunt identificatori opaci.",
+          "formula_note": "Relația presupune autorizări bine formate, același context autentificat, rezistența la coliziuni și păstrarea stării și a referinței concordante, corect inițializate. ACCEPT semnifică doar înregistrarea observației, nu executarea tranziției.",
+          "method": "Experimentul a reutilizat HMAC-SHA256, codificarea canonică și mecanismul local de referință al experimentelor anterioare, folosind numai o cheie sintetică. Cele 13 teste au inclus ambele ordini ale autorizărilor, restart într-un proces nou și restaurarea copiilor. Nu a fost generată o nouă dovadă ZKP.",
+          "interpretation": "Ambele autorizări pot fi autentice, iar oricare dintre ele poate fi prima înregistrată. Conflictul nu depinde de epoca activă sau de o politică fixă a succesorilor. Restaurarea simultană la starea inițială elimină capacitatea de a detecta contradicția anterioară. Nu sunt demonstrate legitimitatea autorității, prevenirea echivocului global, timpul de încredere, adevărul telemetriei sau acoperirea fizică.",
+          "controls": "MAC-ul invalid, cheia incorectă, succesorul modificat fără reautentificare și structura invalidă au fost respinse fără schimbarea stării. Domeniile și epocile precedente au fost separate. Referința absentă sau invalidă și restaurarea doar a stării au determinat refuzul. Nu au fost testate concurența adversarială, întreruperile injectate la scriere, substituirea arbitrară a contextelor sau ciclul de viață al cheilor.",
+          "stages": [
+            "Două autorizări autentice pentru același context",
+            "Comparare cu prima referință păstrată",
+            "Succesor diferit: conflict detectat"
+          ]
+        },
+        "en": {
+          "question": "Can a verifier detect two authentic authorizations for the same previous epoch but different successors without deciding whether a transition is admissible?",
+          "principle": "The verifier authenticates scope, previous epoch and successor, then compares the commitment to the first authorization with that of the next authorization in a pre-enrolled consistency slot for the same context. Epochs are opaque identifiers.",
+          "formula_note": "The relation assumes well-formed authorizations, the same authenticated context, collision resistance, and correctly initialized, retained matching state and reference. ACCEPT means recording an observation only, not executing a transition.",
+          "method": "The experiment reused HMAC-SHA256, canonical encoding and the local reference mechanism of earlier experiments, using only a synthetic key. Thirteen tests covered both authorization orders, restart in a fresh process and restoration of the copies. No new ZKP was generated.",
+          "interpretation": "Both authorizations can be authentic, and either may be recorded first. Conflict detection does not depend on the active epoch or a fixed successor policy. Restoring both copies to the initial state removes detection of the earlier contradiction. Authority legitimacy, global equivocation prevention, trusted time, telemetry truth and physical coverage remain unestablished.",
+          "controls": "Invalid MAC, incorrect key, altered successor without reauthentication and invalid structure were rejected without state change. Scopes and previous epochs were separated. Missing or invalid reference and restoration of state alone caused rejection. Adversarial concurrency, injected write interruptions, arbitrary context substitution and key lifecycle were not tested.",
+          "stages": [
+            "Two authentic authorizations for the same context",
+            "Comparison with the first retained reference",
+            "Different successor: conflict detected"
+          ]
+        }
+      }
     }
   ],
   "next_question": {
     "ro": {
       "label": "Întrebare deschisă",
       "title": "Cum distingem o declarație terminală autentică și consecventă, dar falsă, de una sinceră?",
-      "description": "Unicitatea locală a închiderii, prospețimea contextuală și autorizarea autentificată a tranziției nu rezolvă restaurarea simultană a referințelor sau lipsa unei referințe independente privind emisiile efective. Acoperirea fizică, originea reală și timpul de încredere rămân nedemonstrate."
+      "description": "Unicitatea locală a închiderii, prospețimea contextuală și consistența autorizărilor autentificate ale tranzițiilor nu rezolvă restaurarea simultană a referințelor sau lipsa unei referințe independente privind emisiile efective. Acoperirea fizică, originea reală și timpul de încredere rămân nedemonstrate."
     },
     "en": {
       "label": "Open research question",
       "title": "How can an authentic and consistent but false terminal declaration be distinguished from a truthful one?",
-      "description": "Local closure uniqueness, contextual freshness and authenticated transition authorization do not resolve simultaneous reference restoration or the absence of an independent reference for actual emissions. Physical coverage, real origin and trusted time remain unestablished."
+      "description": "Local closure uniqueness, contextual freshness and consistency of authenticated transition authorizations do not resolve simultaneous reference restoration or the absence of an independent reference for actual emissions. Physical coverage, real origin and trusted time remain unestablished."
     }
   }
 }
