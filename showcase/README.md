@@ -30,6 +30,24 @@ the original model, evidence link and experimental boundary. Add visual
 records in the same journal entry as each accepted future finding; no new
 proof, test, or publication is implied by a diagram.
 
+### Research journal visual coherence
+
+The journal index and every generated article use the shared TAG identity,
+localized organization name and native language selector, with a reading-width
+layout distinct from the unchanged public overview. Theme navigation and
+counts derive from the single accepted journal; six original static SVG
+symbols identify themes, not assurance. Finding cards retain full result and
+limitation text, stable anchors, evidence references and one aligned article
+CTA; an odd last card spans its row. Articles expose the documented observation
+early, internal section anchors, the unmodified formal relation, all four
+diagram paths (model, observed, control and counterexample), and provenance.
+Decorative icons and case-specific visual hierarchy never substitute for
+explicit mode, boundary and outcome labels. Native disclosures distinguish
+simulated positive and negative controls from the recorded verifier result.
+Keep the open question distinct, all science text and mandatory markings
+intact, and the same template for future RO/EN findings. No scripts, external
+assets, runtime connection, journal schema change or promotion is implied.
+
 ### Public overview reconciliation
 
 The overview derives its finding and populated-theme counts from the validated

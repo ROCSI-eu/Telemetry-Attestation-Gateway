@@ -82,6 +82,100 @@ CSS = """
 .r-footer p{margin:8px 0}
 @media(max-width:700px){.r-wrap{width:calc(100% - 36px)}.r-hero{padding:38px 0 28px}.r-section{padding:30px 0}.r-grid{grid-template-columns:1fr}.r-entry{padding:19px}.r-lead{font-size:1rem}.r-brand{font-size:.9rem}.r-feature,.r-questions{padding:18px}}
 @media(max-width:360px){.r-wrap{width:calc(100% - 28px)}.r-header{gap:10px}.r-nav{gap:8px 16px}.r-entry{padding:16px}.r-demo summary,.r-demo-body{padding:14px}}
+
+/* Shared journal visual language; homepage is deliberately unaffected. */
+.research-page{background:radial-gradient(ellipse at top right,#202d33 0,transparent 650px),#0b1113;color:#f1eee7;font:16px/1.7 system-ui,-apple-system,BlinkMacSystemFont,sans-serif}
+.r-wrap{width:min(1120px,100% - 64px)}
+.r-brand{gap:10px;letter-spacing:0;max-width:390px}
+.r-brand-tag{font-size:1.55rem;font-weight:850;letter-spacing:-.05em}
+.r-brand img{width:34px;height:34px;flex:none}
+.r-brand-name{font-size:.72rem;line-height:1.35;letter-spacing:.07em;text-transform:uppercase;font-weight:500;max-width:215px}
+.r-header-nav{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.r-header-nav>a,.r-secondary,.r-primary{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 14px;border:1px solid #bca47c;text-decoration:none;font-weight:650;font-size:.88rem}
+.r-primary{background:#e5c18a;color:#111617!important}
+.r-secondary:hover,.r-header-nav>a:hover{background:#e5c18a;color:#111617}
+.r-primary:hover{background:#f4d8a8}
+.r-kicker,.r-entry .r-kicker,.r-article .r-kicker{color:#e5c18a}
+.r-hero h1,.r-article h1{letter-spacing:-.045em}
+.r-hero{padding:48px 0 32px}
+.r-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:520px;margin:20px 0}
+.r-metrics div{background:#14272c;border-top:2px solid #e5c18a;padding:12px 16px}
+.r-metrics dt{font-size:.9rem;color:#c6d0cd}
+.r-metrics dd{margin:0;color:#e5c18a;font-size:2rem;font-weight:750;line-height:1.2}
+.r-nav{gap:8px 14px;margin-top:18px}
+.r-nav a,.r-contents a{display:inline-flex;align-items:center;min-height:44px;text-decoration:none;border-bottom:1px solid #5b625c;padding:5px 3px}
+.r-section{padding:40px 0}
+.r-section h2{color:#f3efe2}
+.r-section-intro{max-width:76ch}
+.r-atlas-map{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.r-atlas-group{border-radius:0;background:#112329;display:grid;grid-template-columns:42px minmax(0,1fr);align-content:center;column-gap:13px;row-gap:2px;min-height:112px}
+.r-atlas-group svg{grid-row:span 2;color:#96cfcc;width:40px;height:40px}
+.r-atlas-group strong{color:#f1e4cb;text-decoration:none;font-size:1rem}
+.r-atlas-group span{font-size:.88rem}
+.r-icon{width:28px;height:28px;flex:none;color:#96cfcc;vertical-align:middle}
+.r-theme{margin:36px 0 0}
+.r-theme>h3{display:flex;align-items:center;gap:10px;color:#a6e0d9;font-size:1.35rem}
+.r-entry{background:#112329;padding:22px;gap:0;align-items:stretch}
+.r-entry h4{font-size:1.25rem}
+.r-entry .r-limit{font-size:.98rem;line-height:1.6}
+.r-entry-label{display:block;color:#9bd3cf;font-size:.82rem;font-weight:700;margin-bottom:4px}
+.r-limit .r-entry-label{color:#e5c18a}
+.r-entry-actions{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin-top:auto;padding-top:8px}
+.r-entry-actions a{margin-top:0}
+.r-grid>.r-entry:last-child:nth-child(odd){grid-column:1/-1}
+.r-grid>.r-entry:last-child:nth-child(odd)>p{max-width:90ch}
+.r-theme-back{padding:9px 0;min-height:44px}
+.r-article{max-width:880px;padding:36px 0 50px}
+.r-article h2{margin-top:32px;font-size:1.5rem;color:#f0e2c9;scroll-margin-top:24px}
+.r-article>p:not(.r-kicker):not(.r-boundary),.r-article-section p{font-size:1.04rem;line-height:1.75}
+.r-article-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:#a6e0d9;font-size:.9rem;margin:14px 0}
+.r-article-meta .r-icon{width:26px;height:26px}
+.r-contents{display:flex;flex-wrap:wrap;gap:4px 14px;border-block:1px solid #405052;padding:10px 0;margin:20px 0}
+.r-contents a{font-size:.86rem}
+.r-article-section{scroll-margin-top:24px}
+.r-article-section h2{margin-top:0}
+.r-article-section{margin:28px 0}
+.r-article-section-observed,.r-article-section-limitations{padding:20px 22px;background:#112329;border:1px solid #415254;border-left:3px solid #96cfcc}
+.r-article-section-limitations{border-left-color:#e5c18a}
+.r-article-section-observed p:last-child,.r-article-section-limitations p:last-child{margin-bottom:0}
+.r-article .r-equation{border-left:3px solid #e5c18a;background:#112329;padding:20px;line-height:1.65}
+.r-diagram{border-radius:0;background:linear-gradient(145deg,#13292f,#101d22);border:1px solid #415254;padding:clamp(12px,3vw,24px)}
+.r-figure-title{display:flex;align-items:center;gap:12px;margin:0 0 16px;color:#e5c18a;font-size:1.12rem;font-weight:700}
+.r-figure-title .r-icon{width:38px;height:38px}
+.r-diagram .r-atlas-boundary{text-align:left}
+.r-diagram ol,.r-visual-path{gap:24px}
+.r-diagram li,.r-visual-node{border-radius:0;background:#16292e;border-color:#587278;font-size:.98rem}
+.r-visual-case{border-radius:0;background:#101e22}
+.r-visual-case h3{display:flex;align-items:center;gap:8px}
+.r-visual-case h3 .r-icon{width:22px;height:22px}
+.r-visual-case-control h3 .r-icon{color:#e4a5a0}
+.r-visual-case-limit h3 .r-icon{color:#e5c18a}
+.r-visual-case-observed .r-visual-node:last-child{background:#193329}
+.r-visual-case-control .r-visual-node:last-child{background:#302426}
+.r-visual-case-limit .r-visual-node:last-child{background:#302b20}
+.r-diagram figcaption{font-size:.95rem}
+.r-demo summary{display:flex;align-items:center;gap:12px;min-height:64px;list-style:none}
+.r-demo summary::-webkit-details-marker{display:none}
+.r-demo summary:after{content:'⌄';margin-left:auto;color:#e5c18a;font-size:1.3rem}
+.r-demo[open] summary:after{transform:rotate(180deg)}
+.r-demo summary strong,.r-demo summary small{display:block}
+.r-demo summary small{font-size:.82rem;color:#b9c9c6;font-weight:500}
+.r-demo summary .r-icon{width:30px;height:30px}
+.r-demo summary[data-kind="control"] .r-icon{color:#e5c18a}
+.r-questions{border-left:3px solid #e5c18a;background:#112329}
+.r-questions h3{display:flex;gap:12px;align-items:flex-start;font-size:1.3rem}
+.r-questions .r-icon{color:#e5c18a}
+.r-affiliation{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:22px 0;margin-bottom:20px;border-bottom:1px solid #405052}
+.r-affiliation img{width:48px;height:48px;flex:none}
+.r-affiliation div{flex:1;min-width:170px}
+.r-affiliation strong{color:#f1eee7;font-size:1rem}
+.r-affiliation p{margin:4px 0;font-size:.9rem}
+.r-footer{border-top:1px solid #405052;font-size:.85rem}
+.r-provenance{display:flex;gap:12px;align-items:center;flex-wrap:wrap;border-top:1px solid #405052;padding-top:20px}
+@media(max-width:900px){.r-atlas-map{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.r-wrap{width:calc(100% - 36px)}.r-atlas-map{grid-template-columns:1fr}.r-brand{max-width:100%}.r-header{gap:12px}.r-header-nav{width:100%;justify-content:space-between}.r-entry{padding:18px}.r-article{padding:24px 0 36px}.r-article h1{font-size:clamp(1.95rem,7.8vw,3rem)}.r-article-section-observed,.r-article-section-limitations{padding:16px}.r-contents{gap:4px 10px}.r-section{padding:30px 0}}
+@media(max-width:640px){.r-diagram ol,.r-visual-path{gap:24px}.r-diagram li,.r-visual-node{padding:10px}}
+@media(max-width:360px){.r-wrap{width:calc(100% - 28px)}.r-brand-name{font-size:.67rem}.r-metrics div{padding:10px}.r-entry-actions{align-items:stretch}}
 """ + LANGUAGE_DROPDOWN_CSS
 COPY = {
 "ro": {
@@ -278,6 +372,58 @@ def render_overview_progress(journal: dict, lang: str) -> str:
     )
 
 
+# Original decorative line art; symbols identify themes/cases, not assurance.
+JOURNAL_ICONS = {
+    "foundations": '<path d="M12 2l8 4v6c0 5-4 8-8 10-4-2-8-5-8-10V6z"/><path d="m8 12 3 3 5-6"/>',
+    "source": '<circle cx="8" cy="8" r="4"/><path d="M12 8h9m-3 0v4m-3-4v3M5 18h14m-7-3v6"/>',
+    "coverage": '<path d="M2 12h4l3-6 4 12 3-6h6"/><path d="M3 4v16m18-16v16"/>',
+    "state": '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 4 16 4 16 0V5M4 12c0 4 16 4 16 0"/>',
+    "aggregate": '<path d="M3 3h6v6H3zM15 3h6v6h-6zM9 15h6v6H9zM6 9v3h12V9M12 12v3"/>',
+    "emission": '<circle cx="12" cy="4" r="2"/><circle cx="5" cy="20" r="2"/><circle cx="19" cy="20" r="2"/><path d="M12 6v5H5v7m7-7h7v7"/>',
+    "observed": '<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>',
+    "control": '<path d="M12 3l9 17H3zM12 9v5m0 3v.1"/>',
+    "limit": '<path d="M4 4h16v16H4zM8 16l8-8m-8 0h8v8"/>',
+    "question": '<circle cx="12" cy="12" r="9"/><path d="M9 8a3 3 0 1 1 4 3c-1 1-1 2-1 3m0 3v.1"/>',
+}
+
+
+def journal_icon(kind):
+    return ('<svg class="r-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+            'stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" '
+            'aria-hidden="true" focusable="false">' + JOURNAL_ICONS[kind] + '</svg>')
+
+
+def journal_header(lang, suffix, article=False):
+    name = "Inițiativa Română pentru Spațiul Cibernetic" if lang == "ro" else "Romanian Cyber Space Initiative"
+    target = f"/{lang}/research/" if article else f"/{lang}/"
+    label = ARTICLE_LABELS[lang]["back"] if article else COPY[lang]["home"]
+    return (f'<header class="r-header"><a class="r-brand" href="/{lang}/">'
+            f'<span class="r-brand-tag">TAG</span><img src="/assets/rocsi-mark.svg" width="34" height="34" alt="">'
+            f'<span class="r-brand-name">{escape(name)}</span></a><div class="r-header-nav">'
+            f'<a href="{target}">{escape(label)}</a>{language_dropdown(lang, suffix, "r-lang")}</div></header>')
+
+
+def journal_footer(lang):
+    ro = lang == "ro"
+    affiliation = ("TAG este o inițiativă de cercetare a Inițiativei Române pentru Spațiul Cibernetic."
+                   if ro else "TAG is a research initiative of the Romanian Cyber Space Initiative.")
+    detail = ("Descoperă cercetările deschise ROCSI și oportunitățile de colaborare."
+              if ro else "Explore ROCSI’s open research and collaboration opportunities.")
+    label = "Descoperă ROCSI" if ro else "Explore ROCSI"
+    c = COPY[lang]
+    return (f'<footer class="r-footer"><div class="r-affiliation"><img src="/assets/rocsi-mark.svg" alt="" width="48" height="48">'
+            f'<div><strong>{escape(affiliation)}</strong><p>{escape(detail)}</p></div>'
+            f'<a class="r-secondary" href="https://rocsi.eu/{lang}">{escape(label)}</a></div>'
+            f'<a href="{REPO}">{escape(c["github"])}</a><p>{escape(c["foot"])}</p>'
+            '<p>EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION</p></footer>')
+
+
+def journal_metrics(journal, groups, lang):
+    labels = ("Constatări documentate", "Teme de cercetare") if lang == "ro" else ("Documented findings", "Research themes")
+    return (f'<dl class="r-metrics"><div><dt>{labels[0]}</dt><dd>{len(journal["entries"])}</dd></div>'
+            f'<div><dt>{labels[1]}</dt><dd>{len(groups)}</dd></div></dl>')
+
+
 def render_visual_diagram(item: dict, lang: str) -> str:
     """Static, semantic HTML; all node text is escaped and data comes from journal."""
     c = ATLAS_COPY[lang]
@@ -289,9 +435,10 @@ def render_visual_diagram(item: dict, lang: str) -> str:
         kind = path["kind"]
         nodes = "".join(f'<div class="r-visual-node" role="listitem">{escape(node[lang])}</div>'
                         for node in path["nodes"])
-        cases.append(f'<section class="r-visual-case r-visual-case-{kind}"><h3>{escape(c[kind])}</h3>'
+        cases.append(f'<section class="r-visual-case r-visual-case-{kind}"><h3>{journal_icon(kind)}{escape(c[kind])}</h3>'
                      f'<div class="r-visual-path" role="list" aria-label="{escape(c[kind], quote=True)}">{nodes}</div></section>')
     return (f'<figure class="r-diagram" aria-label="{escape(item[lang]["title"], quote=True)}">'
+            f'<div class="r-figure-title">{journal_icon(article["visual"]["theme"])}{escape(ATLAS_THEMES[article["visual"]["theme"]][lang == "en"])}</div>'
             f'<p class="r-atlas-boundary">{escape(c["boundary"])} · A0_SYNTHETIC</p>'
             f'<p class="r-atlas-boundary r-atlas-mode">{escape(mode)}</p>'
             f'<h3 class="r-visual-heading">{escape(c["flow"])}</h3><ol>{stages}</ol>'
@@ -313,7 +460,7 @@ def render_atlas_map(groups: dict, lang: str) -> str:
         label = ATLAS_THEMES[theme][lang == "en"]
         count = len(items)
         unit = c["count_one" if count == 1 else "count_many"]
-        links.append(f'<a class="r-atlas-group" href="#theme-{theme}"><strong>{escape(label)}</strong>'
+        links.append(f'<a class="r-atlas-group" href="#theme-{theme}">{journal_icon(theme)}<strong>{escape(label)}</strong>'
                      f'<span>{count} {escape(unit)} →</span></a>')
     return (f'<section class="r-section" id="visual-atlas"><h2>{escape(c["heading"])}</h2>'
             f'<p class="r-section-intro">{escape(c["intro"])}</p>'
@@ -330,11 +477,11 @@ def render_theme_findings(groups: dict, lang: str) -> str:
             copy = item[lang]
             slug = e(item["id"], quote=True)
             entries.append(f'<article class="r-entry" id="{slug}"><p class="r-kicker">{number:02d} · {e(copy["field"])}</p>'
-                           f'<h4>{e(copy["title"])}</h4><p>{e(copy["result"])}</p>'
-                           f'<p class="r-limit"><strong>{e(c["limit"])}:</strong> {e(copy["insight"])}</p>'
-                           f'<a href="/{lang}/research/{slug}/">{e(ARTICLE_LABELS[lang]["open"])}</a>'
-                           f'<a href="{REPO}/blob/main/{e(item["evidence_path"], quote=True)}">{e(c["evidence"])}</a></article>')
-        sections.append(f'<section class="r-theme" id="theme-{theme}"><h3>{e(ATLAS_THEMES[theme][lang == "en"])}</h3>'
+                           f'<h4>{e(copy["title"])}</h4><p><strong class="r-entry-label">{"Rezultat experimental" if lang == "ro" else "Experimental result"}</strong>{e(copy["result"])}</p>'
+                           f'<p class="r-limit"><strong class="r-entry-label">{e(c["limit"])}:</strong> {e(copy["insight"])}</p>'
+                           f'<div class="r-entry-actions"><a class="r-primary" href="/{lang}/research/{slug}/">{e(ARTICLE_LABELS[lang]["open"])}</a>'
+                           f'<a href="{REPO}/blob/main/{e(item["evidence_path"], quote=True)}">{e(c["evidence"])}</a></div></article>')
+        sections.append(f'<section class="r-theme" id="theme-{theme}"><h3>{journal_icon(theme)}{e(ATLAS_THEMES[theme][lang == "en"])}</h3>'
                         f'<div class="r-grid">{"".join(entries)}</div>'
                         f'<a class="r-theme-back" href="#visual-atlas">{e(ATLAS_COPY[lang]["back"])}</a></section>')
     return "".join(sections)
@@ -351,7 +498,10 @@ def research_page(journal, scenarios, verifier, lang):
         data=scenarios["cases"][case]
         claim=c[data["claim"].lower()]
         crypto=c[data["cryptographic"].lower()]
-        demos.append(f'<details class="r-demo"><summary>{e(title)}</summary><div class="r-demo-body"><p class="r-status">{e(c["mock"])}</p><p>{e(note)}</p><p><strong>{e(c["claim"])}:</strong> {e(claim)}<br><strong>{e(c["crypto"])}:</strong> {e(crypto)}</p></div></details>')
+        kind = "observed" if case == "below_limit_local_publication" else "control"
+        control_label = (("Control pozitiv" if kind == "observed" else "Control negativ")
+                         if lang == "ro" else ("Positive control" if kind == "observed" else "Negative control"))
+        demos.append(f'<details class="r-demo"><summary data-kind="{kind}">{journal_icon(kind)}<span><strong>{e(title)}</strong><small>{e(control_label)} · {e(c["mock"])}</small></span></summary><div class="r-demo-body"><p class="r-status">{e(c["mock"])}</p><p>{e(note)}</p><p><strong>{e(c["claim"])}:</strong> {e(claim)}<br><strong>{e(c["crypto"])}:</strong> {e(crypto)}</p></div></details>')
     recorded=c["record_valid" if verifier["cryptographic"]=="VALID" else "record_invalid"]
     question=journal["next_question"][lang]
     return f'''<!doctype html>
@@ -360,13 +510,13 @@ def research_page(journal, scenarios, verifier, lang):
 <link rel="canonical" href="{url}"><link rel="alternate" hreflang="ro" href="{ORIGIN}/ro/research/"><link rel="alternate" hreflang="en" href="{ORIGIN}/en/research/"><link rel="alternate" hreflang="x-default" href="{ORIGIN}/ro/research/"><link rel="icon" href="/assets/favicon.svg">
 <meta property="og:title" content="{e(c["title"],quote=True)} | TAG · ROCSI"><meta property="og:description" content="{e(c["lead"],quote=True)}"><meta property="og:url" content="{url}"><meta property="og:image" content="{ORIGIN}/og/{lang}.png"><meta property="og:type" content="website">
 <style>{CSS}</style></head><body class="research-page"><div class="r-wrap">
-<header class="r-header"><a class="r-brand" href="/{lang}/"><img src="/assets/rocsi-mark.svg" alt="">TAG / ROCSI</a><a href="/{lang}/">{e(c["home"])}</a>{language_dropdown(lang, "/research/", "r-lang")}</header>
-<main><section class="r-hero"><p class="r-kicker">{e(c["label"])}</p><h1>{e(c["title"])}</h1><p class="r-lead">{e(c["lead"])}</p><p class="r-boundary">{e(c["boundary"])}</p><nav class="r-nav" aria-label="{e(c["title"],quote=True)}"><a href="#visual-atlas">{e(ATLAS_COPY[lang]["heading"])}</a><a href="#findings">{e(c["findings"])}</a><a href="#demonstrations">{e(c["demos"])}</a><a href="#next">{e(c["next"])}</a></nav></section>
+{journal_header(lang, "/research/")}
+<main><section class="r-hero"><p class="r-kicker">{e(c["label"])}</p><h1>{e(c["title"])}</h1><p class="r-lead">{e(c["lead"])}</p><p class="r-boundary">{e(c["boundary"])}</p>{journal_metrics(journal, groups, lang)}<nav class="r-nav" aria-label="{e(c["title"],quote=True)}"><a href="#visual-atlas">{e(ATLAS_COPY[lang]["heading"])}</a><a href="#findings">{e(c["findings"])}</a><a href="#demonstrations">{e(c["demos"])}</a><a href="#next">{e(c["next"])}</a></nav></section>
 {render_atlas_map(groups, lang)}
-<section class="r-section" id="findings"><p class="r-kicker">01 / TAG</p><h2>{e(c["findings"])}</h2><p class="r-section-intro">{e(c["intro"])}</p>{render_theme_findings(groups, lang)}</section>
-<section class="r-section" id="demonstrations"><p class="r-kicker">02 / TAG</p><h2>{e(c["demos"])}</h2><p class="r-section-intro">{e(c["demo_intro"])}</p><aside class="r-feature"><h3>{e(c["record"])}</h3><p>{e(recorded)}</p><p>{e(c["record_limit"])}</p></aside>{"".join(demos)}</section>
-<section class="r-section" id="next"><p class="r-kicker">03 / TAG</p><h2>{e(c["next"])}</h2><div class="r-questions"><h3>{e(question["title"])}</h3><p>{e(question["description"])}</p></div></section></main>
-<footer class="r-footer"><a href="{REPO}">{e(c["github"])}</a><p>{e(c["foot"])}</p><p>EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION</p></footer></div></body></html>'''
+<section class="r-section" id="findings"><h2>{e(c["findings"])}</h2><p class="r-section-intro">{e(c["intro"])}</p>{render_theme_findings(groups, lang)}</section>
+<section class="r-section" id="demonstrations"><h2>{e(c["demos"])}</h2><p class="r-section-intro">{e(c["demo_intro"])}</p><aside class="r-feature"><h3>{e(c["record"])}</h3><p>{e(recorded)}</p><p>{e(c["record_limit"])}</p></aside>{"".join(demos)}</section>
+<section class="r-section" id="next"><h2>{e(c["next"])}</h2><div class="r-questions"><h3>{journal_icon("question")}<span>{e(question["title"])}</span></h3><p>{e(question["description"])}</p></div></section></main>
+{journal_footer(lang)}</div></body></html>'''
 
 
 def article_page(item: dict, lang: str) -> str:
@@ -379,24 +529,28 @@ def article_page(item: dict, lang: str) -> str:
     other = "en" if lang == "ro" else "ro"
     url = f"{ORIGIN}/{lang}/research/{slug}/"
     other_url = f"{ORIGIN}/{other}/research/{slug}/"
+    nav_keys = ("observed", "question", "principle", "formula", "diagram", "method", "interpretation", "controls", "limitations")
+    contents = "".join(f'<a href="#{key}">{e("Diagramă" if lang == "ro" else "Diagram") if key == "diagram" else e(labels[key])}</a>' for key in nav_keys)
     return f"""<!doctype html>
 <html lang="{lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{e(copy["title"])} | TAG · ROCSI</title><meta name="robots" content="noindex,nofollow"><meta name="description" content="{e(copy["result"],quote=True)}">
 <link rel="canonical" href="{url}"><link rel="alternate" hreflang="ro" href="{ORIGIN}/ro/research/{slug}/"><link rel="alternate" hreflang="en" href="{ORIGIN}/en/research/{slug}/"><link rel="alternate" hreflang="x-default" href="{ORIGIN}/ro/research/{slug}/"><link rel="icon" href="/assets/favicon.svg">
 <meta property="og:title" content="{e(copy["title"],quote=True)} | TAG · ROCSI"><meta property="og:description" content="{e(copy["result"],quote=True)}"><meta property="og:url" content="{url}"><meta property="og:image" content="{ORIGIN}/og/{lang}.png"><meta property="og:type" content="article">
 <style>{CSS}</style></head><body class="research-page"><div class="r-wrap">
-<header class="r-header"><a class="r-brand" href="/{lang}/"><img src="/assets/rocsi-mark.svg" alt="">TAG / ROCSI</a><a href="/{lang}/research/">{e(labels["back"])}</a>{language_dropdown(lang, "/research/" + slug + "/", "r-lang")}</header>
+{journal_header(lang, "/research/" + slug + "/", article=True)}
 <main><article class="r-article" id="{slug}"><p class="r-kicker">{e(copy["field"])}</p><h1>{e(copy["title"])}</h1><p class="r-boundary">{e(COPY[lang]["boundary"])}</p>
-<h2>{e(labels["question"])}</h2><p>{e(article["question"])}</p>
-<h2>{e(labels["principle"])}</h2><p>{e(article["principle"])}</p>
-<h2>{e(labels["formula"])}</h2><pre class="r-equation"><code>{e(item["article"]["formula"])}</code></pre>
-<p>{e(article["formula_note"])}</p>
-{render_visual_diagram(item, lang)}
-<h2>{e(labels["method"])}</h2><p>{e(article["method"])}</p>
-<h2>{e(labels["observed"])}</h2><p>{e(copy["result"])}</p>
-<h2>{e(labels["interpretation"])}</h2><p>{e(article["interpretation"])}</p>
-<h2>{e(labels["controls"])}</h2><p>{e(article["controls"])}</p>
-<h2>{e(labels["limitations"])}</h2><p>{e(copy["insight"])}</p>
-<p><a href="{REPO}/blob/main/{e(item["evidence_path"],quote=True)}">{e(labels["source"])}</a></p>
-<p><a href="/{lang}/research/">{e(labels["back"])}</a></p></article></main>
-<footer class="r-footer"><a href="{REPO}">{e(COPY[lang]["github"])}</a><p>{e(COPY[lang]["foot"])}</p><p>EXPERIMENTAL · SYNTHETIC_ONLY · A0_SYNTHETIC · NOT VALIDATION OR PRODUCTION AUTHORIZATION</p></footer></div></body></html>"""
+<div class="r-article-meta">{journal_icon(item["article"]["visual"]["theme"])}{e(ATLAS_THEMES[item["article"]["visual"]["theme"]][lang == "en"])}</div>
+<nav class="r-contents" aria-label="{"În acest articol" if lang == "ro" else "In this article"}">{contents}</nav>
+<section class="r-article-section r-article-section-observed" id="observed"><h2>{e(labels["observed"])}</h2><p>{e(copy["result"])}</p></section>
+<section class="r-article-section" id="question"><h2>{e(labels["question"])}</h2><p>{e(article["question"])}</p></section>
+<section class="r-article-section" id="principle"><h2>{e(labels["principle"])}</h2><p>{e(article["principle"])}</p></section>
+<section class="r-article-section" id="formula"><h2>{e(labels["formula"])}</h2><pre class="r-equation"><code>{e(item["article"]["formula"])}</code></pre>
+<p>{e(article["formula_note"])}</p></section>
+<div id="diagram">{render_visual_diagram(item, lang)}</div>
+<section class="r-article-section" id="method"><h2>{e(labels["method"])}</h2><p>{e(article["method"])}</p></section>
+<section class="r-article-section" id="interpretation"><h2>{e(labels["interpretation"])}</h2><p>{e(article["interpretation"])}</p></section>
+<section class="r-article-section" id="controls"><h2>{e(labels["controls"])}</h2><p>{e(article["controls"])}</p></section>
+<section class="r-article-section r-article-section-limitations" id="limitations"><h2>{e(labels["limitations"])}</h2><p>{e(copy["insight"])}</p></section>
+<div class="r-provenance"><a class="r-primary" href="{REPO}/blob/main/{e(item["evidence_path"],quote=True)}">{e(labels["source"])}</a>
+<a class="r-secondary" href="/{lang}/research/#theme-{item["article"]["visual"]["theme"]}">{e(labels["back"])}</a></div></article></main>
+{journal_footer(lang)}</div></body></html>"""
