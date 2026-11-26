@@ -374,9 +374,9 @@ RO_TEXT = {
     "TAG brings together research on privacy-preserving proofs and controlled observations from a vehicle simulator.": "TAG reunește cercetarea dovezilor care protejează datele și observațiile controlate dintr-un simulator de vehicule.",
     "TAG · Telemetry Attestation Gateway. Exploring verifiable conditions, selective disclosure and privacy-preserving telemetry.": "TAG · Telemetry Attestation Gateway. Cercetare despre condiții verificabile, divulgare selectivă și protecția datelor din telemetrie.",
     # Public navigation-only links to the parent ROCSI initiative and its booking page.
-    "A ROCSI research initiative": "O inițiativă de cercetare ROCSI",
+    "Romanian Cyber Space Initiative": "Inițiativa Română pentru Spațiul Cibernetic",
     "Start a conversation": "Programează o conversație",
-    "TAG is a research initiative of ROCSI.": "TAG este o inițiativă de cercetare ROCSI.",
+    "TAG is a research initiative of the Romanian Cyber Space Initiative.": "TAG este o inițiativă de cercetare a Inițiativei Române pentru Spațiul Cibernetic.",
     "Discover more of ROCSI's open research and explore collaboration opportunities.": "Descoperă cercetările deschise ROCSI și oportunitățile de colaborare.",
     "Explore ROCSI": "Descoperă ROCSI",
     # TAG-SPEED-EXPLAIN-01: visitor-first speed example; exact evidence codes unchanged.
@@ -726,6 +726,33 @@ SHARE = {
     },
 }
 
+# Native, keyboard-operable locale disclosure; ordinary links preserve CSP.
+LANGUAGE_DROPDOWN_CSS = """
+.locale-dropdown{position:relative;display:block;flex:none;z-index:5;align-self:center;font-size:.8rem}
+.locale-dropdown summary{cursor:pointer;list-style:none;border:1px solid #596567;color:#e4e1d8;padding:8px 11px;min-width:58px;text-align:center;font-weight:750;white-space:nowrap}
+.locale-dropdown summary::-webkit-details-marker{display:none}
+.locale-dropdown summary::after{content:" ▾";color:#eacb91}
+.locale-dropdown summary:focus-visible,.locale-dropdown a:focus-visible{outline:2px solid #f1d4a2;outline-offset:2px}
+.locale-options{position:absolute;right:0;top:calc(100% + 4px);min-width:116px;background:#142326;border:1px solid #596567;padding:4px;box-shadow:0 6px 20px #0007}
+.locale-options a{display:block;color:#e4e1d8;padding:8px 10px;text-decoration:none;white-space:nowrap}
+.locale-options a[aria-current=page]{background:#d9bd8a;color:#151918}
+.locale-options a:hover{background:#30464b;color:#fff}
+@media(max-width:750px){.r-lang .locale-options{position:static;margin-top:4px}}
+"""
+
+
+def language_dropdown(language: str, suffix: str, css_class: str) -> str:
+    """Static selector for the same route in each supported locale."""
+    label = "Alege limba" if language == "ro" else "Choose language"
+    links = "".join(
+        f'<a href="/{lang}{escape(suffix, quote=True)}" hreflang="{lang}" lang="{lang}"'
+        f' aria-current="{"page" if lang == language else "false"}">{name}</a>'
+        for lang, name in (("ro", "Română"), ("en", "English"))
+    )
+    return (f'<details class="{css_class} locale-dropdown"><summary aria-label="{label} · {language.upper()}">'
+            f'{language.upper()}</summary><div class="locale-options">{links}</div></details>')
+
+
 def social_metadata(html: str, language: str) -> str:
     if language not in SHARE:
         raise ValueError("unsupported social locale")
@@ -768,26 +795,17 @@ def social_metadata(html: str, language: str) -> str:
     if html.count("</head>") != 1:
         raise ValueError("head marker invalid")
     html = html.replace("</head>", additions + "</head>", 1)
-    switch = (
-        '<nav class="language-switch" aria-label="Limbă / Language">'
-        f'<a href="/ro/" hreflang="ro" lang="ro" aria-current="{"page" if language=="ro" else "false"}">RO</a>'
-        f'<a href="/en/" hreflang="en" lang="en" aria-current="{"page" if language=="en" else "false"}">EN</a>'
-        "</nav>"
-    )
+    switch = language_dropdown(language, "/", "language-switch")
     anchor = '<div class="pill" id="console-mode">'
     if html.count(anchor) != 1:
         raise ValueError("locale switch anchor missing")
     html = html.replace(anchor, switch + "\n    " + anchor, 1)
     css = '''
     .pill{white-space:normal;max-width:100%;overflow-wrap:anywhere}
-    .language-switch{display:inline-flex;gap:5px;border:1px solid #596567;border-radius:0;padding:4px;align-self:start}
-    .language-switch a{min-width:36px;text-align:center;text-decoration:none;color:#e4e1d8;font-size:.78rem;font-weight:750;padding:5px 8px;border-radius:0}
-    .language-switch a[aria-current="page"]{background:#d9bd8a;color:#151918}
-    .language-switch a:focus-visible{outline:3px solid #f1d4a2;outline-offset:2px}
 '''
     if html.count("</style>") != 1:
         raise ValueError("style marker invalid")
-    html = html.replace("</style>", css + "  </style>", 1)
+    html = html.replace("</style>", css + LANGUAGE_DROPDOWN_CSS + "  </style>", 1)
     return html
 
 def localize_404(language: str) -> str:

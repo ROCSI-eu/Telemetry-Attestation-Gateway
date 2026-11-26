@@ -53,6 +53,16 @@ telemetry is involved. Reloading starts at the initial position. This is a
 presentation-only change; the other demonstration and research pages are
 unchanged.
 
+### Public hero and navigation refinement
+
+The hero craft and shadow are scaled 30% above the preceding baseline
+(0.52 to 0.676); timing is unchanged; three route coordinates are inset to keep the larger craft inside the SVG. At widths up to 750px the
+scene precedes the headline visually. Home, catalog and article language
+selectors use a native closed-by-default HTML disclosure with ordinary
+same-route RO/EN links; no scripts, forms or client-side redirects. The
+homepage header uses the full localized public organization name from
+ROCSI-Website's organization identity source, not the legal SRL name.
+
 ### Proposed editorial extension — engineering progress
 
 For separately accepted, public-safe engineering achievements (for example

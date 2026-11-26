@@ -1141,7 +1141,7 @@ def redesign_public_html(html: str) -> str:
         raise ValueError("public introduction changed")
 
     header = f"""<header class="site-header">
-    <a class="brand" href="/" aria-label="TAG · ROCSI"><span class="brand-signal">TAG</span><img class="brand-rocsi-mark" src="/assets/rocsi-mark.svg" alt="" width="34" height="34" decoding="async"><span class="brand-detail">A ROCSI research initiative</span></a>
+    <a class="brand" href="/" aria-label="TAG · ROCSI"><span class="brand-signal">TAG</span><img class="brand-rocsi-mark" src="/assets/rocsi-mark.svg" alt="" width="34" height="34" decoding="async"><span class="brand-detail">Romanian Cyber Space Initiative</span></a>
     <nav class="section-nav" aria-label="Page sections">
       <a href="#principle">The Concept</a>
       <a href="#mission-control">How It Works</a>
@@ -1410,7 +1410,7 @@ def redesign_public_html(html: str) -> str:
         footer_anchor,
         '<aside class="rocsi-affiliation" aria-labelledby="rocsi-affiliation-title">'
         '<img class="rocsi-affiliation-mark" src="/assets/rocsi-mark.svg" alt="" width="60" height="60" loading="lazy" decoding="async">'
-        '<div class="rocsi-affiliation-copy"><h3 id="rocsi-affiliation-title">TAG is a research initiative of ROCSI.</h3>'
+        '<div class="rocsi-affiliation-copy"><h3 id="rocsi-affiliation-title">TAG is a research initiative of the Romanian Cyber Space Initiative.</h3>'
         '<p>Discover more of ROCSI\'s open research and explore collaboration opportunities.</p></div>'
         '<div class="rocsi-affiliation-actions"><a href="https://rocsi.eu/en">Explore ROCSI</a></div>'
         '</aside>\n' + footer_anchor,
@@ -1504,7 +1504,7 @@ PUBLIC_THEME_CSS = """
     .brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:#f7f4eb;min-width:0}
     .brand-rocsi-mark{display:block;width:34px;height:34px;flex:none;object-fit:contain}
     .brand-signal{font-size:1.72rem;font-weight:900;letter-spacing:-.09em}
-    .brand-detail{font-size:.66rem;letter-spacing:.11em;text-transform:uppercase;color:#c2c7c8;max-width:160px;line-height:1.45}
+    .brand-detail{font-size:.66rem;letter-spacing:.11em;text-transform:uppercase;color:#c2c7c8;max-width:200px;line-height:1.45}
     .section-nav{display:flex;align-items:center;flex-wrap:wrap;gap:22px;margin-left:auto}
     .section-nav a{text-decoration:none;font-size:.75rem;letter-spacing:.04em;color:#cbd0cf}
     .section-nav a:hover{color:#fff}
@@ -1529,12 +1529,12 @@ PUBLIC_THEME_CSS = """
     .hero-rotor-disc{transform-box:fill-box;transform-origin:center;animation:public-rotor .375s linear infinite}
     .hero-beacon-pulse{transform-box:fill-box;transform-origin:center;animation:public-beacon 3s ease-out infinite}
     @keyframes public-flight{
-      0%,100%{transform:translate(180px,510px) scale(.52) translate(-389px,-350px)}
-      16%{transform:translate(210px,325px) scale(.52) translate(-389px,-350px)}
-      33%{transform:translate(385px,180px) scale(.52) translate(-389px,-350px)}
-      48%{transform:translate(510px,245px) scale(.52) translate(-389px,-350px)}
-      65%{transform:translate(580px,450px) scale(.52) translate(-389px,-350px)}
-      83%{transform:translate(370px,570px) scale(.52) translate(-389px,-350px)}
+      0%,100%{transform:translate(195px,510px) scale(.676) translate(-389px,-350px)}
+      16%{transform:translate(210px,325px) scale(.676) translate(-389px,-350px)}
+      33%{transform:translate(385px,180px) scale(.676) translate(-389px,-350px)}
+      48%{transform:translate(510px,245px) scale(.676) translate(-389px,-350px)}
+      65%{transform:translate(550px,450px) scale(.676) translate(-389px,-350px)}
+      83%{transform:translate(370px,515px) scale(.676) translate(-389px,-350px)}
     }
     @keyframes public-radar{to{transform:rotate(360deg)}}
     @keyframes public-route{to{stroke-dashoffset:-390}}
@@ -1552,7 +1552,7 @@ PUBLIC_THEME_CSS = """
     .rocsi-affiliation-actions a{color:#e4c58e;text-decoration:underline;text-underline-offset:5px;font-weight:700;font-size:.87rem}
     footer{font-size:.76rem;color:#aebdb7;line-height:1.6}
     @media(max-width:1100px){.section-nav{order:3;flex-basis:100%;margin-left:0}.hero{min-height:0}}
-    @media(max-width:750px){html{scroll-behavior:auto}.wrap{padding:0 18px 44px}.site-header{min-height:0;gap:12px 18px}.section-nav{gap:12px 18px}.header-status .pill{display:none}.hero{grid-template-columns:1fr;gap:24px;padding:40px 0 55px}.hero h1{font-size:clamp(2.8rem,10.8vw,4.6rem);margin:13px 0 18px}.hero .sub{font-size:.94rem}.hero-art{min-height:0}.primer{padding:54px 0}.rocsi-affiliation{align-items:flex-start}}
+    @media(max-width:750px){html{scroll-behavior:auto}.wrap{padding:0 18px 44px}.site-header{min-height:0;gap:12px 18px}.section-nav{gap:12px 18px}.header-status .pill{display:none}.hero{grid-template-columns:1fr;gap:24px;padding:18px 0 55px}.hero h1{font-size:clamp(2.8rem,10.8vw,4.6rem);margin:13px 0 18px}.hero .sub{font-size:.94rem}.hero-art{min-height:0;order:-1}.primer{padding:54px 0}.rocsi-affiliation{align-items:flex-start}}
     @media(max-width:420px){.brand-detail{font-size:.58rem}.section-nav{gap:9px 16px}.section-nav a{font-size:.7rem}.header-cta{font-size:.7rem}.hero h1{font-size:clamp(2.6rem,12vw,3.3rem)}.hero-art{min-height:0}.hero-art-label{top:14px;left:13px;font-size:.61rem}.hero-actions a{width:100%}}
     @media(prefers-reduced-motion:reduce){.hero-scene *{animation:none!important}}
 """
@@ -1594,27 +1594,27 @@ PUBLIC_SIMPLE_CSS = """
 def public_hero_flight(hero: str) -> str:
     """Adapt only the public hero: closed synthetic route, continuous CSS motion."""
     old_route = "M98 548C225 522 305 439 389 350S569 203 681 136"
-    route = "M180 510L210 325L385 180L510 245L580 450L370 570Z"
+    route = "M195 510L210 325L385 180L510 245L550 450L370 515Z"
     if hero.count(old_route) != 4 or hero.count('<g class="hero-floor-shadow">') != 1:
         raise ValueError("public hero route anchor changed")
     hero = hero.replace(old_route, route)
-    for old, new in (("translate(98 548)", "translate(180 510)"),
+    for old, new in (("translate(98 548)", "translate(195 510)"),
                      ("translate(389 350)", "translate(385 180)"),
-                     ("translate(681 136)", "translate(580 450)")):
+                     ("translate(681 136)", "translate(550 450)")):
         # Only the waypoint groups: keep the original vehicle's local transform.
         anchor = '<g transform="' + old + '">'
         if hero.count(anchor) != 1:
             raise ValueError("public hero waypoint anchor changed")
         hero = hero.replace(anchor, '<g transform="' + new + '">', 1)
     old_labels = '<text x="78" y="582">A</text><text x="409" y="340" opacity=".68">B</text><text x="683" y="117">C</text>'
-    new_labels = '<text x="75" y="565">A</text><text x="382" y="87">B</text><text x="688" y="452">C</text>'
+    new_labels = '<text x="75" y="565">A</text><text x="382" y="87">B</text><text x="680" y="452">C</text>'
     if hero.count(old_labels) != 1 or hero.count('</svg>') < 1:
         raise ValueError("public hero label anchor changed")
     hero = hero.replace(old_labels, new_labels, 1)
     # The shadow and original artwork move together. The SVG attribute is the
     # exact resting pose, including when reduced motion disables all animation.
     hero = hero.replace('<g class="hero-floor-shadow">',
-                        '<g class="hero-flight" transform="translate(180 510) scale(.52) translate(-389 -350)"><g class="hero-floor-shadow">', 1)
+                        '<g class="hero-flight" transform="translate(195 510) scale(.676) translate(-389 -350)"><g class="hero-floor-shadow">', 1)
     end = '<!-- The route and A/B/C landmarks are intentionally self-explanatory; no internal instrument labels. -->'
     if hero.count(end) != 1:
         raise ValueError("public hero flight end anchor changed")
