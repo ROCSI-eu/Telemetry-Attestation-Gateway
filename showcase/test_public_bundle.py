@@ -85,6 +85,16 @@ class PublicUXTests(unittest.TestCase):
             self.assertNotIn('<animate', page)
             self.assertNotIn('<script', page)
 
+    def test_desktop_hero_height_aware_layout(self):
+        for page in (self.ro, self.en):
+            self.assertIn('@media(min-width:751px)', page)
+            self.assertIn('font-size:clamp(2.65rem,min(6.3vw,10svh),7.1rem)', page)
+            self.assertIn('width:min(100%,58svh)', page)
+            self.assertIn('@media(min-width:751px) and (max-height:650px)', page)
+            self.assertIn('min-height:44px;padding:10px 16px', page)
+            self.assertEqual(page.count('class="hero-actions"'), 1)
+            self.assertIn('href="#demonstration"', page)
+
     def test_hero_flight_continuous_and_static_fallback(self):
         for page in (self.ro, self.en):
             scene = re.search(r'<svg class="hero-scene".*?</svg>', page, re.S).group()

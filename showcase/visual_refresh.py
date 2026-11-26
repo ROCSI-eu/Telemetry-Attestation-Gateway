@@ -1554,6 +1554,21 @@ PUBLIC_THEME_CSS = """
     @media(max-width:1100px){.section-nav{order:3;flex-basis:100%;margin-left:0}.hero{min-height:0}}
     @media(max-width:750px){html{scroll-behavior:auto}.wrap{padding:0 18px 44px}.site-header{min-height:0;gap:12px 18px}.section-nav{gap:12px 18px}.header-status .pill{display:none}.hero{grid-template-columns:1fr;gap:24px;padding:18px 0 55px}.hero h1{font-size:clamp(2.8rem,10.8vw,4.6rem);margin:13px 0 18px}.hero .sub{font-size:.94rem}.hero-art{min-height:0;order:-1}.primer{padding:54px 0}.rocsi-affiliation{align-items:flex-start}}
     @media(max-width:420px){.brand-detail{font-size:.58rem}.section-nav{gap:9px 16px}.section-nav a{font-size:.7rem}.header-cta{font-size:.7rem}.hero h1{font-size:clamp(2.6rem,12vw,3.3rem)}.hero-art{min-height:0}.hero-art-label{top:14px;left:13px;font-size:.61rem}.hero-actions a{width:100%}}
+    /* Fit the primary CTA within common desktop viewport heights without hiding copy. */
+    @media(min-width:751px){
+      .hero{min-height:0;padding:clamp(22px,5svh,70px) 0 clamp(24px,5svh,70px);align-items:center}
+      .hero-overline{margin:0}
+      .hero h1{font-size:clamp(2.65rem,min(6.3vw,10svh),7.1rem);max-width:14ch;line-height:1.02;margin:clamp(12px,2.4svh,22px) 0 clamp(12px,2.4svh,26px)}
+      .hero .sub{margin:0;line-height:1.55}
+      .hero-actions{margin-top:clamp(14px,2.6svh,25px)}
+      .hero-art{width:min(100%,58svh);justify-self:end}
+    }
+    @media(min-width:751px) and (max-height:650px){
+      .hero{padding:18px 0 24px;gap:clamp(16px,3vw,40px)}
+      .hero h1{font-size:clamp(2.25rem,min(5.5vw,8.5svh),4.5rem);margin:10px 0 12px}
+      .hero-actions{margin-top:12px}
+      .hero-actions a{min-height:44px;padding:10px 16px}
+    }
     /* Compact initial mobile viewport; keep the illustration before readable copy. */
     @media(max-width:750px){
       .site-header{padding:9px 0;gap:8px 12px}
