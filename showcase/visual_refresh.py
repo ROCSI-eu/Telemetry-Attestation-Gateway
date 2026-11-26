@@ -1631,6 +1631,14 @@ PUBLIC_SIMPLE_CSS = """
     .public-documentation{margin:24px 0 0}
     .public-documentation a{color:#eed09a;text-underline-offset:5px;font-weight:700}
     @media(max-width:750px){.public-steps,.public-results{grid-template-columns:1fr}.public-step{min-height:0}.public-step h3{margin:12px 0}.public-demo{padding-top:48px}.public-result{padding:19px}}
+    /* Public overview typography: shared section labels and readable secondary copy. */
+    .primer .primer-visual .primer-kicker{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;font-weight:800;color:#e3be83}
+    .primer .concept-step-copy p{font-size:.91rem}
+    .public-step p{font-size:1rem}
+    .public-result p{font-size:.97rem}
+    .rocsi-affiliation p{font-size:.97rem}
+    footer{font-size:.82rem}
+    @media(max-width:420px){.primer .concept-step-copy p{font-size:.85rem}}
     /* The lower page has its own visual vocabulary: illustration vs evidence. */
     .public-step{position:relative;display:flex;flex-direction:column;gap:12px;padding:clamp(16px,2.4vw,28px)}
     .public-step h3{margin:0}.public-step p{margin:0}
@@ -1759,6 +1767,8 @@ def simplify_public_html(html: str) -> str:
         '<div class="hero-actions"><a href="#demonstration">See the demonstration</a></div>',
         hero, count=1, flags=re.S)
     hero = public_hero_flight(hero)
+    intro = intro.replace('<p class="primer-kicker">01 / THE CONCEPT</p>',
+                          '<p class="primer-kicker section-overline">THE CONCEPT</p>', 1)
     # Retain the original artwork and the original explanation of the private value.
     demo = '''<section class="public-demo" id="demonstration" aria-labelledby="demo-title">
       <p class="section-overline">THE DEMONSTRATION</p>
@@ -1779,7 +1789,7 @@ def simplify_public_html(html: str) -> str:
         <article class="public-result"><strong>Independent verification passed</strong><p>A separate verifier successfully checked the synthetic proof offline.</p></article>
       </div>
       <p class="public-progress"><strong>Research progress.</strong> In a synthetic experiment, we checked the signing key and signature, applied session-local replay protection and independently verified a zero-knowledge proof bound to the observation. Separate tests with a mock proof verifier rejected replay after restart using retained local state. Restoring old state defeats this protection. Separate synthetic tests with a mock proof verifier checked reception freshness using an authenticated time reference from a simulated authority separate from the telemetry source. This does not establish physical capture time or a real trusted-time service. The signing key is a publicly known test key; real vehicle identity remains unproven.</p>
-      <p class="public-limits"><strong>Research scope.</strong> Isolated laboratory tests use synthetic data, not authentic flight telemetry. A valid proof does not authenticate its source, timestamp or the full mission. Published illustrations and JSON records are not independently authenticated by this site.</p>
+      <p class="public-limits"><strong>Research scope.</strong> Our isolated laboratory tests use synthetic data, not authentic flight telemetry. A valid cryptographic proof does not, by itself, authenticate the telemetry source, timestamp or the full mission. The published illustrations and JSON records are not independently authenticated by this site.</p>
       <p class="public-documentation"><a href="https://github.com/ROCSI-eu/Telemetry-Attestation-Gateway">Technical documentation and research evidence on GitHub</a></p>
     </section>'''
     for index, art in enumerate(PUBLIC_DEMO_ART, start=1):

@@ -246,6 +246,18 @@ class PublicUXTests(unittest.TestCase):
         self.assertIn('nu sunt autentificate independent de acest site', self.ro)
         self.assertIn('not independently authenticated by this site', self.en)
 
+    def test_public_final_polish(self):
+        for page, label, caveat in (
+            (self.ro, "CONCEPTUL", "Nu toate testele implică dovezi criptografice noi."),
+            (self.en, "THE CONCEPT", "Not all tests involve new cryptographic proofs."),
+        ):
+            self.assertIn(f'<p class="primer-kicker section-overline">{label}</p>', page)
+            progress = re.search(r'<div class="public-progress">(.*?)</div>', page, re.S).group(1)
+            self.assertEqual(progress.count("<p>"), 2)
+            self.assertIn(caveat, progress)
+            self.assertIn('.public-result p{font-size:.97rem}', page)
+            self.assertIn('.public-gcs figcaption{font-size:.91rem}', page)
+
     def test_synthetic_truth_limits_are_plain_and_bilingual(self):
         self.assertIn('nu telemetrie de zbor autentică', self.ro)
         self.assertIn('not authentic flight telemetry', self.en)
@@ -263,8 +275,8 @@ class PublicUXTests(unittest.TestCase):
         self.assertIn('neautentificată de browser', self.research_ro)
         self.assertIn('JSON', self.ro)
         self.assertIn('JSON', self.en)
-        self.assertIn('does not authenticate its source, timestamp or the full mission', self.en)
-        self.assertIn('nu autentifică sursa, marcajul temporal sau întreaga misiune', self.ro)
+        self.assertIn('does not, by itself, authenticate the telemetry source, timestamp or the full mission', self.en)
+        self.assertIn('nu autentifică, prin ea însăși, sursa telemetriei, marcajul temporal sau întreaga misiune', self.ro)
 
     def test_bundle_is_static_no_replay_artifacts_and_safe_rebuild(self):
         from build import load_research_journal

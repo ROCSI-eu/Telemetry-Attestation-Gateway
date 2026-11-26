@@ -99,7 +99,7 @@ COPY = {
  "cases":[("below_limit_local_publication","Condiție îndeplinită","Fluxul simulat continuă până la verificare."),("over_limit","Limită depășită","Condiția nu este îndeplinită; nu se verifică o dovadă."),("tampered_proof","Dovadă alterată","Chiar dacă rezultatul condiției este favorabil, verificarea simulată respinge dovada.")],
  "foot":"Cercetare ROCSI. Fără telemetrie reală, comenzi, calcule criptografice în browser sau autorizare operațională.",
  "github":"Repository și documentație", "cta":"Explorează cercetarea",
- "home_progress":"Cercetăm verificarea criptografică a condițiilor, legarea dovezilor de observații semnate sintetic, protecția împotriva reutilizării și prospețimea recepției cu o autoritate temporală simulată. Experimentele distincte investighează și completitudinea, continuitatea, integritatea stării, agregarea și consistența emisiilor și epocilor. Nu toate aceste rezultate implică dovezi criptografice noi; limitele și contraexemplele sunt documentate în catalog."
+ "home_progress":("Cercetăm cum pot fi verificate criptografic condițiile fără divulgarea datelor private. Studiem legarea dovezilor de observații semnate sintetic, protecția împotriva reutilizării și prospețimea recepției cu o autoritate temporală simulată.", "În teste separate, investigăm completitudinea, continuitatea, integritatea stării, agregarea și consistența emisiilor și epocilor. Nu toate testele implică dovezi criptografice noi. Rezultatele, limitele și contraexemplele sunt documentate în catalog.")
 },
 "en": {
  "home":"Overview", "title":"Research and experimental results", "label":"ROCSI / Telemetry Attestation Gateway",
@@ -116,7 +116,7 @@ COPY = {
  "cases":[("below_limit_local_publication","Condition satisfied","The simulated flow proceeds to verification."),("over_limit","Limit exceeded","The condition is not met; no proof is checked."),("tampered_proof","Tampered proof","Even with a favorable condition outcome, simulated verification rejects the proof.")],
  "foot":"ROCSI research. No real telemetry, commands, browser cryptography or operational authorization.",
  "github":"Repository and documentation", "cta":"Explore the research",
- "home_progress":"We investigate cryptographic verification of conditions, proof binding to synthetically signed observations, replay protection and reception freshness with a simulated time authority. Separate experiments also investigate completeness, continuity, state integrity, aggregation, and emission and epoch consistency. Not all these results involve new cryptographic proofs; limitations and counterexamples are documented in the catalog."
+ "home_progress":("We investigate how conditions can be checked cryptographically without revealing private data. We study proof binding to synthetically signed observations, replay protection and reception freshness with a simulated time authority.", "Separate tests investigate completeness, continuity, state integrity, aggregation, and emission and epoch consistency. Not all tests involve new cryptographic proofs. Results, limitations and counterexamples are documented in the catalog.")
 }}
 ARTICLE_LABELS = {
     "ro": {"open": "Citește articolul", "back": "Înapoi la jurnal",
@@ -205,6 +205,9 @@ OVERVIEW_CSS = """
 .public-research-metrics{min-width:0}
 .public-research-balance .public-research-counts{max-width:none;margin-bottom:16px}
 .public-research-balance .public-documentation,.public-research-balance .public-progress{margin:0;max-width:none}
+.public-progress p{margin:0 0 12px}.public-progress p:last-child{margin-bottom:0}
+.public-research-counts dt{font-size:.95rem}
+.public-gcs figcaption{font-size:.91rem}
 .public-gcs-flow{animation:public-gcs-flow 3s linear infinite}
 @keyframes public-gcs-flow{to{stroke-dashoffset:-36}}
 @keyframes public-gcs-branch-pulse{0%,100%{opacity:.55}50%{opacity:1}}
@@ -262,7 +265,7 @@ def render_overview_progress(journal: dict, lang: str) -> str:
         f'<div class="public-research-balance"><div class="public-research-metrics"><dl class="public-research-counts"><div><dt>{e(c["findings"])}</dt><dd id="public-finding-count">{findings}</dd></div>'
         f'<div><dt>{e(c["themes"])}</dt><dd id="public-theme-count">{themes}</dd></div></dl>'
         f'<p class="public-documentation"><a href="/{lang}/research/">{e(COPY[lang]["cta"])}</a></p></div>'
-        f'<p class="public-progress">{e(COPY[lang]["home_progress"])}</p></div></section>'
+        '<div class="public-progress">' + "".join(f"<p>{e(part)}</p>" for part in COPY[lang]["home_progress"]) + '</div></div></section>'
         f'<section class="public-gcs" aria-labelledby="public-gcs-title">'
         f'<h3 id="public-gcs-title">{e(c["direction"])}</h3><p><strong>{e(c["proposed"])}</strong></p>'
         f'<p>{e(c["intro"])}</p><figure aria-label="{e(c["direction"], quote=True)}">'
