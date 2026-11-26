@@ -1596,6 +1596,15 @@ PUBLIC_THEME_CSS = """
 # Reuse the already-drawn hero and concept, but do not ship the replay UI,
 # technical archives, precomputed JSON clients, controls, or browser scripts.
 PUBLIC_SIMPLE_CSS = """
+    /* Center the copy against the diagram itself, excluding the section label. */
+    @media(min-width:751px){
+      .primer{row-gap:0}
+      .primer .primer-visual{display:contents}
+      .primer .primer-visual .primer-kicker{grid-column:1;grid-row:1}
+      .primer .primer-visual .concept-cinema{grid-column:1;grid-row:2;align-self:center}
+      .primer .primer-copy{grid-column:2;grid-row:2;align-self:center}
+    }
+
     .section-nav{gap:clamp(12px,2vw,28px)}
     .hero-actions a{min-width:185px;text-align:center}
     .public-demo{padding:clamp(48px,7vw,92px) 0;border-top:1px solid #415256;scroll-margin-top:30px}
