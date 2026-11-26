@@ -75,9 +75,11 @@ class PublicUXTests(unittest.TestCase):
             scene = re.search(r'<svg class="hero-scene".*?</svg>', page, re.S).group()
             self.assertIn('viewBox="0 0 760 700" preserveAspectRatio="xMidYMid meet"', scene)
             self.assertEqual(scene.count('class="hero-flight"'), 1)
-            self.assertEqual(scene.count('M180 510L210 325L385 180L510 245L580 450L370 570Z'), 4)
-            self.assertIn('transform="translate(180 510) scale(.52) translate(-389 -350)"', scene)
+            self.assertEqual(scene.count('M195 510L210 325L385 180L510 245L550 450L370 515Z'), 4)
+            self.assertIn('transform="translate(195 510) scale(.676) translate(-389 -350)"', scene)
             self.assertIn('aspect-ratio:760/700;align-self:center', page)
+            self.assertIn('.hero-art{min-height:0;order:-1}', page)
+            self.assertEqual(page.count('scale(.676) translate(-389px,-350px)'), 6)
             for animation in ('public-flight 3s linear infinite',
                               'public-radar 6s linear infinite',
                               'public-route 3s linear infinite',
@@ -113,7 +115,9 @@ class PublicUXTests(unittest.TestCase):
 
     def test_no_technical_controls_panel_or_executable_replay(self):
         for page in (self.ro, self.en):
-            for forbidden in ('<script', '<details', '<select', '<button', '<form',
+            self.assertEqual(page.count('<details'), 1)
+            self.assertIn('<details class="language-switch locale-dropdown">', page)
+            for forbidden in ('<script', '<select', '<button', '<form',
                               'id="scenario"', 'scenario-explanation', 'authentic-panel',
                               'mission-pattern', 'A0_SYNTHETIC', '>VALID<', '>INVALID<',
                               'evidence-results.json', 'authentic-evidence.json',
@@ -123,6 +127,24 @@ class PublicUXTests(unittest.TestCase):
             self.assertIn('prefers-reduced-motion:reduce', page)
             self.assertIn('EXPERIMENTAL', page)
             self.assertIn('SYNTHETIC ONLY' if page == self.en else 'DOAR DATE SINTETICE', page)
+
+    def test_locale_dropdown_and_organization_identity(self):
+        from build import load_research_journal
+        from localization import language_dropdown
+        for lang, home, index, name in (
+            ("ro", self.ro, self.research_ro, "Inițiativa Română pentru Spațiul Cibernetic"),
+            ("en", self.en, self.research_en, "Romanian Cyber Space Initiative"),
+        ):
+            self.assertIn(f'<span class="brand-detail">{name}</span>', home)
+            self.assertNotIn("O inițiativă de cercetare ROCSI", home)
+            self.assertNotIn("A ROCSI research initiative", home)
+            self.assertIn(language_dropdown(lang, "/", "language-switch"), home)
+            self.assertIn(language_dropdown(lang, "/research/", "r-lang"), index)
+            for entry in load_research_journal()["entries"]:
+                suffix = "/research/" + entry["id"] + "/"
+                article = (self.folder / lang / "research" / entry["id"] / "index.html").read_text()
+                self.assertIn(language_dropdown(lang, suffix, "r-lang"), article)
+                self.assertEqual(article.count('class="r-lang locale-dropdown"'), 1)
 
     def test_navigation_all_anchors_resolve_and_one_github_link(self):
         for page in (self.ro, self.en):

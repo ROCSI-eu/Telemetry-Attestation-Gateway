@@ -3,6 +3,7 @@
 Public research page: static editorial evidence and native HTML disclosure only.
 """
 from html import escape
+from localization import LANGUAGE_DROPDOWN_CSS, language_dropdown
 
 ORIGIN = "https://tag.rocsi.eu"
 REPO = "https://github.com/ROCSI-eu/Telemetry-Attestation-Gateway"
@@ -15,9 +16,6 @@ CSS = """
 .r-header{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:22px 0;border-bottom:1px solid #405052;flex-wrap:wrap}
 .r-brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:#e9e8df!important;font-weight:700;letter-spacing:.04em}
 .r-brand img{width:34px;height:34px;object-fit:contain}
-.r-lang{display:flex;gap:5px}
-.r-lang a{padding:5px 10px;border:1px solid #566263;text-decoration:none;font-size:.8rem}
-.r-lang a[aria-current=page]{background:#eacb91;color:#151a1a}
 .r-hero{padding:64px 0 42px;border-bottom:1px solid #405052}
 .r-kicker{font-size:.73rem;text-transform:uppercase;letter-spacing:.16em;font-weight:750;color:#eacb91;margin:0 0 10px}
 .r-hero h1{font-size:clamp(2.2rem,5vw,4.35rem);letter-spacing:-.045em;line-height:1.06;max-width:850px;margin:0 0 18px;color:#f5f1e6}
@@ -84,7 +82,7 @@ CSS = """
 .r-footer p{margin:8px 0}
 @media(max-width:700px){.r-wrap{width:calc(100% - 36px)}.r-hero{padding:38px 0 28px}.r-section{padding:30px 0}.r-grid{grid-template-columns:1fr}.r-entry{padding:19px}.r-lead{font-size:1rem}.r-brand{font-size:.9rem}.r-feature,.r-questions{padding:18px}}
 @media(max-width:360px){.r-wrap{width:calc(100% - 28px)}.r-header{gap:10px}.r-nav{gap:8px 16px}.r-entry{padding:16px}.r-demo summary,.r-demo-body{padding:14px}}
-"""
+""" + LANGUAGE_DROPDOWN_CSS
 COPY = {
 "ro": {
  "home":"Prezentare", "title":"Cercetare și rezultate experimentale", "label":"ROCSI / Telemetry Attestation Gateway",
@@ -322,7 +320,7 @@ def research_page(journal, scenarios, verifier, lang):
 <link rel="canonical" href="{url}"><link rel="alternate" hreflang="ro" href="{ORIGIN}/ro/research/"><link rel="alternate" hreflang="en" href="{ORIGIN}/en/research/"><link rel="alternate" hreflang="x-default" href="{ORIGIN}/ro/research/"><link rel="icon" href="/assets/favicon.svg">
 <meta property="og:title" content="{e(c["title"],quote=True)} | TAG · ROCSI"><meta property="og:description" content="{e(c["lead"],quote=True)}"><meta property="og:url" content="{url}"><meta property="og:image" content="{ORIGIN}/og/{lang}.png"><meta property="og:type" content="website">
 <style>{CSS}</style></head><body class="research-page"><div class="r-wrap">
-<header class="r-header"><a class="r-brand" href="/{lang}/"><img src="/assets/rocsi-mark.svg" alt="">TAG / ROCSI</a><a href="/{lang}/">{e(c["home"])}</a><nav class="r-lang" aria-label="Limbă / Language"><a href="/ro/research/" hreflang="ro" lang="ro" aria-current="{"page" if lang=="ro" else "false"}">RO</a><a href="/en/research/" hreflang="en" lang="en" aria-current="{"page" if lang=="en" else "false"}">EN</a></nav></header>
+<header class="r-header"><a class="r-brand" href="/{lang}/"><img src="/assets/rocsi-mark.svg" alt="">TAG / ROCSI</a><a href="/{lang}/">{e(c["home"])}</a>{language_dropdown(lang, "/research/", "r-lang")}</header>
 <main><section class="r-hero"><p class="r-kicker">{e(c["label"])}</p><h1>{e(c["title"])}</h1><p class="r-lead">{e(c["lead"])}</p><p class="r-boundary">{e(c["boundary"])}</p><nav class="r-nav" aria-label="{e(c["title"],quote=True)}"><a href="#visual-atlas">{e(ATLAS_COPY[lang]["heading"])}</a><a href="#findings">{e(c["findings"])}</a><a href="#demonstrations">{e(c["demos"])}</a><a href="#next">{e(c["next"])}</a></nav></section>
 {render_atlas_map(groups, lang)}
 <section class="r-section" id="findings"><p class="r-kicker">01 / TAG</p><h2>{e(c["findings"])}</h2><p class="r-section-intro">{e(c["intro"])}</p>{render_theme_findings(groups, lang)}</section>
@@ -347,7 +345,7 @@ def article_page(item: dict, lang: str) -> str:
 <link rel="canonical" href="{url}"><link rel="alternate" hreflang="ro" href="{ORIGIN}/ro/research/{slug}/"><link rel="alternate" hreflang="en" href="{ORIGIN}/en/research/{slug}/"><link rel="alternate" hreflang="x-default" href="{ORIGIN}/ro/research/{slug}/"><link rel="icon" href="/assets/favicon.svg">
 <meta property="og:title" content="{e(copy["title"],quote=True)} | TAG · ROCSI"><meta property="og:description" content="{e(copy["result"],quote=True)}"><meta property="og:url" content="{url}"><meta property="og:image" content="{ORIGIN}/og/{lang}.png"><meta property="og:type" content="article">
 <style>{CSS}</style></head><body class="research-page"><div class="r-wrap">
-<header class="r-header"><a class="r-brand" href="/{lang}/"><img src="/assets/rocsi-mark.svg" alt="">TAG / ROCSI</a><a href="/{lang}/research/">{e(labels["back"])}</a><nav class="r-lang" aria-label="Limbă / Language"><a href="/ro/research/{slug}/" hreflang="ro" lang="ro" aria-current="{"page" if lang=="ro" else "false"}">RO</a><a href="/en/research/{slug}/" hreflang="en" lang="en" aria-current="{"page" if lang=="en" else "false"}">EN</a></nav></header>
+<header class="r-header"><a class="r-brand" href="/{lang}/"><img src="/assets/rocsi-mark.svg" alt="">TAG / ROCSI</a><a href="/{lang}/research/">{e(labels["back"])}</a>{language_dropdown(lang, "/research/" + slug + "/", "r-lang")}</header>
 <main><article class="r-article" id="{slug}"><p class="r-kicker">{e(copy["field"])}</p><h1>{e(copy["title"])}</h1><p class="r-boundary">{e(COPY[lang]["boundary"])}</p>
 <h2>{e(labels["question"])}</h2><p>{e(article["question"])}</p>
 <h2>{e(labels["principle"])}</h2><p>{e(article["principle"])}</p>
