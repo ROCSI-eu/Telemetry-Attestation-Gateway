@@ -45,11 +45,11 @@ the accepted research or documented direction materially changes.
 
 The hero panel matches the SVG aspect ratio rather than stretching with the
 adjacent heading. The original illustrative craft and shadow traverse a
-closed three-leg synthetic route twice (2.4 seconds each, 4.8 seconds total)
-and return to the initial position. All hero motion (rotors, radar, route
-flow and beacons included) ends within the same interval; reduced motion uses
-the static resting pose. No script, external assets, control logic or live
-telemetry is involved. Reloading starts a new visual sequence. This is a
+closed synthetic route continuously (3 seconds per circuit, 80% of the
+previous speed). All hero motion (rotors, radar, route flow and beacons
+included) uses the same proportional slowdown; reduced motion uses the
+static resting pose. No script, external assets, control logic or live
+telemetry is involved. Reloading starts at the initial position. This is a
 presentation-only change; the other demonstration and research pages are
 unchanged.
 
