@@ -307,6 +307,8 @@ class PublicUXTests(unittest.TestCase):
         expected.update(f"{lang}/research/{entry['id']}/index.html"
                         for entry in load_research_journal()["entries"]
                         for lang in ("ro", "en"))
+        expected.update(figure["path"] for entry in load_research_journal()["entries"]
+                        for figure in entry["article"].get("engineering_progress", {}).get("figures", []))
         self.assertEqual(set(self.files), expected)
         self.assertEqual({p.relative_to(self.folder).as_posix() for p in self.folder.rglob('*') if p.is_file()}, expected)
         for old in ('evidence-results.json','authentic-evidence.json'):
@@ -314,6 +316,66 @@ class PublicUXTests(unittest.TestCase):
         self.assertEqual(set(build(self.folder)), expected)
         for old in ('evidence-results.json','authentic-evidence.json'):
             self.assertFalse((self.folder / old).exists())
+
+    def test_supplementary_engineering_progress_bilingual_and_scoped(self):
+        from build import LABELS, ROOT, load_research_journal
+        from html import escape
+        journal = load_research_journal()
+        self.assertEqual(len(journal["entries"]), 20)
+        entry = next(item for item in journal["entries"] if item["id"] == "sitl-receive-only")
+        progress = entry["article"]["engineering_progress"]
+        self.assertNotEqual(progress["evidence_path"], entry["evidence_path"])
+        self.assertEqual(len(progress["figures"]), 3)
+        for lang in ("ro", "en"):
+            page = (self.folder / lang / "research/sitl-receive-only/index.html").read_text()
+            section = page.split('id="engineering-progress">', 1)[1].split("</section>", 1)[0]
+            self.assertIn(progress["evidence_path"], section)
+            self.assertIn(entry["evidence_path"], page)
+            for key in ("context", "result", "limitation", "prototype"):
+                self.assertIn(escape(progress[lang][key]), section)
+            self.assertEqual(section.count("<figure>"), 3)
+            for label in LABELS:
+                self.assertEqual(section.count(label), 4)
+            self.assertIn("<details>", section)
+            self.assertNotIn("<script", section)
+            for figure in progress["figures"]:
+                self.assertIn(f'src="/{figure["path"]}"', section)
+                self.assertIn(escape(figure[lang]["alt"], quote=True), section)
+                self.assertIn(escape(figure[lang]["caption"]), section)
+                public = (self.folder / figure["path"]).read_bytes()
+                self.assertEqual(hashlib.sha256(public).hexdigest(), figure["sha256"])
+                self.assertEqual(public, (ROOT / "showcase" / figure["path"]).read_bytes())
+            for item in journal["entries"]:
+                if item["id"] != entry["id"]:
+                    other = (self.folder / lang / "research" / item["id"] / "index.html").read_text()
+                    self.assertNotIn('id="engineering-progress"', other)
+        for page in (self.ro, self.en, self.research_ro, self.research_en):
+            self.assertNotIn('id="engineering-progress"', page)
+            self.assertNotIn("/assets/research/gcs-companion/", page)
+
+    def test_engineering_progress_invalid_inputs_fail_closed(self):
+        from build import JOURNAL, load_research_journal
+        changes = (
+            lambda p: p["labels"].pop(),
+            lambda p: p["figures"][0].update(path="https://example.com/image.png"),
+            lambda p: p["figures"][0].update(path="assets/research/../image.png"),
+            lambda p: p["figures"][0].update(path="assets/research/gcs-companion/missing.png"),
+            lambda p: p["figures"][0].update(sha256="0" * 64),
+            lambda p: p["figures"][0].update(height=1),
+            lambda p: p["figures"][0].pop("en"),
+            lambda p: p["figures"].__setitem__(1, p["figures"][0]),
+            lambda p: p.update(evidence_path="experiments/sitl-receive-v0/qube-parity-evidence-20261123.md"),
+            lambda p: p["en"].update(prototype="Verified product"),
+        )
+        for change in changes:
+            with self.subTest(change=change):
+                data = json.loads(JOURNAL.read_text())
+                entry = next(e for e in data["entries"] if e["id"] == "sitl-receive-only")
+                change(entry["article"]["engineering_progress"])
+                candidate = self.folder / "bad-progress.json"
+                candidate.write_text(json.dumps(data))
+                with self.assertRaises(ValueError):
+                    load_research_journal(candidate)
 
     def test_csp_no_script_tracking_or_remote_connections(self):
         headers = (self.folder / '_headers').read_text(encoding='utf-8')

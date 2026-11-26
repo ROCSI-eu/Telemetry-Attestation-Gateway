@@ -16,6 +16,8 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import re
+import struct
+import zlib
 
 from localization import localize_404, romanian_html, social_metadata
 from visual_refresh import redesign_public_html, simplify_public_html
@@ -376,6 +378,55 @@ def security_headers(html: str, research_html: str | None = None) -> str:
 
 
 
+def checked_progress_png(figure: dict) -> bytes:
+    """Only labelled, content-addressed PNGs from the dedicated research assets."""
+    name = figure["path"]
+    if (type(name) is not str or not re.fullmatch(
+            r"assets/research/[a-z0-9-]+/[a-z0-9-]+\.png", name)):
+        raise ValueError("invalid engineering media path")
+    path = ROOT / "showcase" / name
+    if path.resolve() != path or not path.is_file():
+        raise ValueError("missing or unsafe engineering media")
+    raw = path.read_bytes()
+    if (len(raw) > 450_000 or not raw.startswith(b"\x89PNG\r\n\x1a\n")
+            or type(figure["sha256"]) is not str
+            or not re.fullmatch(r"[a-f0-9]{64}", figure["sha256"])
+            or hashlib.sha256(raw).hexdigest() != figure["sha256"]):
+        raise ValueError("engineering media digest or PNG invalid")
+    # Reject all metadata, trailing data and non-RGB images; no image library
+    # or external dependency is required to validate the approved asset.
+    pos, chunks = 8, []
+    while pos < len(raw):
+        if pos + 12 > len(raw):
+            raise ValueError("truncated engineering PNG")
+        n = struct.unpack_from(">I", raw, pos)[0]
+        end = pos + n + 12
+        if end > len(raw):
+            raise ValueError("truncated engineering PNG chunk")
+        kind = raw[pos+4:pos+8]
+        payload = raw[pos+8:end-4]
+        if (kind not in (b"IHDR", b"IDAT", b"IEND")
+                or zlib.crc32(kind + payload) != struct.unpack_from(">I", raw, end-4)[0]):
+            raise ValueError("engineering PNG metadata or CRC invalid")
+        chunks.append(kind)
+        if kind == b"IHDR":
+            if n != 13:
+                raise ValueError("invalid engineering PNG header")
+            width, height, depth, color, compression, filtering, interlace = struct.unpack(">IIBBBBB", payload)
+            if (type(figure["width"]) is not int or type(figure["height"]) is not int
+                    or (width, height) != (figure["width"], figure["height"])
+                    or not 1 <= width <= 2400 or not 1 <= height <= 1800
+                    or (depth, color, compression, filtering, interlace) != (8, 2, 0, 0, 0)):
+                raise ValueError("invalid engineering PNG geometry")
+        if kind == b"IEND" and n != 0:
+            raise ValueError("invalid engineering PNG end")
+        pos = end
+    if (len(chunks) < 3 or chunks[0] != b"IHDR" or chunks[-1] != b"IEND"
+            or any(kind != b"IDAT" for kind in chunks[1:-1])):
+        raise ValueError("invalid engineering PNG chunk order")
+    return raw
+
+
 def load_research_journal(path: Path = JOURNAL) -> dict:
     """Validate public-safe, bilingual accepted research summaries at build time."""
     payload = json.loads(path.read_text(encoding="utf-8"))
@@ -386,6 +437,7 @@ def load_research_journal(path: Path = JOURNAL) -> dict:
     if type(entries) is not list or not 1 <= len(entries) <= 200:
         raise ValueError("journal entry count invalid")
     seen = set()
+    media_seen = set()
 
     def fields(value: object, required: set[str], where: str) -> dict:
         obj = exact_fields(value, required, where)
@@ -412,7 +464,41 @@ def load_research_journal(path: Path = JOURNAL) -> dict:
             raise ValueError("journal evidence reference not found: " + ref)
         for language in ("ro", "en"):
             fields(item[language], {"field", "title", "result", "insight"}, item["id"] + "/" + language)
-        article = exact_fields(item["article"], {"formula", "ro", "en", "visual"}, "article")
+        article_fields = {"formula", "ro", "en", "visual"}
+        if isinstance(item["article"], dict) and "engineering_progress" in item["article"]:
+            article_fields.add("engineering_progress")
+        article = exact_fields(item["article"], article_fields, "article")
+        if "engineering_progress" in article:
+            progress = exact_fields(article["engineering_progress"],
+                                    {"labels", "evidence_path", "ro", "en", "figures"}, "engineering progress")
+            if progress["labels"] != LABELS:
+                raise ValueError("engineering progress labels missing")
+            evidence = progress["evidence_path"]
+            if (type(evidence) is not str or evidence == ref
+                    or not re.fullmatch(r"experiments/[a-z0-9-]+/(?:[a-z0-9-]+/)*[A-Za-z0-9_.-]+\.md", evidence)
+                    or (ROOT / evidence).resolve() != ROOT / evidence or not (ROOT / evidence).is_file()):
+                raise ValueError("invalid engineering evidence reference")
+            evidence_text = (ROOT / evidence).read_text(encoding="utf-8")
+            if not all(label in evidence_text for label in LABELS):
+                raise ValueError("engineering evidence markings missing")
+            for language in ("ro", "en"):
+                fields(progress[language], {"title", "context", "result", "limitation",
+                                            "prototype", "more", "source"}, "engineering progress locale")
+            if (progress["en"]["prototype"] != "Non-cryptographic UX prototype — no proof generated or verified."
+                    or progress["ro"]["prototype"] != "Prototip UX necriptografic — nicio dovadă generată sau verificată."):
+                raise ValueError("engineering prototype boundary missing")
+            figures = progress["figures"]
+            if type(figures) is not list or not 1 <= len(figures) <= 3:
+                raise ValueError("invalid engineering figure count")
+            for figure in figures:
+                figure = exact_fields(figure, {"path", "sha256", "width", "height", "ro", "en"}, "engineering figure")
+                checked_progress_png(figure)
+                if (figure["path"] in media_seen or figure["sha256"] not in evidence_text
+                        or figure["path"] not in evidence_text):
+                    raise ValueError("duplicate or undocumented engineering media")
+                media_seen.add(figure["path"])
+                for language in ("ro", "en"):
+                    fields(figure[language], {"caption", "alt"}, "engineering figure locale")
         visual = exact_fields(article["visual"], {"theme", "paths", "mode"}, "article visual")
         if type(visual["theme"]) is not str or visual["theme"] not in ATLAS_THEMES:
             raise ValueError("invalid atlas theme")
@@ -587,6 +673,11 @@ def build(out: Path) -> tuple[str, ...]:
         "og/ro.png": (media / "og/ro.png").read_bytes(),
         "og/en.png": (media / "og/en.png").read_bytes(),
     }
+    for item in journal["entries"]:
+        for figure in item["article"].get("engineering_progress", {}).get("figures", []):
+            if figure["path"] in assets:
+                raise ValueError("duplicate public engineering asset")
+            assets[figure["path"]] = checked_progress_png(figure)
     target.mkdir(parents=True, exist_ok=True)
     # Avoid shipping a stale root page if the output directory is reused.
     obsolete_root = target / "index.html"

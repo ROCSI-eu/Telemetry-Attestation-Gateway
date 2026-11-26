@@ -204,6 +204,77 @@
             }
           ],
           "mode": "passive"
+        },
+        "engineering_progress": {
+          "labels": [
+            "EXPERIMENTAL",
+            "SYNTHETIC_ONLY",
+            "A0_SYNTHETIC",
+            "NOT VALIDATION OR PRODUCTION AUTHORIZATION"
+          ],
+          "evidence_path": "experiments/sitl-receive-v0/qa-gcs-companion-visual-20261126.md",
+          "ro": {
+            "title": "De la cercetare la un companion experimental pentru QGroundControl",
+            "context": "Material suplimentar de progres ingineresc, dintr-un experiment ulterior offline cu două observații fabricate; nu reprezintă captura SITL care fundamentează constatarea acestui articol.",
+            "result": "QGroundControl a importat și reprezentat grafic datele derivate. Prototipul desktop TAG Companion a separat rezultatul curent, scenariile simulate și rezultatul istoric al unei verificări criptografice offline. La schimbarea mock-ului pozitiv în negativ, rezultatul curent a rămas NOT_EVALUATED, mock-ul a devenit INVALID, iar rezultatul istoric a rămas VALID.",
+            "limitation": "Nu a fost generată sau verificată o nouă dovadă. Rezultatul istoric nu este legat criptografic de observațiile afișate. Nu a existat o conexiune live la vehicul sau simulator; nu sunt demonstrate interoperabilitatea MAVLink nativă, adevărul telemetriei, siguranța sau pregătirea pentru producție. Acceptanța browserului rămâne nefinalizată.",
+            "prototype": "Prototip UX necriptografic — nicio dovadă generată sau verificată.",
+            "more": "Alte capturi ale testului offline",
+            "source": "Dovada suplimentară de reproducere"
+          },
+          "en": {
+            "title": "From research to an experimental QGroundControl companion",
+            "context": "Supplementary engineering progress from a subsequent offline experiment with two fabricated observations; this is not the SITL capture underlying the original finding in this article.",
+            "result": "QGroundControl imported and plotted derived data. The native TAG Companion prototype separated the current result, simulated scenarios and the historical outcome of an offline cryptographic verification. When the positive mock changed to negative, the current result remained NOT_EVALUATED, the mock became INVALID and the historical outcome remained VALID.",
+            "limitation": "No new proof was generated or verified. The historical result is not cryptographically bound to the displayed observations. There was no live connection to a vehicle or simulator; native MAVLink interoperability, telemetry truth, safety and production readiness remain unestablished. Browser acceptance remains incomplete.",
+            "prototype": "Non-cryptographic UX prototype — no proof generated or verified.",
+            "more": "Additional offline test screenshots",
+            "source": "Supplementary reproduction evidence"
+          },
+          "figures": [
+            {
+              "path": "assets/research/gcs-companion/qgc-tag-companion-01b.png",
+              "sha256": "ddc8f98c6b80936b407f45ebdc1d9cd916be341618e9197db022aace61ecd4f1",
+              "width": 1920,
+              "height": 1152,
+              "ro": {
+                "caption": "QGroundControl și TAG Companion, afișate alăturat. Scenariul curent: NOT_EVALUATED; mock negativ: INVALID; replay istoric: VALID. Rezultatele sunt distincte; nu a fost verificată nicio dovadă nouă.",
+                "alt": "Grafic TAGD la stânga și trei panouri distincte TAG Companion la dreapta."
+              },
+              "en": {
+                "caption": "QGroundControl and TAG Companion side by side. Current scenario: NOT_EVALUATED; negative mock: INVALID; historical replay: VALID. These outcomes are separate; no new proof was verified.",
+                "alt": "TAGD chart on the left and three separate TAG Companion panels on the right."
+              }
+            },
+            {
+              "path": "assets/research/gcs-companion/qgc-01a-chart.png",
+              "sha256": "0b743589a8edbbc4b9dbd0752f86445a19a4d3537a76811f57da3b9ebce53ac2",
+              "width": 1920,
+              "height": 1152,
+              "ro": {
+                "caption": "QGroundControl reprezintă două observații fabricate, cu ordinea 1 și 2 și marcajul sintetic constant 1. Linia dintre puncte este interpolare grafică, nu măsurare continuă.",
+                "alt": "Grafic cu seria Sample crescând de la 1 la 2 și seria Synthetic constantă la 1."
+              },
+              "en": {
+                "caption": "QGroundControl plots two fabricated observations, numbered 1 and 2, with a constant synthetic marker of 1. The connecting line is graphical interpolation, not continuous measurement.",
+                "alt": "Sample series increases from 1 to 2; Synthetic remains at 1."
+              }
+            },
+            {
+              "path": "assets/research/gcs-companion/qgc-01a-messages.png",
+              "sha256": "d498c3b9527f463ae6704103c772cbbc6e3bde1148a21e28070c8a16785e715c",
+              "width": 1920,
+              "height": 1152,
+              "ro": {
+                "caption": "Mesajele din fișier precizează caracterul experimental, sintetic și derivat al afișării. Fișierul nu este un jurnal de zbor real sau o dovadă.",
+                "alt": "Trei mesaje care delimitează utilizarea experimentală și proveniența sintetică."
+              },
+              "en": {
+                "caption": "File messages identify the display as experimental, synthetic and derived. This file is neither a real flight log nor a proof.",
+                "alt": "Three messages describe the experimental scope and synthetic provenance."
+              }
+            }
+          ]
         }
       }
     },
