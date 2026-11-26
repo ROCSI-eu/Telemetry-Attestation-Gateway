@@ -736,18 +736,64 @@
           ]
         }
       }
+    },
+    {
+      "id": "synthetic-source-emission-end-consistency",
+      "status": "documented_synthetic",
+      "evidence_path": "experiments/source-proof-binding-v0/qa-emission-end-consistency-20261126.md",
+      "ro": {
+        "field": "Integritate · consistență terminală",
+        "title": "Unicitatea închiderii autentificate a unei secvențe de observații",
+        "result": "În 10 teste sintetice locale, prima declarație terminală validă a fost reținută persistent; repetarea identică a fost idempotentă, iar o declarație autentică contradictorie a fost respinsă în același context, inclusiv după reluare.",
+        "insight": "O primă declarație autentică, dar falsă și consecventă, rămâne nedetectabilă fără o referință independentă. Integritatea referinței locale este presupusă; acoperirea fizică, originea reală și timpul de încredere nu sunt demonstrate."
+      },
+      "en": {
+        "field": "Integrity · terminal consistency",
+        "title": "Authenticated terminal closure uniqueness for an observation sequence",
+        "result": "In 10 local synthetic tests, the first valid terminal declaration was retained persistently; an identical repetition was idempotent, and a conflicting authentic declaration was rejected in the same context, including after restart.",
+        "insight": "An authentic but false and consistent first declaration remains undetectable without an independent reference. Local reference integrity is assumed; physical coverage, real origin and trusted time remain unestablished."
+      },
+      "article": {
+        "formula": "R_C(N) = IDEMPOTENT if N = N_0; R_C(N) = CONFLICT if N ≠ N_0",
+        "ro": {
+          "question": "Poate un verificator să detecteze declarații terminale autentificate, dar contradictorii, pentru același context de emisie?",
+          "principle": "Prima declarație terminală validă este asociată unei referințe persistente. Declarațiile ulterioare sunt autentificate și comparate cu aceasta în același domeniu, aceeași epocă și pentru același indice inițial, sub politica de autentificare fixată. Repetarea identică este idempotentă; o închidere autentică diferită este respinsă fără înlocuirea referinței.",
+          "formula_note": "C este contextul fixat de verificator, N_0 indicele terminal acceptat inițial, iar N indicele unei declarații ulterioare individual autentice și valide. Relația presupune păstrarea aceleiași referințe locale intacte pentru contextul respectiv.",
+          "method": "Au fost reutilizate observațiile sintetice numerotate, autentificarea referinței terminale și mecanismele existente de persistență și scriere atomică. Toate cele 10 teste locale izolate au trecut: prima acceptare, repetarea identică, contradicțiile în ambele ordine, modificarea neautentificată, separarea contextelor și reluarea după conflict. Nu a fost generată o nouă dovadă ZKP.",
+          "interpretation": "O istorie sintetică cu trei emisii și una cu patru emisii, dintre care ultima este ascunsă, pot produce aceeași declarație terminală autentificată și același rezultat pentru verificator. Unicitatea închiderii nu demonstrează sinceritatea declarației, completitudinea fizică, originea reală sau timpul de încredere. Integritatea și păstrarea referinței locale sunt presupuneri ale modelului; nu s-a demonstrat rezistența la restaurare malițioasă sau compromitere.",
+          "controls": "Modificarea neautentificată, o referință dintr-un context greșit și absența declarației terminale au fost respinse. O referință persistentă absentă sau coruptă a împiedicat reluarea normală. Conflictul nu a schimbat referința inițială, nici după reluare. Nu s-au testat unicitatea globală între verificatori, prospețimea, tranzițiile între epoci, întreruperea în timpul scrierii sau legarea de ZKP.",
+          "stages": [
+            "Prima declarație terminală autentificată",
+            "Referință locală persistentă",
+            "Repetare identică sau conflict"
+          ]
+        },
+        "en": {
+          "question": "Can a verifier detect authenticated but contradictory terminal declarations for the same emission context?",
+          "principle": "The first valid terminal declaration is associated with a persistent reference. Subsequent declarations are authenticated and compared against it within the same scope, epoch and initial index, under the pinned authentication policy. Identical repetition is idempotent; a different authentic closure is rejected without replacing the reference.",
+          "formula_note": "C is the verifier-owned context, N_0 the initially accepted terminal index and N the index of a subsequent individually authentic and valid declaration. The relation assumes the same intact local reference is retained for that context.",
+          "method": "Earlier numbered synthetic observations, terminal reference authentication and existing persistence and atomic-write mechanisms were reused. All 10 isolated local tests passed: initial acceptance, identical repetition, contradictions in both orders, unauthenticated modification, context separation and restart after conflict. No new ZKP was generated.",
+          "interpretation": "A synthetic history containing three emissions and another containing four emissions, with the final emission concealed, can produce the same authenticated terminal declaration and verifier result. Closure uniqueness does not establish declaration truthfulness, physical completeness, real origin or trusted time. Integrity and retention of the local reference are assumptions; resistance to malicious restoration or compromise was not established.",
+          "controls": "Unauthenticated modification, an out-of-context reference and missing terminal declaration were rejected. A missing or corrupted persistent reference prevented normal restart. Conflict did not change the original reference, including after restart. Global uniqueness across verifiers, freshness, epoch transitions, interruption during write and ZKP binding were not tested.",
+          "stages": [
+            "First authenticated terminal declaration",
+            "Persistent local reference",
+            "Identical repetition or conflict"
+          ]
+        }
+      }
     }
   ],
   "next_question": {
     "ro": {
       "label": "Întrebare deschisă",
-      "title": "Cum distingem o declarație terminală sinceră de una contradictorie sau falsă?",
-      "description": "Referința terminală autentificată limitează secvența declarată, dar nu rezolvă unicitatea și prospețimea închiderii, tranzițiile între epoci, acoperirea fizică, originea reală sau timpul de încredere."
+      "title": "Cum distingem o declarație terminală autentică și consecventă, dar falsă, de una sinceră?",
+      "description": "Unicitatea locală a închiderii nu rezolvă prospețimea declarației, tranzițiile între epoci sau lipsa unei referințe independente privind emisiile efective. Acoperirea fizică, originea reală și timpul de încredere rămân nedemonstrate."
     },
     "en": {
       "label": "Open research question",
-      "title": "How can a truthful terminal declaration be distinguished from a conflicting or false one?",
-      "description": "An authenticated end reference bounds the declared sequence, but does not resolve unique and fresh closure, epoch transitions, physical coverage, real origin or trusted time."
+      "title": "How can an authentic and consistent but false terminal declaration be distinguished from a truthful one?",
+      "description": "Local closure uniqueness does not resolve declaration freshness, epoch transitions or the absence of an independent reference for actual emissions. Physical coverage, real origin and trusted time remain unestablished."
     }
   }
 }
