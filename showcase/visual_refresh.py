@@ -1607,6 +1607,16 @@ PUBLIC_SIMPLE_CSS = """
 
     .section-nav{gap:clamp(12px,2vw,28px)}
     .hero-actions a{min-width:185px;text-align:center}
+    .section-nav .header-research{color:#e5c18a;font-weight:700}
+    .hero-actions{gap:10px}
+    .hero-actions a{min-width:0;min-height:44px}
+    .hero-actions .hero-research{background:transparent;color:#e5c18a;border-color:#bca47c}
+    .hero-actions .hero-research:hover{background:#e5c18a;color:#111617}
+    .hero-actions a:focus-visible,.section-nav .header-research:focus-visible{outline:2px solid #f1d4a2;outline-offset:3px}
+    @media(min-width:751px){.section-nav{gap:clamp(10px,1.3vw,20px)}}
+    @media(max-width:750px){.hero-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.hero-actions a{width:100%;padding:8px 7px;font-size:.78rem;line-height:1.3}}
+    @media(max-width:750px) and (max-height:590px){.hero .sub{font-size:.87rem;line-height:1.38}.hero-art{width:min(100%,clamp(112px,21svh,200px))}.hero-actions{margin-top:8px}.section-nav{column-gap:9px}}
+
     .public-demo{padding:clamp(48px,7vw,92px) 0;border-top:1px solid #415256;scroll-margin-top:30px}
     .public-demo .section-display{max-width:23ch}
     .public-demo-lead{max-width:70ch;font-size:clamp(1rem,1.35vw,1.15rem);line-height:1.7;color:#d5dcd7;margin:16px 0 33px}
@@ -1762,10 +1772,11 @@ def simplify_public_html(html: str) -> str:
     header = re.sub(r'<nav class="section-nav".*?</nav>',
         '<nav class="section-nav" aria-label="Page sections">'
         '<a href="#principle">The Concept</a><a href="#demonstration">The Demonstration</a>'
-        '<a href="#results">Results</a></nav>', header, count=1, flags=re.S)
+        '<a href="#results">Results</a><a class="header-research" href="/en/research/">Research</a></nav>', header, count=1, flags=re.S)
     hero = re.sub(r'<div class="hero-actions">.*?</div>',
-        '<div class="hero-actions"><a href="#demonstration">See the demonstration</a></div>',
+        '<div class="hero-actions"><a href="#demonstration">See the demonstration</a><a class="hero-research" href="/en/research/">Research journal</a></div>',
         hero, count=1, flags=re.S)
+    hero = hero.replace("What if systems could demonstrate a condition without revealing the data behind it? TAG investigates this direction for telemetry through cryptographic research.", "TAG researches cryptographic checks of telemetry conditions without revealing private data. Discover the experiments, findings and their limits in the research journal.", 1)
     hero = public_hero_flight(hero)
     intro = intro.replace('<p class="primer-kicker">01 / THE CONCEPT</p>',
                           '<p class="primer-kicker section-overline">THE CONCEPT</p>', 1)
