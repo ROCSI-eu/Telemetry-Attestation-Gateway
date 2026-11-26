@@ -57,7 +57,7 @@ unchanged.
 
 The hero craft and shadow are scaled 30% above the preceding baseline
 (0.52 to 0.676); timing is unchanged; three route coordinates are inset to keep the larger craft inside the SVG. At widths up to 750px the
-scene precedes the headline visually. Home, catalog and article language
+scene precedes the headline visually. The mobile hero uses viewport-aware\nart sizing, compact spacing and readable copy to fit the title, description\nand primary CTA on common initial portrait viewports without hiding content.\nSmaller screens or enlarged browser text may still require scrolling. Home, catalog and article language
 selectors use a native closed-by-default HTML disclosure with ordinary
 same-route RO/EN links; no scripts, forms or client-side redirects. The
 homepage header uses the full localized public organization name from

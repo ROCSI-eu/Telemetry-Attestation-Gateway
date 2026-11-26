@@ -79,6 +79,9 @@ class PublicUXTests(unittest.TestCase):
             self.assertIn('transform="translate(195 510) scale(.676) translate(-389 -350)"', scene)
             self.assertIn('aspect-ratio:760/700;align-self:center', page)
             self.assertIn('.hero-art{min-height:0;order:-1}', page)
+            self.assertIn('width:min(100%,clamp(150px,34svh,340px))', page)
+            self.assertIn('width:min(100%,clamp(128px,25svh,200px))', page)
+            self.assertIn('font-size:clamp(1.7rem,7.1vw,2.8rem);max-width:none', page)
             self.assertEqual(page.count('scale(.676) translate(-389px,-350px)'), 6)
             for animation in ('public-flight 3s linear infinite',
                               'public-radar 6s linear infinite',
