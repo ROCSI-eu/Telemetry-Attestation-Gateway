@@ -79,6 +79,14 @@ aligns their visual midpoints even when localized text wraps differently.
 The existing stacked mobile order and all concept text and artwork remain
 unchanged.
 
+### Demonstration iconography
+
+The three decorative SVG scenes use distinct sensor/receiver, private
+input/cryptographic transformation/proof token and independent
+validator/condition symbols. The proof token is visually consistent
+between the last two stages. The illustrations remain conceptual, with
+unchanged text, timing, layout and reduced-motion behavior.
+
 ### Lower overview visual coherence
 
 The demonstration uses three original decorative SVG illustrations with

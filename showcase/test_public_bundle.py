@@ -70,6 +70,21 @@ class PublicUXTests(unittest.TestCase):
         self.assertIn("Verificăm respectarea unei condiții fără să dezvăluim datele din spatele ei", self.ro)
         self.assertIn("We check whether a condition is met without revealing the data behind it", self.en)
 
+    def test_demo_stage_specific_iconography(self):
+        for page in (self.ro, self.en):
+            scenes = re.findall(r'<svg class="public-demo-art".*?</svg>', page, re.S)
+            self.assertEqual(len(scenes), 3)
+            for scene, roles in zip(scenes, (
+                ("demo-sensor", "demo-receiver"),
+                ("demo-private", "demo-transform", "demo-proof-token"),
+                ("demo-proof-token", "demo-validator", "demo-condition"),
+            )):
+                for role in roles:
+                    self.assertIn('class="' + role + '"', scene)
+                self.assertIn('aria-hidden="true" focusable="false"', scene)
+                self.assertIn('class="demo-motion"', scene)
+            self.assertEqual(page.count('class="demo-proof-token"'), 2)
+
     def test_lower_overview_visual_coherence(self):
         for page in (self.ro, self.en):
             self.assertEqual(page.count('class="public-demo-art"'), 3)
