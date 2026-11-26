@@ -1607,6 +1607,26 @@ PUBLIC_SIMPLE_CSS = """
     .public-documentation{margin:24px 0 0}
     .public-documentation a{color:#eed09a;text-underline-offset:5px;font-weight:700}
     @media(max-width:750px){.public-steps,.public-results{grid-template-columns:1fr}.public-step{min-height:0}.public-step h3{margin:12px 0}.public-demo{padding-top:48px}.public-result{padding:19px}}
+    /* The lower page has its own visual vocabulary: illustration vs evidence. */
+    .public-step{position:relative;display:flex;flex-direction:column;gap:12px;padding:clamp(16px,2.4vw,28px)}
+    .public-step h3{margin:0}.public-step p{margin:0}
+    .public-demo-art{display:block;width:100%;height:auto;aspect-ratio:240/104;background:radial-gradient(ellipse at 50% 50%,#23434b,#0d1d23);border:1px solid #3c5960;color:#9ad5d0}
+    .public-demo-art .demo-motion{animation:demo-flow 2.8s linear infinite}
+    .public-demo-art .demo-pulse{transform-box:fill-box;transform-origin:center;animation:demo-pulse 2.8s ease-in-out infinite}
+    @keyframes demo-flow{to{stroke-dashoffset:-48}}
+    @keyframes demo-pulse{0%,100%{opacity:.45}50%{opacity:1}}
+    .public-result{display:grid;grid-template-columns:30px minmax(0,1fr);gap:12px;align-items:start;background:none;border:0;border-top:1px solid #4b6668;padding:18px 0}
+    .public-result strong{color:#e8e8df;margin-bottom:6px}
+    .public-result-mark{width:28px;height:28px;color:#a6d9cd}
+    .public-limits{max-width:none;margin:0;padding:clamp(18px,3vw,30px);border-left:3px solid #bca47c}
+    .public-evidence{display:grid;grid-template-columns:1fr;gap:14px;padding:20px 0;border-bottom:1px solid #415256}
+    .public-evidence .public-documentation{margin:0;justify-self:start}
+    .public-evidence a{display:inline-flex;align-items:center;min-height:44px;padding:10px 15px;border:1px solid #bca47c;text-decoration:none}
+    .public-evidence a:hover{background:#e5c18a;color:#111617}
+    .public-research-summary .public-documentation a{display:inline-flex;align-items:center;min-height:44px;padding:12px 20px;background:#e5c18a;color:#111617;text-decoration:none;font-weight:750}
+    .public-research-summary .public-documentation a:hover{background:#f0d9ad}
+    @media(max-width:750px){.public-step{gap:10px}.public-demo-art{max-height:160px}.public-results{gap:4px}.public-evidence{grid-template-columns:1fr}.public-evidence a{width:fit-content;max-width:100%}}
+    @media(prefers-reduced-motion:reduce){.public-demo-art *{animation:none!important}}
     @media(prefers-reduced-motion:reduce){.public-step{animation:none!important}.hero-scene *,.concept-cinema *{animation:none!important}}
 """
 
@@ -1639,6 +1659,31 @@ def public_hero_flight(hero: str) -> str:
     if hero.count(end) != 1:
         raise ValueError("public hero flight end anchor changed")
     return hero.replace(end, '</g>' + end, 1)
+
+
+# Original, decorative illustrations; no private value, runtime status or evidence.
+PUBLIC_DEMO_ART = (
+    '<svg class="public-demo-art" viewBox="0 0 240 104" aria-hidden="true" focusable="false">'
+    '<g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 52H228M12 24H228M12 80H228" opacity=".18"/>'
+    '<rect x="14" y="34" width="38" height="36" rx="4"/><path d="M23 45h20M23 52h15M23 59h20"/>'
+    '<path d="M52 52H68L80 28L94 78L108 38L124 64L137 52H184" stroke-width="2"/>'
+    '<path class="demo-motion" d="M52 52H68L80 28L94 78L108 38L124 64L137 52H184" stroke="#e5c18a" stroke-dasharray="4 12" stroke-width="3"/>'
+    '<rect x="184" y="32" width="42" height="40" rx="4"/><path d="M193 43h24M193 52h24M193 61h16"/></g></svg>',
+    '<svg class="public-demo-art" viewBox="0 0 240 104" aria-hidden="true" focusable="false">'
+    '<g fill="none" stroke="currentColor" stroke-width="1.5"><rect x="14" y="27" width="49" height="50" rx="5"/>'
+    '<path d="M25 42h27M25 52h27M25 62h18"/><path d="M63 52H90M150 52H182" stroke-dasharray="4 8" class="demo-motion"/>'
+    '<path d="M120 15L150 33V70L120 89L90 70V33Z"/><path d="M120 33L135 42V61L120 70L105 61V42Z" class="demo-pulse" fill="#32605f" stroke="#e5c18a"/>'
+    '<rect x="182" y="27" width="44" height="50" rx="5"/><path d="M191 40h26M191 50h26M191 60h16" stroke="#e5c18a"/></g></svg>',
+    '<svg class="public-demo-art" viewBox="0 0 240 104" aria-hidden="true" focusable="false">'
+    '<g fill="none" stroke="currentColor" stroke-width="1.5"><rect x="14" y="29" width="45" height="46" rx="4"/>'
+    '<path d="M24 42h25M24 52h25M24 62h16"/><path d="M59 52H93" stroke-dasharray="4 8" class="demo-motion"/>'
+    '<circle cx="130" cy="52" r="36" opacity=".3"/><circle cx="130" cy="52" r="27"/>'
+    '<path d="M116 52l10 10 19-23" class="demo-pulse" stroke="#e5c18a" stroke-width="3.5"/>'
+    '<path d="M166 52H184" stroke-dasharray="4 8"/><rect x="184" y="34" width="42" height="36" rx="4"/><path d="M193 45h24M193 55h16"/></g></svg>',
+)
+PUBLIC_RESULT_MARK = ('<svg class="public-result-mark" viewBox="0 0 28 28" aria-hidden="true" focusable="false">'
+                      '<circle cx="14" cy="14" r="12" fill="none" stroke="currentColor"/>'
+                      '<path d="M8 14l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2"/></svg>')
 
 
 def simplify_public_html(html: str) -> str:
@@ -1688,6 +1733,19 @@ def simplify_public_html(html: str) -> str:
       <p class="public-limits"><strong>Experimental and synthetic only.</strong> The tests confirm an isolated end-to-end research path, not authentic flight telemetry. A valid proof does not authenticate its source, timestamp or the full mission. The published illustration and JSON recordings are not independently authenticated by this website. No live vehicle, proving, verification or operational authorization is provided.</p>
       <p class="public-documentation"><a href="https://github.com/ROCSI-eu/Telemetry-Attestation-Gateway">Technical documentation and research evidence on GitHub</a></p>
     </section>'''
+    for index, art in enumerate(PUBLIC_DEMO_ART, start=1):
+        pattern = rf'(<li class="public-step"><small>0{index} / [^<]+</small>)'
+        demo, count = re.subn(pattern, lambda match: match.group(1) + art, demo)
+        if count != 1:
+            raise ValueError("public demonstration anchor changed")
+    demo = re.sub(r'(<article class="public-result">)(<strong>.*?</p>)(</article>)',
+                  lambda m: m[1] + PUBLIC_RESULT_MARK + "<div>" + m[2] + "</div>" + m[3],
+                  demo, flags=re.S)
+    # Keep the entire limitations copy and the single evidence link in one full-width area.
+    demo, count = re.subn(r'(<p class="public-limits">.*?</p>)\s*(<p class="public-documentation">.*?</p>)',
+                          r'<div class="public-evidence">\1\2</div>', demo, flags=re.S)
+    if count != 1:
+        raise ValueError("public evidence anchor changed")
     prefix = html.split('<body>', 1)[0]
     if prefix.count('</style>') != 1 or prefix.count('<style>') != 1:
         raise ValueError("public stylesheet structure changed")

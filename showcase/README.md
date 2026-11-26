@@ -63,6 +63,18 @@ same-route RO/EN links; no scripts, forms or client-side redirects. The
 homepage header uses the full localized public organization name from
 ROCSI-Website's organization identity source, not the legal SRL name.
 
+### Lower overview visual coherence
+
+The demonstration uses three original decorative SVG illustrations with
+CSS-only flow/pulse motion and reduced-motion fallback. The confirmed
+laboratory steps are visually distinct static evidence summaries; counts
+remain derived from the accepted journal and the catalog link is prominent.
+The proposed GCS figure uses static component symbols and split observation
+arrows, with control and receive-only boundaries unchanged. The full-width
+limitations and single GitHub evidence link remain visible before the ROCSI
+affiliation. No new claim, experiment, external asset or dependency; the
+hero, concept and research pages are unaffected.
+
 ### Proposed editorial extension — engineering progress
 
 For separately accepted, public-safe engineering achievements (for example

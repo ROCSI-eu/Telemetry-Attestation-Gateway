@@ -185,6 +185,21 @@ OVERVIEW_CSS = """
 .public-gcs-branch:last-child .public-gcs-node{border-color:#69aba3;border-style:dashed}
 .public-gcs figcaption{font-size:.84rem;color:#c8d4d0;margin-top:14px}
 @media(max-width:600px){.public-gcs-branches{grid-template-columns:1fr;gap:16px}.public-research-counts div{flex:1 1 120px}}
+/* Overview only: preserve the research catalog's common CSS. */
+.public-research-summary{border-top:1px solid #466168;padding-top:24px}
+.public-research-counts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:560px}
+.public-research-counts div{border-top:2px solid #d5b67e;padding:12px 16px;background:#14272c}
+.public-research-counts dd{font-size:clamp(2rem,4vw,3rem)}
+.public-gcs figure{max-width:840px}
+.public-gcs-icon{display:block;width:56px;height:46px;color:#9bd3cf;flex:none}
+.public-gcs-source,.public-gcs-node{display:flex;align-items:center;gap:14px;text-align:left;padding:16px}
+.public-gcs-source strong,.public-gcs-node strong{margin-bottom:4px}
+.public-gcs-fork{width:100%;height:44px;display:block;color:#9bd3cf}
+.public-gcs-branch>.public-gcs-arrow:first-child{display:none}
+.public-gcs-arrow{height:28px;margin:3px 0}
+.public-gcs-arrow svg{width:32px;height:28px}
+.public-gcs-branch:last-child .public-gcs-node{background:#142c31}
+@media(max-width:600px){.public-gcs-fork{display:none}.public-gcs-source{max-width:none}.public-gcs-branches{gap:12px;margin-left:12px;padding:14px 0 0 18px;border-left:1px solid #9bd3cf}.public-gcs-branch{position:relative}.public-gcs-branch::before{content:"";position:absolute;top:24px;left:-18px;width:17px;border-top:1px solid #9bd3cf}.public-gcs-branch::after{content:"";position:absolute;top:21px;left:-7px;width:6px;height:6px;border-top:1px solid #9bd3cf;border-right:1px solid #9bd3cf;transform:rotate(45deg)}.public-gcs-icon{width:42px;height:38px}.public-gcs-node,.public-gcs-source{gap:10px;padding:12px}.public-research-counts div{padding:10px}}
 """
 OVERVIEW_COPY = {
     "ro": {"heading": "De la verificarea unei condiții la integritatea fluxului de telemetrie",
@@ -216,9 +231,20 @@ def render_overview_progress(journal: dict, lang: str) -> str:
     e = escape
     findings = len(journal["entries"])
     themes = len({item["article"]["visual"]["theme"] for item in journal["entries"]})
+    icons = {
+        "source": '<path d="M14 24h36M32 6v36M12 10l40 28M52 10L12 38"/><rect x="24" y="16" width="16" height="16" rx="4"/><circle cx="12" cy="10" r="5"/><circle cx="52" cy="10" r="5"/><circle cx="12" cy="38" r="5"/><circle cx="52" cy="38" r="5"/>',
+        "gcs": '<rect x="5" y="5" width="54" height="34" rx="3"/><path d="M13 29l11-12 10 7 12-10M25 39v6m14-6v6M18 45h28"/>',
+        "tag": '<path d="M32 4l23 12v23L32 51 9 39V16Z"/><path d="M20 24h24M20 31h24M20 38h14"/>',
+        "proof": '<rect x="5" y="6" width="30" height="42" rx="3"/><path d="M12 17h16M12 25h16M12 33h12"/><circle cx="45" cy="32" r="15"/><path d="M39 32l5 5 8-10"/>',
+    }
     def node(title, note, cls="public-gcs-node"):
-        return f'<div class="{cls}"><strong>{e(c[title])}</strong>{e(c[note])}</div>'
-    arrow = '<div class="public-gcs-arrow" aria-hidden="true">↓</div>'
+        icon = ('<svg class="public-gcs-icon" viewBox="0 0 64 54" aria-hidden="true" focusable="false" '
+                'fill="none" stroke="currentColor" stroke-width="1.8">' + icons[title] + '</svg>')
+        return f'<div class="{cls}">{icon}<div><strong>{e(c[title])}</strong>{e(c[note])}</div></div>'
+    arrow = ('<div class="public-gcs-arrow" aria-hidden="true"><svg viewBox="0 0 32 28" fill="none" stroke="currentColor" stroke-width="1.5">'
+             '<path d="M16 1v23m-6-6 6 6 6-6"/></svg></div>')
+    fork = ('<svg class="public-gcs-fork" viewBox="0 0 840 44" preserveAspectRatio="none" aria-hidden="true" '
+            'fill="none" stroke="currentColor" stroke-width="1.5"><path d="M420 0v15H210v26m-6-6 6 6 6-6M420 15h210v26m-6-6 6 6 6-6"/></svg>')
     return (
         f'<section class="public-research-summary" aria-labelledby="public-research-title">'
         f'<h3 id="public-research-title">{e(c["heading"])}</h3>'
@@ -229,7 +255,7 @@ def render_overview_progress(journal: dict, lang: str) -> str:
         f'<section class="public-gcs" aria-labelledby="public-gcs-title">'
         f'<h3 id="public-gcs-title">{e(c["direction"])}</h3><p><strong>{e(c["proposed"])}</strong></p>'
         f'<p>{e(c["intro"])}</p><figure aria-label="{e(c["direction"], quote=True)}">'
-        + node("source", "synthetic", "public-gcs-source")
+        + node("source", "synthetic", "public-gcs-source") + fork
         + '<div class="public-gcs-branches"><div class="public-gcs-branch">'
         + arrow + node("gcs", "gcs_note")
         + '</div><div class="public-gcs-branch">'
