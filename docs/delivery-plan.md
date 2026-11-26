@@ -36,6 +36,20 @@ Experimental artifacts and outputs MUST conspicuously carry **`EXPERIMENTAL`**, 
 
 Experiment output is not external discovery evidence, independent verification, a performance commitment, a security finding closure, or a product capability. It MUST NOT be relabelled in place. Promotion requires a reviewed copy or reimplementation under the destination controls, retaining provenance while excluding sandbox data and keys.
 
+## Product-readiness focus and GCS demonstrator
+
+Planning direction, 2026-11-26: pause automatic continuation of individual fundamental experiments; retain the research track and resume narrowly scoped investigations only for material demonstrator or product limitations. Reuse accepted synthetic evidence and the existing pinned tools. This is a prioritization within the parallel-track model, not an additional promotion gate.
+
+The first proposed increment is GCS-COMPANION-01: an isolated, synthetic, receive-only reference companion for one existing GCS, preferably QGroundControl, or Mission Planner first if the existing test environment makes that simpler. Both integrations should ultimately reuse the same experimental TAG core and minimal ingestion contract, without native plugins, GCS forks or a TAG command/relay path. Keep GCS command capabilities outside the TAG trust boundary and enforce the isolated synthetic test boundary. Reuse the demonstrated bounded-speed SITL-to-ZKP path and independent offline verifier; keep mock, replay and newly observed cryptographic results distinguishable. An historical proof is not evidence for a new observation unless the actual bound inputs and provenance match.
+
+Acceptance for the first integration: reproducible shared synthetic scenario in the GCS and TAG; bounded intake and policy evaluation; correctly attributed genuine proof or explicitly separate replay; independently invokable offline verification; minimized typed output; positive, negative and unavailable-input/verifier fail-closed cases; no raw telemetry, witness or restricted identifiers in UI/export/logs; verified absence of a TAG command path; scoped cleanup. Any new execution, proving, provisioning or installation must remain within its applicable authorization. Reuse the same core for the second GCS.
+
+Proposed test-tool retention: preserve version-pinned GCS applications in the appropriate non-production QA environments alongside existing toolchains after separately approved installation and dependency/provenance checks. Retain synthetic scenario definitions and manual reproduction instructions beside automated tests. Keep experiment processes and private runtime data disposable and isolated. Do not alter the existing TAG #88 service or use a production host for this increment.
+
+Finite follow-on objectives: consolidate the shared experimental core; demonstrate both GCS integrations; package portable offline evidence; freeze the applicable contract and select the proof system through Gate A and required review; prepare a reproducible supported distribution through applicable promotion controls; complete scoped security/privacy/recovery evidence; conduct separately authorized external workflow and technical/commercial evaluation under Gate B; and consider an offline MVP declaration only when Gate D is satisfied. Gate C and Gate E remain separate for real sources/hardware and pilot/deployment. External discovery and security preparation may run in parallel within their authorization. Keep the six independent artifact dimensions and existing register unchanged until evidence and authority justify promotion.
+
+The public reference implementation and eventual private commercial boundary follow the [commercial model](commercial-model.md#repository-boundary-and-gcs-reference-integration). No private repository, new deployment, proof-system adoption or release is authorized by this planning section.
+
 ## Artifact map and dependencies
 
 The identifiers below name artifacts, not sequential work packages.

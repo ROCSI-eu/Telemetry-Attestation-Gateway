@@ -50,6 +50,14 @@ Commercial community support, self-hosted enterprise packages, and managed servi
 
 These features may be proprietary because they operate or administer the open proof path rather than redefine it. Their security, privacy, retention, and assurance claims must remain explicit. Service objectives are commitments of a particular offering, not properties of the proof protocol or defaults for the proposed MVP.
 
+## Repository boundary and GCS reference integration
+
+Owner-endorsed direction, 2026-11-26 (planning only): retain the existing public repository as the canonical research and open proof-path repository. Continue the synthetic reference integrations with QGroundControl and Mission Planner, the shared standard TAG core, local CLI/SDK, verifier, schemas, fixtures, conformance tests and reproducible local demonstrator in that repository. Do not fork either GCS merely to integrate TAG. Publication of integration code does not imply supported interoperability or authorize real telemetry, hardware or external evaluation.
+
+Defer a separate private commercial implementation repository until a concrete proprietary capability, customer need and ownership boundary justify it. Its name, license, interfaces and support scope remain unselected. Future private modules may consume versioned public interfaces and add organization-specific integrations, administration or managed operations; they must not make proprietary software or a hosted account necessary to produce or independently verify standard proofs, nor move existing open capabilities behind a paid boundary. Keep customer-specific confidential material, credentials, contracts and negotiations in separately approved private systems, never in the public repository. Private repository creation, licensing changes, commercial release and promotion are separately authorized decisions.
+
+The existing MIT license remains effective; ADR-0003 is Proposed and its prerequisites remain unchanged. This direction confirms the existing open-core policy; it is not acceptance of an implementation technology, commercial demand, a pricing decision or an artifact promotion.
+
 ## Independence and anti-lock-in rules
 
 Commercial packaging **MUST** preserve all of the following principles:
