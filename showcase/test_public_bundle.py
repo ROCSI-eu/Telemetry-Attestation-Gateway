@@ -70,6 +70,22 @@ class PublicUXTests(unittest.TestCase):
         self.assertIn("Verificăm respectarea unei condiții fără să dezvăluim datele din spatele ei", self.ro)
         self.assertIn("We check whether a condition is met without revealing the data behind it", self.en)
 
+    def test_hero_flight_finite_and_static_fallback(self):
+        for page in (self.ro, self.en):
+            scene = re.search(r'<svg class="hero-scene".*?</svg>', page, re.S).group()
+            self.assertIn('viewBox="0 0 760 700" preserveAspectRatio="xMidYMid meet"', scene)
+            self.assertEqual(scene.count('class="hero-flight"'), 1)
+            self.assertEqual(scene.count('M180 510L210 325L385 180L510 245L580 450L370 570Z'), 4)
+            self.assertIn('transform="translate(180 510) scale(.52) translate(-389 -350)"', scene)
+            self.assertIn('aspect-ratio:760/700;align-self:center', page)
+            self.assertIn('animation:public-flight 2.4s linear 2', page)
+            self.assertIn('animation:public-rotor .3s linear 16', page)
+            for name in ('flight', 'radar', 'route', 'rotor', 'beacon'):
+                self.assertNotRegex(page, rf'animation:public-{name}[^}};]*infinite')
+            self.assertIn('@media(prefers-reduced-motion:reduce){.hero-scene *{animation:none!important}}', page)
+            self.assertNotIn('<animate', scene)
+            self.assertNotIn('<script', scene)
+
     def test_overview_catalog_counts_and_proposed_gcs_boundary(self):
         from build import load_research_journal
         from research_module import render_overview_progress

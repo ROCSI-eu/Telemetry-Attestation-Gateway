@@ -41,6 +41,18 @@ product readiness or authorization. Retain the existing demonstration,
 limitations, animation and static CSP; update the high-level copy only when
 the accepted research or documented direction materially changes.
 
+### Public hero motion
+
+The hero panel matches the SVG aspect ratio rather than stretching with the
+adjacent heading. The original illustrative craft and shadow traverse a
+closed three-leg synthetic route twice (2.4 seconds each, 4.8 seconds total)
+and return to the initial position. All hero motion (rotors, radar, route
+flow and beacons included) ends within the same interval; reduced motion uses
+the static resting pose. No script, external assets, control logic or live
+telemetry is involved. Reloading starts a new visual sequence. This is a
+presentation-only change; the other demonstration and research pages are
+unchanged.
+
 ### Proposed editorial extension — engineering progress
 
 For separately accepted, public-safe engineering achievements (for example
