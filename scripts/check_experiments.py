@@ -45,6 +45,7 @@ APPROVED_TESTS = (
     "experiments/publication-adapter-v0/test_publication_adapter.py",
     "experiments/integrated-cli-v0/test_cli.py",
     "experiments/integrated-cli-v0/test_authentic_package_cli.py",
+    "experiments/companion-cli-v0/test_contract.py",
     "experiments/web-console-v0/test_console.py",
     "experiments/web-console-v0/test_authentic_console.py",
     "experiments/web-console-v0/test_refresh_local_console.py",

@@ -1,0 +1,13 @@
+#!/usr/bin/python3
+# EXPERIMENTAL / SYNTHETIC_ONLY / A0_SYNTHETIC / NOT VALIDATION OR PRODUCTION AUTHORIZATION
+# Fixed verifier-only wrapper. No arbitrary subcommand, network or provisioning.
+import os,sys
+from pathlib import Path
+args=sys.argv[1:]
+if args==["--version"]:
+    os.execv("/tool/bb",["/tool/bb","--version"])
+if len(args)!=9 or args[:3]!=["verify","-t","noir-recursive"] or args[3]!="-i" or args[5]!="-p" or args[7]!="-k":sys.exit(64)
+for value in args[4],args[6],args[8]:
+    p=Path(value)
+    if not p.is_absolute() or not p.resolve().is_relative_to("/tmp") or not p.is_file():sys.exit(64)
+os.execv("/tool/bb",["/tool/bb",*args,"-c","/tmp/crs"])
