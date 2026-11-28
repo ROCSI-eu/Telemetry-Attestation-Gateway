@@ -44,6 +44,7 @@ The gate deliberately does not re-provision Noir, Barretenberg, CRS/setup materi
 - [`integrated-cli-v0/`](integrated-cli-v0/) — one-command synthetic CLI that reuses normalization, genuine proof, independent verification, and provisional publication boundaries while emitting redacted human-readable and machine-readable typed state.
 - [`claim-envelope-v1-spike/`](claim-envelope-v1-spike/) — proposed synthetic text-key CBOR format spike with placeholder-only outcomes and a separate byte-level checker; no cryptographic verification.
 - [`companion-cli-v0/`](companion-cli-v0/) — experimental offline verifier CLI, local profile, source assembly and lifecycle contracts; synthetic inputs only.
+- [`portable-demonstrator-v0/`](portable-demonstrator-v0/) — deterministic experimental source assembly, single-entry synthetic scenario, offline GCS projection and separate historical verification context; see [reproduction](portable-demonstrator-v0/REPRODUCTION.md).
 - [`web-console-v0/`](web-console-v0/) — local-only responsive browser preview of explicitly mocked, deterministic orchestration results; no live prover or public exposure.
 
 ## Workspace boundary
