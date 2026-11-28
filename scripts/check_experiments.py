@@ -47,6 +47,7 @@ APPROVED_TESTS = (
     "experiments/integrated-cli-v0/test_authentic_package_cli.py",
     "experiments/companion-cli-v0/test_contract.py",
     "experiments/claim-envelope-v1-spike/test_contract.py",
+    "experiments/claim-envelope-v1-spike/test_i1_delta.py",
     "experiments/claim-envelope-v1-spike/test_binding_adapter.py",
     "experiments/web-console-v0/test_console.py",
     "experiments/web-console-v0/test_authentic_console.py",
