@@ -12,6 +12,10 @@ Until the Phase 0 executable spike gate is passed and a release ADR is accepted,
 
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, and **MAY** are to be interpreted as normative requirements. An envelope conveys a privacy-preserving claim and the material needed to evaluate it; it is not evidence that the underlying sensor was truthful.
 
+## Provisional scalar exploration profile
+
+The [proposed bounded synthetic scalar profile](adr/0004-proposed-synthetic-scalar-claim-profile.md) reconciles existing experimental v0 evidence with this draft. Its integer-key CBOR and scalar cryptographic result are not version 1 conformance, a frozen contract, or an accepted registry entry. All normative v1 fields, checks and review requirements below remain unchanged.
+
 ## Version and canonical serialization
 
 An envelope version is the two-element unsigned-integer array `[major, minor]`. This specification defines `[1, 0]`. A major version changes field meaning or canonical encoding. A minor version may only add optional fields whose absence preserves meaning. A verifier MUST reject an unknown major version as `unsupported`. It MAY process a newer minor version only when it recognizes every present field and the applicable policy explicitly permits that minor version; otherwise it returns `unsupported`. The version is independent of telemetry-schema, statement, proof-suite, policy, and key versions.
