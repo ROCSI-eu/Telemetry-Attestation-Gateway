@@ -41,6 +41,10 @@ Rollback drills MUST activate a previously approved immutable digest through a n
 
 For every case, assertions MUST cover the externally visible outcome/reason and the append-only audit fields required by the [policy lifecycle model](data-and-proof-model.md#policy-lifecycle-and-verifier-trust), including issuer/authority/key IDs, effective window, state, compatibility, checkpoint/source, cache age, decision time, rollback chain, and revocation result. Privacy tests MUST confirm that these records contain no witness, exact telemetry, or restricted identity. A release gate requires a tabletop and executable rollback/revocation exercise with artifacts sufficient for an independent auditor to reconstruct the decision.
 
+## Scalar profile vector reconciliation
+
+The [proposed scalar profile and vector inventory](adr/0004-proposed-synthetic-scalar-claim-profile.md#vector-and-implementation-delta) identifies scope-matched existing experimental cases and missing v1 cases. It is not a new suite, release gate, or evidence of v1 conformance. The conformance requirements below remain unchanged.
+
 ## Claim-envelope interoperability
 
 Interoperability evidence is staged so that early discovery does not imply a stable contract:

@@ -10,6 +10,10 @@
 
 The public wire contract, disclosure boundary, artifact references, and verifier result semantics are defined by the normative [claim envelope specification](claim-envelope.md). If an illustrative representation in this document conflicts with that specification, the claim envelope specification governs.
 
+## Provisional scalar profile
+
+The [proposed scalar profile](adr/0004-proposed-synthetic-scalar-claim-profile.md) records the current technical direction and existing receive-only integer normalization. A scalar proof does not bind a received observation without additional verified evidence; source-binding experiments remain separate. No final commitment fields, proof system or product claim are selected by this proposal.
+
 ## Canonical telemetry model
 
 The MVP snapshot draws only from the selected MAVLink dialect's `GLOBAL_POSITION_INT` and `VFR_HUD`. Compatibility with a pinned SITL and exact field selection MUST be demonstrated before schema approval. The internal record uses integers and rejects overflow or unavailable values rather than coercing them.

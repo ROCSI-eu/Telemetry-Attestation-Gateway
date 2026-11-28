@@ -16,6 +16,10 @@ Create an ADR when a choice is consequential, difficult to reverse, contested, s
 
 Store the first accepted ADR under `docs/adr/NNNN-short-title.md` and add it to this register. Do not create the directory or an ADR solely to make the structure appear complete. Proposed and Open items remain here until evidence supports a decision.
 
+## Provisional technical profile proposal
+
+[ADR-0004 (Proposed)](adr/0004-proposed-synthetic-scalar-claim-profile.md) records the maintainer-selected provisional exploration direction: one synthetic scalar observation, with no commercial or coverage claim. It does not change the Open decisions or close Gate A. Existing ADR-0001/0002 remain authoritative.
+
 ## Register
 
 | Topic | State | Due gate | Accountable owner | Required reviewers | Required evidence |
