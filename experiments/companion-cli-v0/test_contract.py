@@ -206,4 +206,31 @@ class QA(unittest.TestCase):
             (Path(d)/"unrelated").write_text("keep")
             with self.assertRaises(ValueError):assemble.assemble(REPO,Path(d))
             self.assertEqual((Path(d)/"unrelated").read_text(),"keep")
+    def test_explicit_permissions_and_no_repair_of_existing(self):
+        import stat
+        from local_lifecycle import Local,EMPTY
+        entry={"version":c.VERSION,"seal":self.args.release_sha256}
+        def assert_modes(root):
+            for f in root.rglob("*"):
+                expected=0o700 if f.is_dir() else 0o500 if f.name=="bb" else 0o400
+                self.assertEqual(stat.S_IMODE(f.stat().st_mode),expected,str(f.relative_to(root)))
+        for mask in (0o022,0o077):
+            prior=os.umask(mask)
+            try:
+                with tempfile.TemporaryDirectory() as d:
+                    base=Path(d);release=base/"release";release.mkdir(mode=0o700)
+                    seal=assemble.assemble(REPO,release)
+                    self.assertEqual(seal,entry["seal"]);assert_modes(release)
+                    mgr=Local(base/"install",{c.VERSION:(release,seal)},create=True)
+                    for n in ("lock","state.json"):
+                        self.assertEqual(stat.S_IMODE((mgr.root/n).stat().st_mode),0o600)
+                    with patch.object(Local,"info",return_value={}),patch("subprocess.Popen",side_effect=AssertionError("NO PROCESS")):
+                        state=mgr.apply("install",EMPTY,entry)
+                        installed=mgr.check_version(entry);assert_modes(installed)
+                        (installed/"app").chmod(0o755)
+                        with self.assertRaises(c.Rejected):mgr.check_version(entry)
+                        self.assertEqual(stat.S_IMODE((installed/"app").stat().st_mode),0o755)
+                        (installed/"app").chmod(0o700)
+                        self.assertEqual(mgr.apply("uninstall",state),EMPTY)
+            finally:os.umask(prior)
 if __name__=="__main__":unittest.main(verbosity=2)

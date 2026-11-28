@@ -29,7 +29,9 @@ def read_private(p):
     return json.loads(data,object_pairs_hook=unique)
 def atomic(p,obj):
     tmp=p.with_name(p.name+".next")
-    with tmp.open("xb") as h:h.write(encode(obj));h.flush();os.fsync(h.fileno())
+    fd=os.open(tmp,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o600)
+    with os.fdopen(fd,"wb") as h:
+        os.fchmod(h.fileno(),0o600);h.write(encode(obj));h.flush();os.fsync(h.fileno())
     os.replace(tmp,p);sync_dir(p.parent)
 class Local:
     def __init__(self,root,registry,create=False,profile=None):
@@ -40,7 +42,9 @@ class Local:
         if create:
             self.root.mkdir(mode=0o700)
             self.releases.mkdir(mode=0o700)
-            with (self.root/"lock").open("xb"):pass
+            fd=os.open(self.root/"lock",os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o600)
+            try:os.fchmod(fd,0o600);os.fsync(fd)
+            finally:os.close(fd)
             atomic(self.statefile,EMPTY)
         self.identity=c.private_dir(self.root);c.private_dir(self.releases)
     def guard(self):
@@ -90,10 +94,17 @@ class Local:
         need(not target.exists() and not target.is_symlink() and not stage.exists() and not stage.is_symlink(),"TARGET_EXISTS")
         stage.mkdir(mode=0o700)
         for n in (*c.RELEASE_FILES,"SHA256SUMS"):
-            dst=stage/n;dst.parent.mkdir(parents=True,mode=0o700,exist_ok=True)
-            with (source/n).open("rb") as src,dst.open("xb") as out:
-                shutil.copyfileobj(src,out);out.flush();os.fsync(out.fileno())
-            dst.chmod(0o500 if n=="app/bin/bb" else 0o400)
+            dst=stage/n;parent=stage
+            for part in Path(n).parts[:-1]:
+                parent=parent/part
+                try:parent.mkdir(mode=0o700)
+                except FileExistsError:pass
+                c.private_dir(parent)
+            with (source/n).open("rb") as src:
+                fd=os.open(dst,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o600)
+                with os.fdopen(fd,"wb") as out:
+                    shutil.copyfileobj(src,out);out.flush()
+                    os.fchmod(out.fileno(),0o500 if n=="app/bin/bb" else 0o400);os.fsync(out.fileno())
         for d in sorted((p for p in stage.rglob("*") if p.is_dir()),key=lambda d:len(d.parts),reverse=True):sync_dir(d)
         sync_dir(stage);c.check_release(stage,seal)
         stage.rename(target);sync_dir(self.releases)

@@ -26,9 +26,17 @@ def assemble(repo,out):
     data["README.md"]=read(HERE/"README.md")
     inventory="".join(hashlib.sha256(b).hexdigest()+"  "+n+"\n" for n,b in sorted(data.items())).encode()
     for n,b in sorted({**data,"SHA256SUMS":inventory}.items()):
-        f=out/n;f.parent.mkdir(mode=0o700,parents=True,exist_ok=True)
-        with f.open("xb") as h:h.write(b)
-        f.chmod(0o500 if n=="app/bin/bb" else 0o400)
+        f=out/n
+        parent=out
+        for part in Path(n).parts[:-1]:
+            parent=parent/part
+            try:parent.mkdir(mode=0o700)
+            except FileExistsError:pass
+            st=parent.lstat()
+            need(stat.S_ISDIR(st.st_mode) and st.st_uid==os.getuid() and stat.S_IMODE(st.st_mode)==0o700)
+        fd=os.open(f,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o600)
+        with os.fdopen(fd,"wb") as h:
+            h.write(b);h.flush();os.fchmod(h.fileno(),0o500 if n=="app/bin/bb" else 0o400)
     return hashlib.sha256(inventory).hexdigest()
 def main():
     a=argparse.ArgumentParser(description=MARKS)
